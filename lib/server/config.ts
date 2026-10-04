@@ -1,7 +1,7 @@
 /** Server-only configuration. Never import from client components. */
 export const REPO = process.env.NATIVE_REPO ?? "atlas-thedev/native-client";
 export const API_URL = (process.env.NATIVE_API_URL ?? "https://api.nativelaunch.xyz").replace(/\/$/, "");
-export const SITE_KEY = process.env.NATIVE_SITE_KEY ?? "";
+export const SITE_KEY = process.env.NATIVE_SITE_KEY ?? process.env.NOCTRA_SITE_KEY ?? "";
 
 export const ghHeaders = (): HeadersInit => ({
   Accept: "application/vnd.github+json",

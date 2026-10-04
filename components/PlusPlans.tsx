@@ -21,6 +21,7 @@ export default function PlusPlans() {
   const plans = bill?.config?.plus;
   const monthly = plans?.monthly?.amount ?? 2.99;
   const yearly = plans?.yearly?.amount ?? 24.99;
+  const saving = Math.max(0, Math.round((1 - yearly / (monthly * 12)) * 100));
   const enabled = bill ? !!bill.config.enabled : true;
   const plus = bill?.plus;
 
@@ -74,7 +75,7 @@ export default function PlusPlans() {
     <div className={`card flex flex-col p-7 ${best ? "border-fg/60" : ""}`}>
       <div className="flex items-center justify-between">
         <p className="text-[15px] font-bold uppercase tracking-wider text-mute">{plan === "monthly" ? "Monthly" : "Yearly"}</p>
-        {best && <span className="rounded-full bg-inv px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-wider text-inv-fg">Save 30%</span>}
+        {best && saving > 0 && <span className="rounded-full bg-inv px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-wider text-inv-fg">Save {saving}%</span>}
       </div>
       <p className="mt-4 text-[44px] font-extrabold leading-none tracking-[-0.04em]">{money(price)}<span className="text-[17px] font-semibold text-mute"> / {per}</span></p>
       <p className="mt-2 text-[14.5px] text-mute">{note}</p>
