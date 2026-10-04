@@ -9,7 +9,7 @@ export const site = {
     "Native Client is a fast, beautiful Minecraft launcher with instances, mod and modpack discovery, a 3D skin locker, friends chat, and a crash analyzer that fixes problems for you.",
   /** shown until the real latest release is known */
   fallbackVersion: "4.1.8",
-  discord: "https://discord.gg/Cb3DCf6G7a",
+  discord: "https://discord.gg/m9QpHFP8e",
   youtube: "https://www.youtube.com/@native-client",
   url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://nativelaunch.xyz").replace(/\/$/, ""),
   keywords: [
