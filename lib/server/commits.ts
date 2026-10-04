@@ -1,4 +1,5 @@
 import { REPO, ghHeaders } from "./config";
+import { rebrand } from "./brand";
 
 export type Commit = {
   sha: string;
@@ -20,7 +21,7 @@ export function classify(title: string): Commit["kind"] {
 }
 
 const clean = (s: string) =>
-  s
+  rebrand(s)
     .replace(/https?:\/\/(www\.)?github\.com\S*/gi, "")
     .replace(/\(#\d+\)/g, "")
     .replace(/\bgithub\b/gi, "")
