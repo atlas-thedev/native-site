@@ -18,7 +18,7 @@ npm run lint         # tsc --noEmit
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | Canonical URL for SEO / sitemap / OG | `https://nativelaunch.xyz` |
 | `NATIVE_API_URL` | Native API for auth + locker | `https://api.nativelaunch.xyz` |
-| `NATIVE_SITE_KEY` | Shared secret so the API rate-limits by the visitor IP instead of the site's IP (must equal the API's `NOCTRA_SITE_KEY`; the site also accepts `NOCTRA_SITE_KEY` as the variable name) | unset |
+| `NATIVE_SITE_KEY` | Shared secret so the API rate-limits by the visitor IP instead of the site's IP (must equal the API's `NATIVE_SITE_KEY`; the older `NOCTRA_SITE_KEY` name is still accepted by both) | unset |
 | `GITHUB_TOKEN` | Optional, raises the GitHub API rate limit for releases / change log | unset |
 | `NATIVE_REPO` | `owner/repo` that holds launcher releases + commits | `atlas-thedev/native-client` |
 

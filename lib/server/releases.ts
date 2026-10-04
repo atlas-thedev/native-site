@@ -1,5 +1,6 @@
 import { REPO, ghHeaders } from "./config";
 import { site } from "../site";
+import { rebrand } from "./brand";
 
 export type Asset = { name: string; url: string; size: number };
 export type Release = {
@@ -33,8 +34,8 @@ export async function getReleases(): Promise<Release[]> {
       .map((x) => ({
         tag: x.tag_name,
         version: x.tag_name.replace(/^v/i, ""),
-        name: x.name || x.tag_name,
-        notes: x.body || "",
+        name: rebrand(x.name || x.tag_name),
+        notes: rebrand(x.body || ""),
         date: x.published_at as string,
         prerelease: x.prerelease,
         assets: x.assets.map((a) => ({ name: a.name, url: a.browser_download_url, size: a.size })),
