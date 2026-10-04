@@ -2,6 +2,7 @@
 // Packs exist because this repo was first pushed through a text-only API.
 // Runs automatically before `dev` / `build`; safe to re-run.
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 
 const dir = "assets-packs";
@@ -23,9 +24,11 @@ for (const f of readdirSync(dir).filter((f) => f.endsWith(".json")).sort()) {
 }
 let n = 0;
 for (const [path, chunks] of parts) {
-  if (existsSync(path)) continue;
+  const data = Buffer.from(chunks.join(""), "base64");
+  // Skip only files that are already identical, so a newer pack really replaces an older restored file.
+  if (existsSync(path) && createHash("sha1").update(readFileSync(path)).digest("hex") === createHash("sha1").update(data).digest("hex")) continue;
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, Buffer.from(chunks.join(""), "base64"));
+  writeFileSync(path, data);
   n++;
 }
 if (n) console.log(`restored ${n} asset(s)`);

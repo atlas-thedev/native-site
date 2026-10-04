@@ -21,6 +21,14 @@ export async function GET() {
   }
 }
 
+async function currentModel(name: string, fallback: string | undefined): Promise<"slim" | "default"> {
+  try {
+    const r = await fetch(`${API_URL}/csl/${encodeURIComponent(name)}.json`, { cache: "no-store", signal: AbortSignal.timeout(6000) });
+    if (r.ok) return (await r.json()).model === "slim" ? "slim" : "default";
+  } catch {}
+  return fallback === "slim" ? "slim" : "default";
+}
+
 const dataPng = (v: unknown) => {
   if (v === null) return null;
   if (typeof v !== "string") return undefined;
@@ -39,7 +47,10 @@ export async function POST(req: Request) {
   } catch {
     return json({ ok: false, error: "Invalid request." }, 400);
   }
-  const payload: Record<string, unknown> = { username: s.account.name, model: body.model === "slim" ? "slim" : "default" };
+  // The API resets the model when it is omitted, so keep the current one unless the caller picks a new one.
+  const requested = body.model === "slim" ? "slim" : body.model === "default" ? "default" : null;
+  const model = requested ?? (await currentModel(s.account.name, s.account.model));
+  const payload: Record<string, unknown> = { username: s.account.name, model };
   if ("skin" in body) {
     const v = dataPng(body.skin);
     if (v === undefined) return json({ ok: false, error: "That skin file isn’t valid." }, 400);

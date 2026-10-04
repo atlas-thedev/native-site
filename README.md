@@ -16,9 +16,9 @@ npm run lint         # tsc --noEmit
 
 | Variable | Purpose | Default |
 |---|---|---|
-| `NEXT_PUBLIC_SITE_URL` | Canonical URL for SEO / sitemap / OG | `https://native.app` (**placeholder – set your real domain**) |
+| `NEXT_PUBLIC_SITE_URL` | Canonical URL for SEO / sitemap / OG | `https://nativelaunch.xyz` |
 | `NATIVE_API_URL` | Native API for auth + locker | `https://api.nativelaunch.xyz` |
-| `NATIVE_SITE_KEY` | Shared secret so the API rate-limits by the visitor IP instead of the site's IP (needs the matching API change, see HANDOFF.md) | unset |
+| `NATIVE_SITE_KEY` | Shared secret so the API rate-limits by the visitor IP instead of the site's IP (must equal the API's `NOCTRA_SITE_KEY`; the site also accepts `NOCTRA_SITE_KEY` as the variable name) | unset |
 | `GITHUB_TOKEN` | Optional, raises the GitHub API rate limit for releases / change log | unset |
 | `NATIVE_REPO` | `owner/repo` that holds launcher releases + commits | `atlas-thedev/native-client` |
 
@@ -30,4 +30,3 @@ npm run lint         # tsc --noEmit
 - `components/` UI; `Locker.tsx` + `LockerViewer.tsx` = account skin/cape editor
 - `public/art` version artwork, `public/capes` official capes, `public/skins` presets, `public/ui` transparent app screenshots
 
-See **HANDOFF.md** for status and next steps.
