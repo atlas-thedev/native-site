@@ -36,6 +36,7 @@ export const nav = [
   { href: "/capes", label: "Capes" },
   { href: "/plus", label: "Native+" },
   { href: "/vote", label: "Vote" },
+  { href: "/beta", label: "Beta" },
   { href: "/changes", label: "Changes" },
   { href: "/support", label: "Support" },
 ];

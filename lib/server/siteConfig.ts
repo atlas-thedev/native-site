@@ -12,6 +12,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       launch: { ...FALLBACK_CONFIG.launch, ...(d.launch ?? {}) },
       maintenance: { ...FALLBACK_CONFIG.maintenance, ...(d.maintenance ?? {}) },
       announcement: { ...FALLBACK_CONFIG.announcement, ...(d.announcement ?? {}) },
+      beta: { ...FALLBACK_CONFIG.beta, ...(d.beta ?? {}) },
       offers: Array.isArray(d.offers) ? d.offers : [],
     };
   } catch {

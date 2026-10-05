@@ -16,7 +16,17 @@ export type SiteConfig = {
   };
   maintenance: { enabled: boolean; message: string; until: number | null };
   announcement: { enabled: boolean; text: string; href: string; cta: string };
+  beta: { open: boolean; closesAt: number | null };
   offers: Offer[];
+};
+
+export type BetaAnswers = {
+  discord: string; platform: "windows" | "macos" | "linux" | ""; age: "13-17" | "18-24" | "25+" | ""; specs: string;
+  versions: string[]; hours: number; playstyle: string[]; experience: string; why: string; timezone: string; agree: boolean;
+};
+export type BetaApplication = {
+  id: string; status: "pending" | "approved" | "waitlist" | "rejected"; answers: BetaAnswers; createdAt: number; updatedAt: number;
+  reviewedAt: number | null; note: string | null; canReapply: boolean; reapplyAt: number | null;
 };
 
 /** Used when the API can't be reached: assume launched with nothing locked (never lock people out by accident). */
@@ -39,6 +49,7 @@ export const FALLBACK_CONFIG: SiteConfig = {
   },
   maintenance: { enabled: false, message: "", until: null },
   announcement: { enabled: false, text: "", href: "", cta: "" },
+  beta: { open: true, closesAt: null },
   offers: [],
 };
 

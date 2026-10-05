@@ -5,7 +5,7 @@ import { API_URL } from "@/lib/server/config";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const ALLOWED = /^(site|site\/.*|polls|polls\/.*|store\/.*|billing\/.*|users|users\/.*|overview|status)$/;
+const ALLOWED = /^(site|site\/.*|polls|polls\/.*|beta|beta\/.*|store\/.*|billing\/.*|users|users\/.*|overview|status)$/;
 
 /** Admin proxy: /api/admin/<path> → Native API /v1/admin/<path>, with the session token from the httpOnly cookie. */
 async function forward(req: Request, ctx: { params: Promise<{ path: string[] }> }) {

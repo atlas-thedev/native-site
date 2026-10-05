@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { Crown, Loader2, Lock, Minus, Plus, RotateCcw, ShoppingBag } from "lucide-react";
+import { Crown, Loader2, Lock, Minus, Plus, RotateCcw, ShoppingBag, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import LockerViewer, { type ViewerHandle } from "../LockerViewer";
@@ -157,12 +157,14 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
               <div className="w-full rounded-[20px] border border-dashed border-line p-5">
                 <p className="flex items-center gap-2 text-[15px] font-bold"><Lock className="h-4 w-4" /> The store opens at launch</p>
                 <p className="mt-1 text-[14px] text-mute">{isFounder ? "Join before launch and this cape can be your free founder pick." : `On launch day it’s ${money(item.price)} — or included with Native+.`}</p>
-                <Countdown at={launch.at} size="sm" className="mt-4 !justify-start" />
+                <Countdown at={launch.at} size="sm" className="mt-4 justify-start!" />
                 <div className="mt-5 flex flex-wrap gap-3">
                   {isFounder && <Link href={signedIn ? "/founder" : "/register?next=/founder"} className={primary}><Plus className="h-4 w-4" /> {signedIn ? "Pick it as your free cape" : "Join early · get it free"}</Link>}
                   {!signedIn && !isFounder && <Link href="/register?next=/founder" className={primary}>Create a free account</Link>}
                 </div>
               </div>
+            ) : item.id === "super-beta-tester" && !own ? (
+              <Link href="/beta" className={primary}><Sparkles className="h-4 w-4" /> Super Beta Testers only · Apply</Link>
             ) : item.exclusive && !own ? (
               <span className="inline-flex h-12 items-center gap-2 rounded-full border border-dashed border-line px-5 text-[14px] font-semibold text-mute" title="Not sold. The Native team gives event capes out, or with a redeem code.">
                 <Lock className="h-4 w-4" /> Event cape · given by the Native team or with a code
