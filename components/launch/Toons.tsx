@@ -3,6 +3,7 @@
  * ink outlines in the site's own black / white palette so they work in both themes.
  * Animations live in globals.css (.toon-*) and stop for prefers-reduced-motion.
  */
+import FlyingBee from "./FlyingBee";
 type P = { className?: string };
 const ink = { stroke: "var(--fg)", strokeWidth: 4, strokeLinejoin: "round" as const, strokeLinecap: "round" as const };
 const paper = "var(--bg)";
@@ -165,9 +166,7 @@ export default function ToonScene() {
       <Sparkle className="toon-twinkle absolute right-[40%] bottom-[18%] hidden w-4 lg:block [animation-delay:-2.2s]" />
       <Gem className="toon-float absolute left-[9%] top-[44%] hidden w-11 lg:block" />
       <Gem className="toon-float absolute right-[11%] top-[48%] hidden w-8 md:block [animation-delay:-2s]" />
-      <div className="toon-buzz absolute left-[24%] top-[16%] hidden sm:block">
-        <Bee className="w-14" />
-      </div>
+      <FlyingBee size={64} area={[0.03, 0.03, 0.97, 0.22]} className="z-20 hidden sm:block" />
       <Mascot className="absolute bottom-0 left-[-30px] w-[150px] sm:left-[2%] sm:w-[190px] lg:left-[4%] lg:w-[230px]" />
       <Slime className="absolute bottom-1 left-[22%] hidden w-[78px] md:block lg:left-[19%]" />
       <Rocket className="absolute bottom-0 right-[-24px] w-[110px] sm:right-[3%] sm:w-[140px] lg:right-[6%] lg:w-[170px]" />
