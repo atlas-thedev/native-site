@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { readSession, upstreamHeaders } from "@/lib/server/session";
 import { API_URL } from "@/lib/server/config";
 
@@ -25,6 +26,8 @@ async function forward(req: Request, ctx: { params: Promise<{ path: string[] }> 
   try {
     const r = await fetch(`${API_URL}/v1/admin/${sub}${search}`, init);
     const text = await r.text();
+    // launch, maintenance, banners, offers and capes are baked into cached pages: refresh them all right away
+    if (r.ok && !["GET", "HEAD"].includes(req.method) && /^(site|store|polls|beta)/.test(path[0] ?? "")) revalidatePath("/", "layout");
     return new NextResponse(text, { status: r.status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ ok: false, error: "Can’t reach the Native API." }, { status: 502 });

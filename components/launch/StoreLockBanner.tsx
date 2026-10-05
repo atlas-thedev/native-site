@@ -8,7 +8,7 @@ import { useLaunch } from "./LaunchContext";
 /** Shown above the cape gallery while the store is locked before launch. */
 export default function StoreLockBanner({ signedIn }: { signedIn: boolean }) {
   const { launch } = useLaunch();
-  if (!launch.lockStore) return null;
+  if (!launch.lockStore || !launch.prelaunch) return null;
   return (
     <div className="dots mb-10 flex flex-col items-start justify-between gap-6 rounded-[28px] border border-line p-6 sm:p-8 lg:flex-row lg:items-center">
       <div>
