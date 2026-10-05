@@ -19,18 +19,37 @@ import { faqs } from "@/lib/site";
 import { getCatalog } from "@/lib/server/store";
 import { getSiteConfig } from "@/lib/server/siteConfig";
 import DownloadGate from "@/components/launch/DownloadGate";
+import EarlyAccess from "@/components/EarlyAccess";
 
 export const revalidate = 600;
 
 export default async function Home() {
-  const [a, mc, cfg, catalog] = await Promise.all([getAvailability(), getLatestMinecraft(), getSiteConfig(), getCatalog()]);
+  const [a, mc, cfg, catalog] = await Promise.all([
+    getAvailability(),
+    getLatestMinecraft(),
+    getSiteConfig(),
+    getCatalog(),
+  ]);
   const byId = new Map((catalog?.items ?? []).map((i) => [i.id, i]));
-  const founder = cfg.launch.founderCapes.map((id) => byId.get(id)).filter((i) => !!i);
+  const founder = cfg.launch.founderCapes
+    .map((id) => byId.get(id))
+    .filter((i) => !!i);
   return (
     <>
       <Intro />
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }} />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }}
+      />
       <Hero founder={founder} />
+      {cfg.beta.open && <EarlyAccess closesAt={cfg.beta.closesAt} />}
       <Features />
       <LaunchPanel />
       <Community />
@@ -40,10 +59,17 @@ export default async function Home() {
       <More />
       <section id="download" className="mx-auto max-w-[1280px] px-5 py-24">
         <div className="mb-14 text-center">
-          <Reveal><p className="eyebrow">Download</p></Reveal>
-          <SplitText text="Get Native for your system" className="mx-auto mt-5 text-[clamp(2.2rem,4.8vw,3.8rem)] font-extrabold leading-[1.02] tracking-[-0.04em]" />
+          <Reveal>
+            <p className="eyebrow">Download</p>
+          </Reveal>
+          <SplitText
+            text="Get Native for your system"
+            className="mx-auto mt-5 text-[clamp(2.2rem,4.8vw,3.8rem)] font-extrabold leading-[1.02] tracking-[-0.04em]"
+          />
         </div>
-        <DownloadGate><DownloadCards version={a.version} avail={a.platforms} /></DownloadGate>
+        <DownloadGate>
+          <DownloadCards version={a.version} avail={a.platforms} />
+        </DownloadGate>
       </section>
       <FAQ />
       <FinalCta />
