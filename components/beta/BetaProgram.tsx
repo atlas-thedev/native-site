@@ -14,15 +14,16 @@ import {
   Lock,
   MessageSquare,
   PartyPopper,
+  Rocket,
   Send,
-  X,
+  Shirt,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CapeStrip from "../CapeStrip";
 import LockerViewer from "../LockerViewer";
-import FlyingBee from "../launch/FlyingBee";
-import NativeGlyph from "../NativeGlyph";
+import Sky from "../plus/Sky";
+import BetaBadge from "./BetaBadge";
 import PlusMark from "../plus/PlusMark";
 import { playClaimMagic } from "../launch/claimMagic";
 import type { BetaAnswers, BetaApplication } from "@/lib/launch";
@@ -316,109 +317,103 @@ export default function BetaProgram({
   const goForm = () =>
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
+  const perks = [
+    { icon: Rocket, title: "Builds before anyone", body: "New versions show up in your launcher days or weeks before they go public." },
+    { icon: MessageSquare, title: "A private channel", body: "A testers-only Discord channel. The people who build Native read every message." },
+    { icon: Bug, title: "A real say", body: "Your reports decide what we fix next, and your ideas end up in what we build after." },
+    { icon: Shirt, title: "The Super Beta cape", body: "Animated, never sold, and only handed to accepted testers. Wear it in the launcher and in game." },
+    { icon: BadgeIcon, title: "The badge", body: "It sits next to your name in Relay, on your profile and in your friends’ lists." },
+    { icon: Crown, title: "Native+ for life", body: "Every paid cape and every Native+ perk, with no bill and no end date." },
+  ];
+  const steps: [string, string][] = [
+    ["Apply", "Three short steps. Most people finish in about three minutes."],
+    ["We read it", "A real person reviews every application, usually within a week."],
+    ["You’re in", "The cape, badge and Native+ land on your account and we message you on Discord."],
+  ];
+  const faq: [string, string][] = [
+    ["Who gets picked?", "People who play a lot, on different hardware and versions, and who will actually tell us when something breaks. A good bug report beats a big follower count."],
+    ["How long until I hear back?", "Usually within a week. Your status updates on this page, and if you’re accepted the team sends you a Discord message."],
+    ["Is Native+ really forever?", "Yes. Accepted testers get Native+ with no end date, including every paid cape it covers now and later."],
+    ["What if I’m not picked?", "You can apply again a week after your review. Hanging out in the Discord and reporting bugs helps a lot."],
+    ["Can I lose the perks?", "Only if you leak private builds or break the rules. Otherwise they stay yours."],
+  ];
+  const cta = signedIn ? (
+    app && !editing ? (
+      <button onClick={goForm} className={primary}>
+        <Hourglass className="h-4 w-4" /> View your application
+      </button>
+    ) : (
+      <button onClick={goForm} disabled={!canApply} className={primary}>
+        <FlaskConical className="h-4 w-4" /> {canApply ? "Apply now" : "Applications closed"}
+      </button>
+    )
+  ) : (
+    <Link href="/register?next=/beta" className={primary}>
+      <FlaskConical className="h-4 w-4" /> Create an account to apply
+    </Link>
+  );
+
   return (
-    <div className="relative">
+    <div className="relative pb-32">
       {/* hero */}
       <section className="relative overflow-hidden border-b border-line">
-        <div
-          className="dots pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,#000_30%,transparent_80%)]"
-          aria-hidden
-        />
-        <FlyingBee
-          size={56}
-          seed={5}
-          area={[0.04, 0.08, 0.96, 0.5]}
-          className="z-20 hidden md:block"
-        />
-        <NativeGlyph className="toon-twinkle pointer-events-none absolute left-[14%] top-[22%] w-5 text-dim" />
-        <NativeGlyph className="toon-twinkle pointer-events-none absolute right-[16%] top-[16%] w-4 text-dim [animation-delay:-1.2s]" />
-        <div className="relative z-10 mx-auto grid max-w-[1280px] items-center gap-10 px-5 pb-16 pt-14 sm:pt-20 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:pb-24">
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-line bg-bg/70 px-3.5 py-1.5 text-[13px] font-semibold backdrop-blur">
-              <span
-                className={`h-2 w-2 rounded-full ${open ? "bg-fg [animation:pulse-soft_1.4s_ease-in-out_infinite]" : "bg-dim"}`}
-              />
+        <Sky />
+        <div className="beta-sky pointer-events-none absolute inset-0" aria-hidden />
+        <div className="relative mx-auto grid max-w-[1180px] items-end gap-12 px-5 pt-20 sm:pt-28 lg:grid-cols-[1fr_auto]">
+          <div className="pb-36 lg:pb-44">
+            <p className="eyebrow flex items-center gap-2.5">
+              <span className={`h-2 w-2 rounded-full ${open ? "bg-beta [animation:pulse-soft_1.4s_ease-in-out_infinite]" : "bg-dim"}`} />
               {open ? "Applications open" : "Applications closed"}
-            </span>
-            <h1 className="mt-6 text-balance text-[clamp(2.6rem,6.4vw,5.2rem)] font-extrabold leading-[0.98] tracking-[-0.05em]">
-              Break Native before anyone else.
-            </h1>
-            <p className="mt-6 max-w-[540px] text-[18px] leading-relaxed text-mute">
-              Become a <b className="font-bold text-fg">Super Beta Tester</b>.
-              Get early builds, a private channel with the team, and a say in
-              what ships. Accepted testers keep their perks forever.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <h1 className="mt-5 text-[clamp(3.2rem,8vw,6.4rem)] font-extrabold leading-[0.92] tracking-[-0.05em]">
+              Super Beta<span className="text-beta">.</span>
+            </h1>
+            <p className="mt-6 max-w-[470px] text-[19px] leading-relaxed text-mute">
+              Play new Native builds before anyone else, talk straight to the team, and keep the cape, badge and Native+ for life.
+            </p>
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              {cta}
               {signedIn ? (
-                app && !editing ? (
-                  <button onClick={goForm} className={primary}>
-                    <Hourglass className="h-4 w-4" /> View your application
-                  </button>
-                ) : (
-                  <button
-                    onClick={goForm}
-                    disabled={!canApply}
-                    className={primary}
-                  >
-                    <FlaskConical className="h-4 w-4" />{" "}
-                    {canApply ? "Apply now" : "Applications closed"}
-                  </button>
-                )
+                <a href="#how" className={ghost}>How it works</a>
               ) : (
-                <>
-                  <Link href="/register?next=/beta" className={primary}>
-                    <FlaskConical className="h-4 w-4" /> Create an account to
-                    apply
-                  </Link>
-                  <Link href="/login?next=/beta" className={ghost}>
-                    Sign in
-                  </Link>
-                </>
+                <Link href="/login?next=/beta" className={ghost}>Sign in</Link>
               )}
             </div>
-            <ul className="mt-10 grid max-w-[560px] grid-cols-3 gap-3">
-              {[
-                ["Cape", "Super Beta Tester"],
-                ["Badge", "On your profile"],
-                ["Native+", "Free, forever"],
-              ].map(([k, v], i) => (
-                <motion.li
-                  key={k}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 + i * 0.08 }}
-                  className="rounded-2xl border border-line bg-bg/60 px-4 py-3 backdrop-blur"
-                >
-                  <p className="text-[11.5px] font-semibold uppercase tracking-wider text-dim">
-                    {k}
-                  </p>
-                  <p className="mt-0.5 text-[14.5px] font-bold tracking-tight">
-                    {v}
-                  </p>
-                </motion.li>
-              ))}
-            </ul>
+            <p className="mt-5 text-[14px] text-dim">Free to apply. Takes about three minutes.</p>
           </div>
 
-          <div className="beta-cape-stage relative overflow-hidden rounded-[30px] border border-line">
-            <div className="dots relative h-[400px] sm:h-[480px]">
+          <div className="relative hidden items-end gap-7 pb-[66px] lg:flex" aria-hidden>
+            {cape ? (
+              <div className="relative">
+                <span className="pointer-events-none absolute -inset-10 rounded-full bg-[radial-gradient(closest-side,color-mix(in_srgb,var(--beta)_22%,transparent),transparent)]" />
+                <CapeStrip strip={cape.animated ? cape.stripUrl : null} still={cape.stillUrl} frames={cape.frames} fps={cape.fps} width={150} label="Super Beta Tester cape" className="cutout relative" />
+              </div>
+            ) : (
+              <span className="grid h-[240px] w-[150px] place-items-center rounded-2xl border border-line text-dim">Cape</span>
+            )}
+            <div className="mb-6 flex flex-col items-center gap-3">
+              <BetaBadge size={96} />
+              <span className="rounded-full border border-line bg-bg/70 px-3 py-1 text-[12px] font-bold uppercase tracking-wider text-mute backdrop-blur">Testers only</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* rewards */}
+      <section className="mx-auto mt-10 max-w-[1280px] px-5">
+        <div className="mb-6 px-1">
+          <h2 className="text-[clamp(1.7rem,3vw,2.3rem)] font-extrabold tracking-tight">What you keep</h2>
+          <p className="mt-1.5 text-mute">Never sold, never in a sale. Accepted testers only.</p>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+          <div className="beta-cape-stage card relative overflow-hidden p-0">
+            <div className="dots relative h-[380px] sm:h-[460px]">
               {cape ? (
                 <LockerViewer
-                  skin={
-                    skin ??
-                    (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")
-                  }
+                  skin={skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")}
                   model={model}
                   cape={cape.stillUrl}
-                  capeAnim={
-                    cape.animated && cape.stripUrl
-                      ? {
-                          url: cape.stripUrl,
-                          frames: cape.frames,
-                          fps: cape.fps,
-                        }
-                      : null
-                  }
+                  capeAnim={cape.animated && cape.stripUrl ? { url: cape.stripUrl, frames: cape.frames, fps: cape.fps } : null}
                   walk
                   spin
                   showCape
@@ -426,146 +421,80 @@ export default function BetaProgram({
                   elytra={false}
                 />
               ) : (
-                <div className="flex h-full items-center justify-center text-mute">
-                  The Super Beta Tester cape
-                </div>
+                <div className="flex h-full items-center justify-center text-mute">The Super Beta Tester cape</div>
               )}
-              <div className="pointer-events-none absolute inset-x-4 top-4 flex items-center gap-3 rounded-2xl border border-line bg-bg/80 px-3.5 py-3 backdrop-blur-xl">
-                <img
-                  src="/badges/super-beta-tester.png"
-                  alt=""
-                  width={28}
-                  height={28}
-                  className="h-7 w-7 [image-rendering:pixelated]"
-                />
-                <div className="leading-tight">
-                  <p className="text-[13.5px] font-extrabold tracking-tight">
-                    Super Beta Tester
-                  </p>
-                  <p className="text-[11.5px] text-dim">
-                    Founding access · never sold
-                  </p>
+              <div className="pointer-events-none absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
+                <div className="rounded-2xl border border-line bg-bg/80 px-4 py-3 backdrop-blur-xl">
+                  <p className="text-[15px] font-extrabold tracking-tight">Super Beta Tester cape</p>
+                  <p className="text-[12.5px] text-dim">Animated · {name ? `Shown on ${name}` : "Drag to spin"}</p>
                 </div>
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-4">
+            <div className="card flex items-center gap-6 p-6">
+              <span className="dots grid h-[120px] w-[120px] shrink-0 place-items-center rounded-2xl">
+                <BetaBadge size={84} />
+              </span>
+              <div>
+                <p className="text-[19px] font-extrabold tracking-tight">The badge</p>
+                <p className="mt-1.5 text-[14.5px] leading-relaxed text-mute">Shows next to your name in Relay and on your profile, so everyone knows you were here early.</p>
+              </div>
+            </div>
+            <div className="card flex items-center gap-6 p-6">
+              <span className="dots grid h-[120px] w-[120px] shrink-0 place-items-center rounded-2xl">
+                <PlusMark size={60} />
+              </span>
+              <div>
+                <p className="text-[19px] font-extrabold tracking-tight">
+                  Native<span className="text-gold">+</span> for life
+                </p>
+                <p className="mt-1.5 text-[14.5px] leading-relaxed text-mute">Every paid cape, the gold N+ and the crown in Relay. No subscription and no end date.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* perks */}
-      <section className="mx-auto max-w-[1280px] px-5 py-20">
-        <p className="eyebrow">What you get</p>
-        <h2 className="mt-3 text-[clamp(2rem,4vw,3.2rem)] font-extrabold leading-[1.02] tracking-[-0.04em]">
-          Thanks, in three parts.
-        </h2>
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          <div className="card group flex flex-col p-6">
-            <div className="dots flex h-[220px] items-center justify-center rounded-2xl">
-              {cape ? (
-                <CapeStrip
-                  strip={cape.animated ? cape.stripUrl : null}
-                  still={cape.stillUrl}
-                  frames={cape.frames}
-                  fps={cape.fps}
-                  width={96}
-                  label="Super Beta Tester cape"
-                  className="cutout-sm transition duration-500 group-hover:-rotate-3 group-hover:scale-[1.06]"
-                />
-              ) : (
-                <FlaskConical className="h-12 w-12 text-dim" />
-              )}
-            </div>
-            <p className="mt-5 text-[20px] font-extrabold tracking-tight">
-              The Super Beta Tester cape
-            </p>
-            <p className="mt-1.5 text-[15px] text-mute">
-              An animated cape bubbling with test potions. Never sold — testers
-              only. Wear it in the launcher and in game.
-            </p>
-          </div>
-          <div className="card group flex flex-col p-6">
-            <div className="dots flex h-[220px] items-center justify-center rounded-2xl">
-              <img
-                src="/badges/super-beta-tester.png"
-                alt="Super Beta Tester badge"
-                width={112}
-                height={112}
-                className="h-28 w-28 transition duration-500 [image-rendering:pixelated] group-hover:rotate-6 group-hover:scale-110"
-              />
-            </div>
-            <p className="mt-5 text-[20px] font-extrabold tracking-tight">
-              The badge
-            </p>
-            <p className="mt-1.5 text-[15px] text-mute">
-              Shows next to your name in Relay, on your profile and to your
-              friends. Everyone will know you were here first.
-            </p>
-          </div>
-          <div className="card group flex flex-col p-6">
-            <div className="dots flex h-[220px] items-center justify-center rounded-2xl">
-              <div className="relative flex h-28 w-28 items-center justify-center rounded-[30px] bg-inv text-inv-fg transition duration-500 group-hover:-rotate-6 group-hover:scale-110">
-                <PlusMark size={54} />
-                <span className="absolute -bottom-3 rounded-full border border-line bg-bg px-3 py-1 text-[12px] font-extrabold text-fg">
-                  FOREVER
-                </span>
-              </div>
-            </div>
-            <p className="mt-5 text-[20px] font-extrabold tracking-tight">
-              Native+ for life
-            </p>
-            <p className="mt-1.5 text-[15px] text-mute">
-              Every paid cape, the Native+ badge and everything Native+ gets
-              later. No subscription, no end date.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-5 md:grid-cols-3">
-          {[
-            [
-              NativeGlyph,
-              "Early builds",
-              "Try new Native versions days or weeks before release.",
-            ],
-            [
-              MessageSquare,
-              "Private channel",
-              "A testers-only Discord channel with the people who build Native.",
-            ],
-            [
-              Bug,
-              "Real impact",
-              "Your bug reports and ideas decide what gets fixed and built next.",
-            ],
-          ].map(([Icon, t, d]) => {
-            const I = Icon as typeof NativeGlyph;
-            return (
-              <div
-                key={t as string}
-                className="flex gap-4 rounded-[24px] border border-line p-5"
-              >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-line">
+      <div className="mx-auto max-w-[1080px] px-5">
+        {/* perks */}
+        <section className="mt-24">
+          <h2 className="text-[clamp(1.7rem,3vw,2.3rem)] font-extrabold tracking-tight">What testers get</h2>
+          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {perks.map(({ icon: I, title, body }) => (
+              <li key={title} className="card p-6">
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-surface-2">
                   <I className="h-5 w-5" />
                 </span>
-                <div>
-                  <p className="text-[16px] font-bold tracking-tight">
-                    {t as string}
-                  </p>
-                  <p className="mt-1 text-[14.5px] text-mute">{d as string}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+                <p className="mt-5 text-[17px] font-bold tracking-tight">{title}</p>
+                <p className="mt-1.5 text-[14.5px] leading-relaxed text-mute">{body}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* how it works */}
+        <section id="how" className="mt-24 scroll-mt-24">
+          <h2 className="text-[clamp(1.7rem,3vw,2.3rem)] font-extrabold tracking-tight">How it works</h2>
+          <ol className="card mt-8 grid p-0 md:grid-cols-3">
+            {steps.map(([t, d], i) => (
+              <li key={t} className="border-line p-6 sm:p-7 [&:not(:last-child)]:border-b md:[&:not(:last-child)]:border-b-0 md:[&:not(:last-child)]:border-r">
+                <span className="font-mono text-[13px] font-semibold text-dim">0{i + 1}</span>
+                <p className="mt-3 text-[17px] font-bold tracking-tight">{t}</p>
+                <p className="mt-1.5 text-[14.5px] leading-relaxed text-mute">{d}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </div>
 
       {/* form / status */}
       <section
         ref={formRef}
         id="apply"
-        className="scroll-mt-24 border-t border-line"
+        className="mt-24 scroll-mt-24"
       >
-        <div className="mx-auto max-w-[860px] px-5 py-20">
+        <div className="mx-auto max-w-[860px] px-5">
           {!signedIn ? (
             <div className="card relative overflow-hidden p-8 text-center sm:p-12">
               <Lock className="mx-auto h-8 w-8" />
@@ -573,8 +502,8 @@ export default function BetaProgram({
                 Sign in to apply.
               </h2>
               <p className="mx-auto mt-3 max-w-[460px] text-mute">
-                Your Native account is where the cape, badge and Native+ land if
-                you’re accepted. It takes a minute.
+                If you’re accepted, the cape, badge and Native+ go straight to
+                your Native account. Making one takes a minute.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <Link href="/register?next=/beta" className={primary}>
@@ -593,8 +522,8 @@ export default function BetaProgram({
                   Applications are closed for now.
                 </h2>
                 <p className="mx-auto mt-3 max-w-[440px] text-mute">
-                  We’re testing with the current group. Join the Discord to hear
-                  when the next round opens.
+                  We’re testing with the current group right now. Join the
+                  Discord and you’ll hear first when the next round opens.
                 </p>
               </div>
             ) : (
@@ -673,7 +602,7 @@ export default function BetaProgram({
                           </Q>
                           <Q
                             label="Time zone"
-                            hint="Detected from your browser — change it if it’s wrong."
+                            hint="We guessed this from your browser. Change it if it’s off."
                           >
                             <input
                               className={field}
@@ -701,7 +630,7 @@ export default function BetaProgram({
                           </Q>
                           <Q
                             label="Your PC"
-                            hint="CPU, graphics card and RAM — helps us test on lots of hardware."
+                            hint="CPU, graphics card and RAM. It helps us cover lots of hardware."
                             optional
                           >
                             <input
@@ -766,7 +695,7 @@ export default function BetaProgram({
                               className={area}
                               value={a.why}
                               maxLength={1200}
-                              placeholder="What would you test first? What do you love — or hate — about Minecraft launchers?"
+                              placeholder="What would you test first? What do you love or hate about Minecraft launchers?"
                               onChange={(e) => set("why", e.target.value)}
                             />
                           </Q>
@@ -887,59 +816,39 @@ export default function BetaProgram({
         </div>
       </section>
 
-      {/* faq */}
-      <section className="border-t border-line">
-        <div className="mx-auto grid max-w-[1280px] gap-10 px-5 py-20 md:grid-cols-[minmax(0,4fr)_minmax(0,7fr)]">
-          <div>
-            <p className="eyebrow">Questions</p>
-            <h2 className="mt-3 text-[clamp(1.8rem,3.4vw,2.6rem)] font-extrabold leading-[1.04] tracking-[-0.04em]">
-              Good to know.
-            </h2>
-          </div>
-          <div className="divide-y divide-line border-y border-line">
-            {[
-              [
-                "Who gets picked?",
-                "People who play a lot, on different hardware and versions, and who’ll actually tell us when something breaks. Great bug reports beat big follower counts.",
-              ],
-              [
-                "How long until I hear back?",
-                "Usually within a week. Your status updates here, and accepted testers get a Discord message from the team.",
-              ],
-              [
-                "Is Native+ really forever?",
-                "Yes. Accepted testers get Native+ with no end date, plus every paid cape it includes — now and later.",
-              ],
-              [
-                "What if I’m not picked?",
-                "You can apply again a week after your review. Joining the Discord and reporting bugs helps a lot.",
-              ],
-              [
-                "Can I lose the perks?",
-                "Only for leaking private builds or breaking the rules. Otherwise they’re yours to keep.",
-              ],
-            ].map(([q, d]) => (
-              <details
-                key={q}
-                className="group py-5 [&_summary::-webkit-details-marker]:hidden"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[17px] font-bold tracking-tight">
-                  {q}
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line transition group-open:rotate-45">
-                    <X className="h-4 w-4 rotate-45" />
-                  </span>
-                </summary>
-                <p className="mt-3 max-w-[620px] text-[15.5px] leading-relaxed text-mute">
-                  {d}
-                </p>
-              </details>
+
+      <div className="mx-auto max-w-[1080px] px-5">
+        {/* faq */}
+        <section className="mt-24">
+          <h2 className="text-[clamp(1.7rem,3vw,2.3rem)] font-extrabold tracking-tight">Questions</h2>
+          <dl className="mt-6 divide-y divide-line border-y border-line">
+            {faq.map(([q, d]) => (
+              <div key={q} className="grid gap-2 py-5 sm:grid-cols-[300px_1fr]">
+                <dt className="font-semibold">{q}</dt>
+                <dd className="text-mute">{d}</dd>
+              </div>
             ))}
-          </div>
-        </div>
-      </section>
+          </dl>
+        </section>
+
+        {/* cta */}
+        {!(app && app.status === "approved") && (
+          <section className="card relative mt-24 overflow-hidden px-8 py-14 text-center">
+            <div className="beta-sky pointer-events-none absolute inset-0" aria-hidden />
+            <div className="relative">
+              <BetaBadge size={76} className="mx-auto" />
+              <h2 className="mt-6 text-[clamp(1.8rem,3.4vw,2.6rem)] font-extrabold tracking-tight">Find the bugs before everyone else.</h2>
+              <p className="mx-auto mt-3 max-w-[480px] text-mute">Tell us how you play and what you run it on. We’ll take it from there.</p>
+              <div className="mt-8 flex justify-center">{cta}</div>
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
+
+const BadgeIcon = ({ className = "" }: { className?: string }) => <BetaBadge size={22} still className={className} />;
 
 function Status({
   app,
@@ -1041,8 +950,8 @@ function Status({
               You’re on the waitlist.
             </h2>
             <p className="mt-3 max-w-[560px] text-mute">
-              We liked your application. As soon as a spot opens up, it’s yours
-              — we’ll message you on Discord.
+              We liked your application. The next spot that opens is yours,
+              and we’ll message you on Discord when it does.
             </p>
           </>
         ) : (
@@ -1051,9 +960,9 @@ function Status({
               Application sent.
             </h2>
             <p className="mt-3 max-w-[560px] text-mute">
-              The team reads every one. You’ll see the decision here, and on
-              Discord if you’re accepted. You can still edit it while it’s
-              waiting.
+              Someone on the team will read it. The decision shows up here, and
+              if you’re accepted you’ll get a Discord message too. You can still
+              edit it while you wait.
             </p>
           </>
         )}
@@ -1118,13 +1027,7 @@ function Status({
               <span className="text-[14px] font-bold">Cape in your locker</span>
             </div>
             <div className="flex items-center gap-3 rounded-2xl border border-line p-4">
-              <img
-                src="/badges/super-beta-tester.png"
-                alt=""
-                width={34}
-                height={34}
-                className="h-[34px] w-[34px] [image-rendering:pixelated]"
-              />
+              <BetaBadge size={34} still />
               <span className="text-[14px] font-bold">
                 Badge on your profile
               </span>

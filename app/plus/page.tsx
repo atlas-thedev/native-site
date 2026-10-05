@@ -23,7 +23,7 @@ export const revalidate = 60;
 export const metadata = pageMeta({
   title: "Native+",
   description:
-    "Native+ unlocks every paid Native cape, a gold N+ in the launcher and the Native+ crown in Relay. $2.99 a month or $24.99 a year — cancel anytime.",
+    "Native+ unlocks every paid Native cape, a gold N+ in the launcher and the Native+ crown in Relay. $2.99 a month or $24.99 a year, and you can cancel anytime.",
   path: "/plus",
 });
 
@@ -31,7 +31,7 @@ const perks = [
   {
     icon: Shirt,
     title: "Every paid cape",
-    body: "All paid Native capes are in your locker while you’re a member — wear any of them in the launcher and in game.",
+    body: "Every paid Native cape sits in your locker while you’re a member. Wear any of them in the launcher and in game.",
   },
   {
     icon: NativeGlyph,
@@ -41,7 +41,7 @@ const perks = [
   {
     icon: Crown,
     title: "The Native+ crown",
-    body: "A gold crown next to your name in Relay — on your profile, in your friends’ lists and in every chat.",
+    body: "A gold crown next to your name in Relay. It shows on your profile, in your friends’ lists and in every chat.",
   },
   {
     icon: BadgeCheck,
@@ -77,7 +77,7 @@ const faq = [
   ],
   [
     "Are event capes included?",
-    "No. Event capes, like the Beta Tester or CrabbyMC capes, are never sold — they’re given out by the Native team, at events or with redeem codes.",
+    "No. Event capes, like the Beta Tester or CrabbyMC capes, are never sold. The Native team gives them out at events or with redeem codes.",
   ],
   [
     "Does it work with my premium Minecraft account?",
@@ -89,7 +89,7 @@ const faq = [
   ],
   [
     "Can I get a refund?",
-    "Yes — see our refund policy. You can ask for a refund within 14 days of a purchase.",
+    "Yes. You can ask for a refund within 14 days of a purchase. The refund policy has the details.",
   ],
 ];
 
@@ -312,8 +312,8 @@ export default async function PlusPage() {
               Wear every cape. Keep Native free.
             </h2>
             <p className="mx-auto mt-3 max-w-[480px] text-mute">
-              Join in a minute — your capes and crown show up in the launcher
-              right away.
+              Joining takes a minute, and your capes and crown show up in the
+              launcher right away.
             </p>
             <a
               href="#plans"

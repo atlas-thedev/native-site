@@ -4,6 +4,7 @@ import { ArrowRight, Tag } from "lucide-react";
 import Link from "next/link";
 import { useVersion } from "./VersionContext";
 import { useLaunch, useCountdown } from "./launch/LaunchContext";
+import BetaBadge from "./beta/BetaBadge";
 
 const pill = "inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-line px-3 py-1 text-[12px] font-semibold text-fg transition hover:bg-surface-2";
 
@@ -14,10 +15,10 @@ function Mini({ at }: { at: number }) {
   return <span className="font-mono font-semibold tabular-nums text-fg">{t.days}d {p(t.hours)}h {p(t.minutes)}m {p(t.seconds)}s</span>;
 }
 
-/** Top bar: admin announcement › live offer › launch countdown › latest version. */
+/** Top bar: admin announcement › early access › live offer › launch countdown › latest version. */
 export default function Announcement() {
   const version = useVersion();
-  const { launch, announcement, offers } = useLaunch();
+  const { launch, announcement, offers, beta } = useLaunch();
   const offer = offers.find((o) => o.banner);
   const isExt = (h: string) => /^https:/.test(h);
 
@@ -31,6 +32,24 @@ export default function Announcement() {
             {announcement.cta || "Learn more"} <ArrowRight className="h-3 w-3" />
           </Link>
         )}
+      </>
+    );
+  } else if (beta.open) {
+    body = (
+      <>
+        <BetaBadge size={18} still />
+        <span className="truncate">
+          <b className="font-semibold text-fg">Early access is open.</b>
+          <span className="hidden sm:inline"> Test new builds first and keep the Super Beta cape for good.</span>
+        </span>
+        {launch.prelaunch && (
+          <span className="hidden items-center gap-2 md:flex">
+            <span className="h-3.5 w-px bg-line" />
+            <span>Launch in</span>
+            <Mini at={launch.at} />
+          </span>
+        )}
+        <Link href="/beta" className={pill}>Apply <ArrowRight className="h-3 w-3" /></Link>
       </>
     );
   } else if (offer && !launch.lockStore) {
@@ -54,7 +73,7 @@ export default function Announcement() {
   } else {
     body = (
       <>
-        <span className="hidden sm:inline">Native Client {version} — free for Windows, macOS and Linux.</span>
+        <span className="hidden sm:inline">Native Client {version} is out, free on Windows, macOS and Linux.</span>
         <span className="sm:hidden">Native {version} is out.</span>
         <Link href="/changes" className={pill}>See what’s new <ArrowRight className="h-3 w-3" /></Link>
       </>

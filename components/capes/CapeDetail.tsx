@@ -98,7 +98,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
           action === "claim" ? `${item.name} is in your locker. Wear it here or from the launcher.`
           : action === "unclaim" ? `${item.name} was removed from your locker.`
           : off ? "Cape taken off."
-          : `${item.name} is on — friends see it in the launcher and in game.`,
+          : `${item.name} is on. Friends see it in the launcher and in game.`,
       });
     } catch (e) {
       setMsg({ t: "err", s: e instanceof Error ? e.message : "Something went wrong." });
@@ -156,7 +156,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
             {storeLocked && !item.exclusive ? (
               <div className="w-full rounded-[20px] border border-dashed border-line p-5">
                 <p className="flex items-center gap-2 text-[15px] font-bold"><Lock className="h-4 w-4" /> The store opens at launch</p>
-                <p className="mt-1 text-[14px] text-mute">{isFounder ? "Join before launch and this cape can be your free founder pick." : `On launch day it’s ${money(item.price)} — or included with Native+.`}</p>
+                <p className="mt-1 text-[14px] text-mute">{isFounder ? "Join before launch and this cape can be your free founder pick." : `On launch day it’s ${money(item.price)}, or free with Native+.`}</p>
                 <Countdown at={launch.at} size="sm" className="mt-4 justify-start!" />
                 <div className="mt-5 flex flex-wrap gap-3">
                   {isFounder && <Link href={signedIn ? "/founder" : "/register?next=/founder"} className={primary}><Plus className="h-4 w-4" /> {signedIn ? "Pick it as your free cape" : "Join early · get it free"}</Link>}
@@ -244,7 +244,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
             ))}
           </div>
         )}
-        <p className="text-[13.5px] text-dim">Native capes show on your account everywhere: the launcher, the website and in game with the Native mod. You can only wear Native capes and the classic presets — custom cape uploads aren’t allowed.</p>
+        <p className="text-[13.5px] text-dim">Native capes show on your account everywhere: the launcher, the website and in game with the Native mod. You can only wear Native capes and the classic presets. Custom cape uploads aren’t allowed.</p>
       </div>
     </div>
   );

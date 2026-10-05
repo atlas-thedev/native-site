@@ -15,7 +15,7 @@ const sections: Section[] = [
     ],
   },
   {
-    h: "What Native is — and isn’t",
+    h: "What Native is and isn’t",
     body: [
       "Native Client is a free launcher that helps you install, organise and start Minecraft: Java Edition. It is not an official Minecraft product and is not approved by or associated with Mojang Studios or Microsoft. “Minecraft” is a trademark of Mojang Studios.",
       "Native doesn’t sell or distribute Minecraft. To play online you need your own Minecraft licence and a Microsoft account. Offline mode and Native accounts don’t include a Minecraft licence.",
@@ -44,7 +44,7 @@ const sections: Section[] = [
   {
     h: "Your content",
     body: [
-      "You keep ownership of the content you create or upload, such as skins, capes, messages and images. You give Native a limited, worldwide, non-exclusive licence to store, process and display that content only as needed to run the services — for example showing your skin to other players or delivering your messages to the people you send them to.",
+      "You keep ownership of the content you create or upload, such as skins, capes, messages and images. You give Native a limited, worldwide, non-exclusive licence to store, process and display that content only as needed to run the services, for example showing your skin to other players or delivering your messages to the people you send them to.",
       "Skins and capes you publish to your locker are publicly retrievable by your username so that other players’ launchers can display them. Don’t publish anything you wouldn’t want others to see.",
       "We may remove content that breaks these terms.",
     ],
@@ -108,5 +108,5 @@ const sections: Section[] = [
 ];
 
 export default function Page() {
-  return <Legal title="Terms of Service" path="/terms" updated="October 3, 2026" intro="Plain-language rules for using Native Client and its online services. Please read them — they’re short." sections={sections} />;
+  return <Legal title="Terms of Service" path="/terms" updated="October 3, 2026" intro="Plain-language rules for using Native Client and its online services. They’re short, so please read them." sections={sections} />;
 }

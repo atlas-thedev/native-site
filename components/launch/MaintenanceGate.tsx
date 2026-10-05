@@ -32,7 +32,7 @@ export default function MaintenanceGate() {
   if (!block) {
     return me?.isAdmin ? (
       <div className="fixed bottom-4 left-1/2 z-[90] -translate-x-1/2 rounded-full border border-line bg-bg/90 px-4 py-2 text-[12.5px] font-semibold shadow-lg backdrop-blur">
-        Maintenance mode is on — only admins see the site. <Link className="underline" href="/admin">Turn off</Link>
+        Maintenance mode is on, so only admins can see the site. <Link className="underline" href="/admin">Turn off</Link>
       </div>
     ) : null;
   }

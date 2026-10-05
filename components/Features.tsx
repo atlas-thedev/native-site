@@ -30,7 +30,7 @@ export default function Features() {
       <div className="mb-14 text-center">
         <SplitText text="Elevate your Minecraft experience" className="mx-auto max-w-[800px] text-balance text-[clamp(2.2rem,4.8vw,3.8rem)] font-extrabold leading-[1.02] tracking-[-0.04em]" />
         <Reveal delay={0.15}>
-          <p className="mx-auto mt-5 max-w-[620px] text-lg text-mute">Everything you do in Minecraft — organised, fast and out of your way.</p>
+          <p className="mx-auto mt-5 max-w-[620px] text-lg text-mute">Everything you do in Minecraft, organised, fast and out of your way.</p>
         </Reveal>
       </div>
       <div className="grid gap-5 md:grid-cols-3">

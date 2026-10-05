@@ -1,5 +1,6 @@
 "use client";
 
+import BetaBadge from "../beta/BetaBadge";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Gift, Loader2, PartyPopper } from "lucide-react";
 import Link from "next/link";
@@ -64,7 +65,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
     return (
       <div className="mx-auto max-w-[640px] px-5 py-32 text-center">
         <h1 className="text-[40px] font-extrabold tracking-tight">Founder capes are on their way.</h1>
-        <p className="mt-4 text-mute">Check back soon — your free pick is saved for you.</p>
+        <p className="mt-4 text-mute">Check back soon. Your free pick is saved for you.</p>
       </div>
     );
   }
@@ -82,7 +83,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
         <p className="mx-auto mt-5 max-w-[560px] text-[17px] text-mute">
           {done
             ? `${pickedItem?.name ?? "It"} lives in your locker forever. Wear it on the site now, and in the launcher and in game from day one.`
-            : `You joined before launch, so one of these is on us. Choose carefully — you get one. After launch each cape costs ${money(1.99)}.`}
+            : `You joined before launch, so one of these is on us. Choose carefully, you only get one. After launch each cape costs ${money(1.99)}.`}
         </p>
       </header>
 
@@ -163,10 +164,10 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
           {done && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
               <Link href="/beta" className="card group flex items-center gap-4 p-5 transition hover:bg-surface-2">
-                <img src="/badges/super-beta-tester.png" alt="" width={44} height={44} className="h-11 w-11 shrink-0 [image-rendering:pixelated]" />
+                <BetaBadge size={44} still />
                 <span className="min-w-0 flex-1">
                   <span className="block text-[16px] font-bold tracking-tight">Want to test Native early?</span>
-                  <span className="block text-[13.5px] text-mute">Apply to be a Super Beta Tester — cape, badge and Native+ forever.</span>
+                  <span className="block text-[13.5px] text-mute">Apply to be a Super Beta Tester and keep the cape, badge and Native+ for good.</span>
                 </span>
                 <span className="text-[20px] transition group-hover:translate-x-1" aria-hidden>→</span>
               </Link>

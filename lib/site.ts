@@ -35,7 +35,6 @@ export const nav = [
   { href: "/#versions", label: "Versions" },
   { href: "/capes", label: "Capes" },
   { href: "/plus", label: "Native+" },
-  { href: "/vote", label: "Vote" },
   { href: "/beta", label: "Beta" },
   { href: "/changes", label: "Changes" },
   { href: "/support", label: "Support" },
@@ -86,7 +85,7 @@ export const faqs = [
   },
   {
     q: "Where do mods and modpacks come from?",
-    a: "Discover searches Modrinth and CurseForge in one place — mods, modpacks, shader packs, resource packs and data packs. Dependencies are detected and offered before you install, and Native checks your installed mods for updates.",
+    a: "Discover searches Modrinth and CurseForge in one place for mods, modpacks, shader packs, resource packs and data packs. Dependencies are detected and offered before you install, and Native checks your installed mods for updates.",
   },
   {
     q: "Do I need to install Java myself?",
@@ -94,7 +93,7 @@ export const faqs = [
   },
   {
     q: "What happens when the game crashes?",
-    a: "The crash analyzer reads the log, finds the cause — a conflicting mod, too little memory, the wrong Java — and offers one-click fixes. You can also share a clean report with a link.",
+    a: "The crash analyzer reads the log, finds the cause (a conflicting mod, too little memory, the wrong Java) and offers fixes you can apply in one click. You can also share a clean report with a link.",
   },
   {
     q: "Can I use my own skin and cape?",
@@ -110,7 +109,7 @@ export const faqs = [
   },
   {
     q: "Where do I get help?",
-    a: "Visit the Support page for quick fixes and a live service status, or ask in our Discord server — someone is usually around to help.",
+    a: "Visit the Support page for quick fixes and a live service status, or ask in our Discord server. Someone is usually around to help.",
   },
   {
     q: "Which languages are available?",

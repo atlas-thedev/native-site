@@ -13,6 +13,7 @@ import { INTRO, platforms } from "@/lib/site";
 import { useVersion } from "./VersionContext";
 import { useLaunch } from "./launch/LaunchContext";
 import LaunchHero from "./launch/LaunchHero";
+import EarlyAccess from "./EarlyAccess";
 import type { StoreItem } from "@/lib/store";
 
 const MotionLink = motion.create(Link);
@@ -26,6 +27,7 @@ export default function Hero({ founder = [] }: { founder?: StoreItem[] }) {
 function LaunchedHero() {
   const os = useOS();
   const version = useVersion();
+  const { beta } = useLaunch();
   const OsIcon = os === "mac" ? Apple : os === "linux" ? Linux : Windows;
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
@@ -37,15 +39,21 @@ function LaunchedHero() {
       <div className="dots pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,#000,transparent_85%)]" aria-hidden />
       <div className="relative mx-auto grid max-w-[1280px] items-center gap-10 px-5 pb-24 pt-16 lg:grid-cols-[500px_1fr] lg:pb-32 lg:pt-24">
         <div className="relative z-10">
-          <MotionLink
-            href="/changes"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: INTRO, ease }}
-            className="inline-flex items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-4 pr-3 text-[13.5px] font-medium text-mute transition hover:bg-surface-2 hover:text-fg"
-          >
-            See what’s new in {version} <ArrowRight className="h-3.5 w-3.5" />
-          </MotionLink>
+          {beta.open ? (
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: INTRO, ease }}>
+              <EarlyAccess />
+            </motion.div>
+          ) : (
+            <MotionLink
+              href="/changes"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: INTRO, ease }}
+              className="inline-flex items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-4 pr-3 text-[13.5px] font-medium text-mute transition hover:bg-surface-2 hover:text-fg"
+            >
+              See what’s new in {version} <ArrowRight className="h-3.5 w-3.5" />
+            </MotionLink>
+          )}
 
           <SplitText
             as="h1"
@@ -60,7 +68,7 @@ function LaunchedHero() {
             transition={{ duration: 0.9, delay: 0.5 + INTRO, ease }}
             className="mt-7 max-w-[470px] text-pretty text-[18px] leading-relaxed text-mute"
           >
-            Instances, mods, modpacks, a 3D skin locker, friends chat and a crash analyzer that fixes problems for you — in one fast, obsessively crafted launcher.
+            Instances, mods, modpacks, a 3D skin locker, chat with friends and a crash analyzer that fixes things for you. All in one fast launcher we obsess over.
           </motion.p>
 
           <motion.div

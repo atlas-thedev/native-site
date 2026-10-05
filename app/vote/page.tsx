@@ -7,7 +7,7 @@ import type { Poll } from "@/lib/launch";
 export const dynamic = "force-dynamic";
 export const metadata = pageMeta({
   title: "Community vote",
-  description: "Vote on the next Native capes and features. One account, one vote — the community decides what we make next.",
+  description: "Vote on the next Native capes and features. One account, one vote. The community decides what we make next.",
   path: "/vote",
 });
 

@@ -17,7 +17,7 @@ const sections: Section[] = [
   {
     h: "14-day refunds",
     body: [
-      "If you’re not happy with a purchase you can ask for a full refund within 14 days of paying — for a cape you bought or for a Native+ payment. You don’t need to give a reason.",
+      "If you’re not happy with a purchase you can ask for a full refund within 14 days of paying, whether it was a cape or a Native+ payment. You don’t need to give a reason.",
       "After 14 days we review requests case by case, for example if something didn’t work as described or you were charged by mistake.",
     ],
   },
@@ -46,7 +46,7 @@ const sections: Section[] = [
   },
   {
     h: "Chargebacks",
-    body: ["Please contact us before opening a chargeback — we’ll sort it out faster. Accounts with fraudulent chargebacks may lose the related purchases."],
+    body: ["Please contact us before opening a chargeback. We’ll sort it out faster that way. Accounts with fraudulent chargebacks may lose the related purchases."],
   },
   {
     h: "Your rights",

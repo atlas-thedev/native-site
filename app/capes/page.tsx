@@ -9,7 +9,7 @@ import StoreLockBanner from "@/components/launch/StoreLockBanner";
 export const dynamic = "force-dynamic";
 export const metadata = pageMeta({
   title: "Capes",
-  description: "Browse every Native cape — animated and classic. Preview them in 3D, add them to your locker and wear them in the launcher and in game.",
+  description: "Browse every Native cape, animated and classic. Preview them in 3D, add them to your locker and wear them in the launcher and in game.",
   path: "/capes",
 });
 
@@ -27,7 +27,7 @@ export default async function CapesPage() {
         <div>
           <p className="eyebrow">Native capes</p>
           <h1 className="mt-4 text-[clamp(2.6rem,6vw,4.6rem)] font-extrabold leading-[1] tracking-[-0.045em]">Capes that move.</h1>
-          <p className="mt-5 max-w-[580px] text-lg text-mute">Every Native cape in one place. Preview in 3D, add to your locker and wear it — in the launcher and in game. Every cape is a one-off $1.99 buy — or included with Native+.</p>
+          <p className="mt-5 max-w-[580px] text-lg text-mute">Every Native cape in one place. Preview them in 3D, add them to your locker and wear them in the launcher and in game. Each cape is a one-off $1.99, or free with Native+.</p>
         </div>
         <div className="flex flex-col items-end gap-4">
           {items.length > 0 && <dl className="flex gap-8 text-right">

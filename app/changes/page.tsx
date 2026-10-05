@@ -17,15 +17,15 @@ export const metadata = pageMeta({
   path: "/changes",
 });
 
-const d = (s: string | null) => (s ? new Date(s).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—");
+const d = (s: string | null) => (s ? new Date(s).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "–");
 
 export default async function ChangesPage() {
   const [mc, releases, first, version] = await Promise.all([getLatestMinecraft(), getReleases(), getCommits(1, 30), getSiteVersion()]);
   const latest = releases[0];
   const stats = [
     { k: "Native Client", v: version, s: latest ? `Released ${d(latest.date)}` : "Latest build" },
-    { k: "Minecraft release", v: mc?.release ?? "—", s: mc ? `Released ${d(mc.releaseDate)}` : "Unavailable right now" },
-    { k: "Minecraft snapshot", v: mc?.snapshot ?? "—", s: mc ? d(mc.snapshotDate) : "Unavailable right now" },
+    { k: "Minecraft release", v: mc?.release ?? "–", s: mc ? `Released ${d(mc.releaseDate)}` : "Unavailable right now" },
+    { k: "Minecraft snapshot", v: mc?.snapshot ?? "–", s: mc ? d(mc.snapshotDate) : "Unavailable right now" },
   ];
   return (
     <div className="mx-auto max-w-[1000px] px-5 pb-32 pt-24 sm:px-8 sm:pt-32">

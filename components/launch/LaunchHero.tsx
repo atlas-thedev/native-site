@@ -1,11 +1,12 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ArrowRight, Gift, Sparkles } from "lucide-react";
+import { ArrowRight, Gift, UserPlus } from "lucide-react";
 import Link from "next/link";
 import CapeStrip from "../CapeStrip";
 import Countdown from "./Countdown";
 import ToonScene from "./Toons";
+import EarlyAccess from "../EarlyAccess";
 import { useLaunch } from "./LaunchContext";
 import { useAccount } from "../useAccount";
 import { INTRO } from "@/lib/site";
@@ -16,11 +17,8 @@ const up = (d: number) => ({ initial: { opacity: 0, y: 18 }, animate: { opacity:
 
 /** Pre-launch hero: giant countdown, cartoon cast, and the free founder cape offer. */
 export default function LaunchHero({ founder }: { founder: StoreItem[] }) {
-  const { launch } = useLaunch();
+  const { launch, beta } = useLaunch();
   const me = useAccount();
-  const date = new Date(launch.at);
-  const when = date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
-  const time = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
   const pickHref = me ? "/founder" : "/register?next=/founder";
 
   return (
@@ -28,15 +26,13 @@ export default function LaunchHero({ founder }: { founder: StoreItem[] }) {
       <div className="dots pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,#000_30%,transparent_80%)]" aria-hidden />
       <ToonScene />
       <div className="relative z-10 mx-auto flex max-w-[1280px] flex-col items-center px-5 pb-[210px] pt-14 text-center sm:pb-[250px] sm:pt-20 lg:pb-[230px]">
-        <motion.span {...up(0)} className="inline-flex items-center gap-2 rounded-full border border-line bg-bg/80 py-1.5 pl-3 pr-4 text-[13.5px] font-semibold backdrop-blur">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fg opacity-60" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-fg" />
-          </span>
-          Launching {when} · {time}
-        </motion.span>
+        {beta.open && (
+          <motion.div {...up(0)}>
+            <EarlyAccess />
+          </motion.div>
+        )}
 
-        <motion.h1 {...up(0.08)} className="mt-6 max-w-[900px] text-balance text-[clamp(2.4rem,5.6vw,4.6rem)] font-extrabold leading-[0.98] tracking-[-0.045em]">
+        <motion.h1 {...up(0.08)} className={`${beta.open ? "mt-7" : ""} max-w-[900px] text-balance text-[clamp(2.4rem,5.6vw,4.6rem)] font-extrabold leading-[0.98] tracking-[-0.045em]`}>
           {launch.headline || "Native is almost here."}
         </motion.h1>
 
@@ -55,7 +51,7 @@ export default function LaunchHero({ founder }: { founder: StoreItem[] }) {
             </Link>
           ) : (
             <Link href="/register?next=/founder" className="inline-flex h-14 items-center gap-2 rounded-full bg-inv px-8 text-[17px] font-semibold text-inv-fg transition hover:opacity-85 active:scale-95">
-              <Sparkles className="h-5 w-5" /> Create your free account
+              <UserPlus className="h-5 w-5" /> Create your free account
             </Link>
           )}
           <Link href="#tour" className="inline-flex h-14 items-center gap-2 rounded-full border border-line bg-bg/70 px-8 text-[17px] font-semibold backdrop-blur transition hover:bg-surface-2">
@@ -65,7 +61,7 @@ export default function LaunchHero({ founder }: { founder: StoreItem[] }) {
 
         {launch.founderPick && founder.length > 0 && (
           <motion.div {...up(0.55)} className="mt-10 flex flex-col items-center">
-            <p className="font-mono text-[11.5px] uppercase tracking-[0.22em] text-dim">Join before launch · pick 1 free</p>
+            <p className="font-mono text-[11.5px] uppercase tracking-[0.22em] text-dim">Join before launch and pick one free</p>
             <ul className="mt-4 flex items-end gap-3 sm:gap-4">
               {founder.map((it, i) => (
                 <li key={it.id}>

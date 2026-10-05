@@ -107,7 +107,7 @@ export default function CapeGallery({ items, signedIn, owned, equipped }: Props)
         <div className="card mt-8 flex flex-col items-center px-6 py-16 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-2"><PixelCape className="h-6 w-6" /></span>
           <p className="mt-5 text-[22px] font-extrabold tracking-tight">{items.length ? "No capes match that." : "New capes are on the way."}</p>
-          <p className="mt-2 max-w-[440px] text-mute">{items.length ? "Try another search or filter." : "The first Native capes are being made right now. They’ll land here — and in your locker — the moment they drop."}</p>
+          <p className="mt-2 max-w-[440px] text-mute">{items.length ? "Try another search or filter." : "The first Native capes are being made right now. They’ll show up here and in your locker the moment they drop."}</p>
         </div>
       )}
     </div>

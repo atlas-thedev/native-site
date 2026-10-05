@@ -79,7 +79,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     if (step === 1) {
       if (!emailRe.test(email.trim())) return setErr("Please enter a valid email address.");
       if (mode === "register") {
-        if (!/^[A-Za-z0-9_]{3,16}$/.test(username)) return setErr("Username must be 3–16 letters, numbers or underscores — ideally your Minecraft name.");
+        if (!/^[A-Za-z0-9_]{3,16}$/.test(username)) return setErr("Usernames are 3 to 16 letters, numbers or underscores. Your Minecraft name works best.");
         if (password.length < 6) return setErr("Password must be at least 6 characters.");
       }
       setBusy(true);

@@ -30,7 +30,7 @@ export type BetaApplication = {
 };
 
 /** Used when the API can't be reached: assume launched with nothing locked (never lock people out by accident). */
-/** Used only when the API is unreachable — fails safe to the pre-launch state until the default launch date. */
+/** Used only when the API is unreachable. Fails safe to the pre-launch state until the default launch date. */
 const FALLBACK_AT = Date.parse(process.env.NEXT_PUBLIC_LAUNCH_AT || "2026-11-01T18:00:00Z");
 const FALLBACK_PRE = Date.now() < FALLBACK_AT;
 

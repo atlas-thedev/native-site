@@ -11,7 +11,7 @@ const sections: Section[] = [
   {
     h: "The short version",
     body: [
-      "Native only collects what it needs to run your account, locker and Relay chat. The launcher doesn’t include advertising or analytics trackers, and we don’t sell your data. Most of what the launcher stores — instances, worlds, settings — stays on your computer.",
+      "Native only collects what it needs to run your account, locker and Relay chat. The launcher doesn’t include advertising or analytics trackers, and we don’t sell your data. Most of what the launcher stores, like instances, worlds and settings, stays on your computer.",
     ],
   },
   {
@@ -29,7 +29,7 @@ const sections: Section[] = [
   {
     h: "What we collect when you use Relay",
     body: [
-      "Relay is the friends and chat layer. To make it work, the service stores your friend list and requests, blocked users, direct and group messages, images or files you send, read state, and presence — whether you’re online and, if you allow it, what instance or version you’re playing. Messages and media are visible to the people in that conversation.",
+      "Relay is the friends and chat layer. To make it work, the service stores your friend list and requests, blocked users, direct and group messages, images or files you send, read state, and presence (whether you’re online and, if you allow it, what instance or version you’re playing). Messages and media are visible to the people in that conversation.",
     ],
   },
   {
@@ -48,11 +48,11 @@ const sections: Section[] = [
     h: "Services we connect to",
     body: [
       [
-        "Microsoft and Mojang — sign-in, ownership checks, official skins and game files.",
-        "Modrinth and CurseForge — searching and downloading mods, modpacks and other content. They receive the requests the launcher makes.",
-        "mclo.gs — only when you choose to share a log from the crash analyzer, the log you share is uploaded there.",
-        "An email delivery provider — to send you verification and password-reset emails.",
-        "Paddle.com — our reseller and merchant of record. When you buy a cape or Native+, Paddle collects your payment details, billing email and country to process the payment, calculate tax and prevent fraud. We never see or store your card details; we receive your order, its status and a Paddle customer ID so we can unlock what you bought.",
+        "Microsoft and Mojang, for sign-in, ownership checks, official skins and game files.",
+        "Modrinth and CurseForge, for searching and downloading mods, modpacks and other content. They receive the requests the launcher makes.",
+        "mclo.gs, but only when you choose to share a log from the crash analyzer. That log is uploaded there.",
+        "An email delivery provider, to send you verification and password reset emails.",
+        "Paddle.com, our reseller and merchant of record. When you buy a cape or Native+, Paddle collects your payment details, billing email and country to process the payment, calculate tax and prevent fraud. We never see or store your card details; we receive your order, its status and a Paddle customer ID so we can unlock what you bought.",
       ],
       "Each of these has its own privacy policy.",
     ],
@@ -100,5 +100,5 @@ const sections: Section[] = [
 ];
 
 export default function Page() {
-  return <Legal title="Privacy Policy" path="/privacy" updated="October 3, 2026" intro="What Native collects, why, and the choices you have — written to be read, not skimmed past." sections={sections} />;
+  return <Legal title="Privacy Policy" path="/privacy" updated="October 3, 2026" intro="What Native collects, why it does, and the choices you have. Written to be read, not skimmed." sections={sections} />;
 }

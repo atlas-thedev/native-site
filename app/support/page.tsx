@@ -16,11 +16,11 @@ export const metadata = pageMeta({
 const topics = [
   {
     q: "The game won’t launch",
-    a: ["Open the instance and check the Console or Logs tab — the crash analyzer reads the log and suggests one-click fixes.", "Make sure the instance uses the Java version Native picked for it (Settings → Java), and that you have enough free memory allocated.", "If a mod is the culprit, disable recently added mods and relaunch."],
+    a: ["Open the instance and check the Console or Logs tab. The crash analyzer reads the log and suggests fixes you can apply in one click.", "Make sure the instance uses the Java version Native picked for it (Settings → Java), and that you have enough free memory allocated.", "If a mod is the culprit, disable recently added mods and relaunch."],
   },
   {
     q: "My game crashed",
-    a: ["Use the crash analyzer after the crash — it highlights the cause (conflicting mod, memory, Java).", "To ask for help, share the log from the analyzer and post the link in our Discord."],
+    a: ["Run the crash analyzer after the crash. It points out the cause, whether that’s a conflicting mod, memory or Java.", "To ask for help, share the log from the analyzer and post the link in our Discord."],
   },
   {
     q: "I can’t sign in to my Native account",
@@ -48,7 +48,7 @@ export default function SupportPage() {
       <div className="mb-14 text-center">
         <Reveal><p className="eyebrow">Support</p></Reveal>
         <SplitText as="h1" text="How can we help?" className="mt-5 text-[clamp(2.8rem,7vw,5.6rem)] font-extrabold leading-[1] tracking-[-0.045em]" />
-        <Reveal delay={0.2}><p className="mx-auto mt-6 max-w-[520px] text-lg text-mute">Quick fixes for the most common problems — and real people in our community when you need more.</p></Reveal>
+        <Reveal delay={0.2}><p className="mx-auto mt-6 max-w-[520px] text-lg text-mute">Quick fixes for the most common problems, and real people in our community when you need more.</p></Reveal>
         <Reveal delay={0.3} className="mt-8"><StatusPill /></Reveal>
       </div>
 
