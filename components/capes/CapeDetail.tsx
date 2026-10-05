@@ -43,7 +43,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
   const own = owned.some((o) => o.id === item.id);
   const { launch } = useLaunch();
   const storeLocked = launch.lockStore && !own;
-  const isFounder = launch.founderPick && launch.founderCapes.includes(item.id);
+  const isFounder = launch.prelaunch && launch.founderPick && launch.founderCapes.includes(item.id);
   const price = priceNow(item);
   const priceLabel = item.salePrice != null ? <>{money(price)} <s className="opacity-60">{money(item.price)}</s></> : money(item.price);
 

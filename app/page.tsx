@@ -20,7 +20,7 @@ import { getCatalog } from "@/lib/server/store";
 import { getSiteConfig } from "@/lib/server/siteConfig";
 import DownloadGate from "@/components/launch/DownloadGate";
 
-export const revalidate = 600;
+export const revalidate = 60;
 
 export default async function Home() {
   const [a, mc, cfg, catalog] = await Promise.all([
