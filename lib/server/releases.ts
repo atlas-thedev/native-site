@@ -23,13 +23,16 @@ type GhRelease = {
   assets: { name: string; browser_download_url: string; size: number }[];
 };
 
+/** Last list GitHub gave us, so a rate limit or outage never makes the site fall back to an old version. */
+let lastGood: Release[] = [];
+
 /** Published releases, newest first. Never throws. */
 export async function getReleases(): Promise<Release[]> {
   try {
-    const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers: ghHeaders(), next: { revalidate: 600 } });
-    if (!r.ok) return [];
+    const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers: ghHeaders(), next: { revalidate: 300 } });
+    if (!r.ok) return lastGood;
     const list = (await r.json()) as GhRelease[];
-    return list
+    const out = list
       .filter((x) => !x.draft && x.published_at)
       .map((x) => ({
         tag: x.tag_name,
@@ -41,8 +44,25 @@ export async function getReleases(): Promise<Release[]> {
         assets: x.assets.map((a) => ({ name: a.name, url: a.browser_download_url, size: a.size })),
       }))
       .sort((a, b) => +new Date(b.date) - +new Date(a.date));
+    if (out.length) lastGood = out;
+    return out.length ? out : lastGood;
   } catch {
-    return [];
+    return lastGood;
+  }
+}
+
+/**
+ * Version of the latest published release, read from the updater manifest that ships with every
+ * release (github.com download, not the rate-limited REST API).
+ */
+async function getUpdaterVersion(): Promise<string | null> {
+  try {
+    const r = await fetch(`https://github.com/${REPO}/releases/latest/download/latest.yml`, { next: { revalidate: 300 }, signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return null;
+    const m = (await r.text()).match(/^version:\s*["\x27]?v?([0-9][0-9A-Za-z.+-]*)/m);
+    return m ? m[1] : null;
+  } catch {
+    return null;
   }
 }
 
@@ -51,18 +71,14 @@ export async function getLatestRelease(): Promise<Release | null> {
   return all.find((r) => !r.prerelease) ?? all[0] ?? null;
 }
 
-/** Version shown across the site: latest published release, else package.json on main. */
+/**
+ * Version shown across the site: the latest published release (REST API), else the release's
+ * updater manifest. package.json on main is NOT used: it is bumped before a release is published.
+ */
 export async function getSiteVersion(): Promise<string> {
   const rel = await getLatestRelease();
   if (rel) return rel.version;
-  try {
-    const r = await fetch(`https://raw.githubusercontent.com/${REPO}/main/package.json`, { next: { revalidate: 900 } });
-    if (r.ok) {
-      const v = (await r.json()).version;
-      if (typeof v === "string" && v) return v;
-    }
-  } catch {}
-  return site.fallbackVersion;
+  return (await getUpdaterVersion()) ?? site.fallbackVersion;
 }
 
 export type PlatformKey = "windows" | "mac" | "linux";
