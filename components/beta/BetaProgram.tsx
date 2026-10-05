@@ -8,7 +8,6 @@ import {
   Check,
   Clock,
   Crown,
-  FlaskConical,
   Hourglass,
   Loader2,
   Lock,
@@ -344,12 +343,12 @@ export default function BetaProgram({
       </button>
     ) : (
       <button onClick={goForm} disabled={!canApply} className={primary}>
-        <FlaskConical className="h-4 w-4" /> {canApply ? "Apply now" : "Applications closed"}
+        <Bug className="h-4 w-4" /> {canApply ? "Apply now" : "Applications closed"}
       </button>
     )
   ) : (
     <Link href="/register?next=/beta" className={primary}>
-      <FlaskConical className="h-4 w-4" /> Create an account to apply
+      <Bug className="h-4 w-4" /> Create an account to apply
     </Link>
   );
 

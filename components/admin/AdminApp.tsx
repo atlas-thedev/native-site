@@ -2,7 +2,7 @@
 
 import {
   BarChart3,
-  FlaskConical,
+  Bug,
   Gift,
   Megaphone,
   Rocket,
@@ -32,7 +32,7 @@ const TABS = [
   { id: "site", label: "Maintenance & banner", icon: Megaphone },
   { id: "offers", label: "Offers", icon: Tag },
   { id: "votes", label: "Votes", icon: Vote },
-  { id: "beta", label: "Beta testers", icon: FlaskConical },
+  { id: "beta", label: "Beta testers", icon: Bug },
   { id: "capes", label: "Capes", icon: Shirt },
   { id: "users", label: "Users", icon: Users },
   { id: "codes", label: "Codes & gifts", icon: Ticket },

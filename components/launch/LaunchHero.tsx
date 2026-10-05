@@ -6,7 +6,6 @@ import Link from "next/link";
 import CapeStrip from "../CapeStrip";
 import Countdown from "./Countdown";
 import ToonScene from "./Toons";
-import EarlyAccess from "../EarlyAccess";
 import { useLaunch } from "./LaunchContext";
 import { useAccount } from "../useAccount";
 import { INTRO } from "@/lib/site";
@@ -17,7 +16,7 @@ const up = (d: number) => ({ initial: { opacity: 0, y: 18 }, animate: { opacity:
 
 /** Pre-launch hero: giant countdown, cartoon cast, and the free founder cape offer. */
 export default function LaunchHero({ founder }: { founder: StoreItem[] }) {
-  const { launch, beta } = useLaunch();
+  const { launch } = useLaunch();
   const me = useAccount();
   const pickHref = me ? "/founder" : "/register?next=/founder";
 
@@ -26,13 +25,8 @@ export default function LaunchHero({ founder }: { founder: StoreItem[] }) {
       <div className="dots pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,#000_30%,transparent_80%)]" aria-hidden />
       <ToonScene />
       <div className="relative z-10 mx-auto flex max-w-[1280px] flex-col items-center px-5 pb-[210px] pt-14 text-center sm:pb-[250px] sm:pt-20 lg:pb-[230px]">
-        {beta.open && (
-          <motion.div {...up(0)}>
-            <EarlyAccess />
-          </motion.div>
-        )}
 
-        <motion.h1 {...up(0.08)} className={`${beta.open ? "mt-7" : ""} max-w-[900px] text-balance text-[clamp(2.4rem,5.6vw,4.6rem)] font-extrabold leading-[0.98] tracking-[-0.045em]`}>
+        <motion.h1 {...up(0.08)} className={`max-w-[900px] text-balance text-[clamp(2.4rem,5.6vw,4.6rem)] font-extrabold leading-[0.98] tracking-[-0.045em]`}>
           {launch.headline || "Native is almost here."}
         </motion.h1>
 
