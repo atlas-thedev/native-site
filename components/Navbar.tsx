@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
-import { Menu, Shield, User, X } from "lucide-react";
+import { ChevronRight, Menu, Shield, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useAccount } from "./useAccount";
@@ -14,36 +14,69 @@ export default function Navbar() {
   const { scrollYProgress } = useScroll();
   const prog = useSpring(scrollYProgress, { stiffness: 140, damping: 30 });
   const me = useAccount();
-  const name = me === undefined ? undefined : me?.name ?? null;
+  const name = me === undefined ? undefined : (me?.name ?? null);
   const { launch } = useLaunch();
   const [open, setOpen] = useState(false);
 
   const cta = launch.lockDownloads
-    ? { href: name ? "/founder" : "/register?next=/founder", label: name ? "Free cape" : "Join early" }
+    ? {
+        href: name ? "/founder" : "/register?next=/founder",
+        label: name ? "Free cape" : "Join early",
+      }
     : { href: "/download", label: "Download" };
 
   const account = name ? (
-    <Link href="/account" data-claim-target className="hidden h-10 items-center gap-2 rounded-full border border-line px-4 text-[14.5px] font-semibold transition hover:bg-surface-2 sm:inline-flex">
-      <User className="h-4 w-4" /> {name}
+    <Link
+      href="/account"
+      data-claim-target
+      className="group hidden h-11 items-center gap-2.5 rounded-2xl border border-line bg-surface px-2 pr-3 text-[14px] font-semibold transition hover:-translate-y-0.5 hover:border-fg/25 hover:bg-surface-2 sm:inline-flex"
+    >
+      <span className="grid h-7 w-7 place-items-center rounded-xl bg-inv text-[12px] font-extrabold uppercase text-inv-fg">
+        {name.slice(0, 1)}
+      </span>
+      <span className="max-w-28 truncate">{name}</span>
+      <ChevronRight className="h-3.5 w-3.5 text-dim transition-transform group-hover:translate-x-0.5" />
     </Link>
   ) : (
-    <Link href="/login" className={`hidden h-10 items-center rounded-full px-4 text-[14.5px] font-medium text-mute transition hover:bg-surface-2 hover:text-fg sm:inline-flex ${name === undefined ? "opacity-0" : ""}`}>
+    <Link
+      href="/login"
+      className={`hidden h-10 items-center rounded-full px-4 text-[14.5px] font-medium text-mute transition hover:bg-surface-2 hover:text-fg sm:inline-flex ${name === undefined ? "opacity-0" : ""}`}
+    >
       Sign in
     </Link>
   );
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-bg/80 backdrop-blur-xl">
-      <nav aria-label="Main" className="mx-auto flex h-[68px] max-w-[1280px] items-center justify-between px-5">
+      <nav
+        aria-label="Main"
+        className="mx-auto flex h-[68px] max-w-[1280px] items-center justify-between px-5"
+      >
         <div className="flex items-center gap-9">
-          <Link href="/" className="flex items-center gap-2.5" aria-label={`${site.name} home`}>
-            <img src="/brand/icon.png" alt="" width={28} height={28} className="logo-img h-7 w-7" aria-hidden />
-            <span className="text-[19px] font-extrabold tracking-tight">native</span>
+          <Link
+            href="/"
+            className="flex items-center gap-2.5"
+            aria-label={`${site.name} home`}
+          >
+            <img
+              src="/brand/icon.png"
+              alt=""
+              width={28}
+              height={28}
+              className="logo-img h-7 w-7"
+              aria-hidden
+            />
+            <span className="text-[19px] font-extrabold tracking-tight">
+              native
+            </span>
           </Link>
           <ul className="hidden items-center gap-0.5 lg:flex">
             {nav.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className="rounded-full px-3.5 py-2 text-[14.5px] font-medium text-mute transition-colors hover:bg-surface-2 hover:text-fg">
+                <Link
+                  href={l.href}
+                  className="rounded-full px-3.5 py-2 text-[14.5px] font-medium text-mute transition-colors hover:bg-surface-2 hover:text-fg"
+                >
                   {l.label}
                 </Link>
               </li>
@@ -51,34 +84,76 @@ export default function Navbar() {
           </ul>
         </div>
         <div className="flex items-center gap-1.5">
-          <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className="hidden h-10 w-10 items-center justify-center rounded-full text-mute transition hover:bg-surface-2 hover:text-fg lg:flex">
+          <a
+            href={site.discord}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Discord"
+            className="hidden h-10 w-10 items-center justify-center rounded-full text-mute transition hover:bg-surface-2 hover:text-fg lg:flex"
+          >
             <Discord className="h-[18px] w-[18px]" />
           </a>
-          <a href={site.youtube} target="_blank" rel="noreferrer" aria-label="YouTube" className="hidden h-10 w-10 items-center justify-center rounded-full text-mute transition hover:bg-surface-2 hover:text-fg lg:flex">
+          <a
+            href={site.youtube}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="YouTube"
+            className="hidden h-10 w-10 items-center justify-center rounded-full text-mute transition hover:bg-surface-2 hover:text-fg lg:flex"
+          >
             <YouTube className="h-[20px] w-[20px]" />
           </a>
           <ThemeToggle />
           {me?.isAdmin && (
-            <Link href="/admin" aria-label="Admin dashboard" title="Admin dashboard" className="hidden h-10 w-10 items-center justify-center rounded-full text-mute transition hover:bg-surface-2 hover:text-fg sm:flex">
+            <Link
+              href="/admin"
+              aria-label="Admin dashboard"
+              title="Admin dashboard"
+              className="hidden h-10 w-10 items-center justify-center rounded-full text-mute transition hover:bg-surface-2 hover:text-fg sm:flex"
+            >
               <Shield className="h-[18px] w-[18px]" />
             </Link>
           )}
           {account}
-          <Link href={cta.href} className="ml-1 inline-flex h-10 items-center rounded-full bg-inv px-5 text-[14.5px] font-semibold text-inv-fg transition hover:opacity-85 active:scale-95">
+          <Link
+            href={cta.href}
+            className="ml-1 inline-flex h-10 items-center rounded-full bg-inv px-5 text-[14.5px] font-semibold text-inv-fg transition hover:opacity-85 active:scale-95"
+          >
             {cta.label}
           </Link>
-          <button data-claim-target onClick={() => setOpen((v) => !v)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="flex h-10 w-10 items-center justify-center rounded-full text-fg transition hover:bg-surface-2 lg:hidden">
+          <button
+            data-claim-target
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            className="flex h-10 w-10 items-center justify-center rounded-full text-fg transition hover:bg-surface-2 lg:hidden"
+          >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </nav>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="overflow-hidden border-t border-line lg:hidden">
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden border-t border-line lg:hidden"
+          >
             <ul className="mx-auto max-w-[1280px] space-y-1 px-5 py-4">
-              {[...nav, ...(me?.isAdmin ? [{ href: "/admin", label: "Admin" }] : []), name ? { href: "/account", label: "Account" } : { href: "/login", label: "Sign in" }].map((l) => (
+              {[
+                ...nav,
+                ...(me?.isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
+                name
+                  ? { href: "/account", label: "Account" }
+                  : { href: "/login", label: "Sign in" },
+              ].map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} onClick={() => setOpen(false)} className="block rounded-2xl px-4 py-3 text-[17px] font-semibold hover:bg-surface-2">
+                  <Link
+                    href={l.href}
+                    onClick={() => setOpen(false)}
+                    className="block rounded-2xl px-4 py-3 text-[17px] font-semibold hover:bg-surface-2"
+                  >
                     {l.label}
                   </Link>
                 </li>
@@ -87,7 +162,10 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-      <motion.div style={{ scaleX: prog }} className="pointer-events-none absolute inset-x-0 bottom-[-1px] h-[2px] origin-left bg-fg" />
+      <motion.div
+        style={{ scaleX: prog }}
+        className="pointer-events-none absolute inset-x-0 bottom-[-1px] h-[2px] origin-left bg-fg"
+      />
     </header>
   );
 }
