@@ -1,9 +1,9 @@
 "use client";
 
 import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
-import { Menu, Shield, User, X } from "lucide-react";
+import { Menu, Shield, Sparkles, User, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount } from "./useAccount";
 import { useLaunch } from "./launch/LaunchContext";
 import { nav, site } from "@/lib/site";
@@ -17,13 +17,24 @@ export default function Navbar() {
   const name = me === undefined ? undefined : me?.name ?? null;
   const { launch } = useLaunch();
   const [open, setOpen] = useState(false);
+  const [fresh, setFresh] = useState(false);
+  useEffect(() => {
+    const on = () => setFresh(true);
+    window.addEventListener("native:claimed", on);
+    return () => window.removeEventListener("native:claimed", on);
+  }, []);
   const cta = launch.lockDownloads
     ? { href: name ? "/founder" : "/register?next=/founder", label: name ? "Free cape" : "Join early" }
     : { href: "/download", label: "Download" };
 
   const account = name ? (
-    <Link href="/account" className="hidden h-10 items-center gap-2 rounded-full border border-line px-4 text-[14.5px] font-semibold transition hover:bg-surface-2 sm:inline-flex">
+    <Link href="/account" data-claim-target className="relative hidden h-10 items-center gap-2 rounded-full border border-line px-4 text-[14.5px] font-semibold transition hover:bg-surface-2 sm:inline-flex">
       <User className="h-4 w-4" /> {name}
+      {fresh && (
+        <span className="claim-fresh absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-inv text-inv-fg" aria-label="New cape in your locker">
+          <Sparkles className="h-3 w-3" />
+        </span>
+      )}
     </Link>
   ) : (
     <Link href="/login" className={`hidden h-10 items-center rounded-full px-4 text-[14.5px] font-medium text-mute transition hover:bg-surface-2 hover:text-fg sm:inline-flex ${name === undefined ? "opacity-0" : ""}`}>
@@ -66,7 +77,7 @@ export default function Navbar() {
           <Link href={cta.href} className="ml-1 inline-flex h-10 items-center rounded-full bg-inv px-5 text-[14.5px] font-semibold text-inv-fg transition hover:opacity-85 active:scale-95">
             {cta.label}
           </Link>
-          <button onClick={() => setOpen((v) => !v)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="flex h-10 w-10 items-center justify-center rounded-full text-fg transition hover:bg-surface-2 lg:hidden">
+          <button data-claim-target onClick={() => setOpen((v) => !v)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="flex h-10 w-10 items-center justify-center rounded-full text-fg transition hover:bg-surface-2 lg:hidden">
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>

@@ -209,17 +209,6 @@ select optgroup {
 @keyframes toon-smoke { 0% { transform: translateY(0) scale(.7); opacity: .9; } 100% { transform: translateY(14px) scale(1.25); opacity: 0; } }
 .toon-wings { transform-origin: 50% 100%; animation: toon-wings .12s linear infinite alternate; }
 @keyframes toon-wings { from { transform: scaleY(1); } to { transform: scaleY(.45); } }
-.toon-buzz { animation: toon-buzz 14s ease-in-out infinite; }
-@keyframes toon-buzz {
-  0% { transform: translate(0, 0) scaleX(1); }
-  24% { transform: translate(38vw, 6vh) scaleX(1); }
-  25% { transform: translate(38vw, 6vh) scaleX(-1); }
-  49% { transform: translate(4vw, 14vh) scaleX(-1); }
-  50% { transform: translate(4vw, 14vh) scaleX(1); }
-  74% { transform: translate(30vw, -2vh) scaleX(1); }
-  75% { transform: translate(30vw, -2vh) scaleX(-1); }
-  100% { transform: translate(0, 0) scaleX(-1); }
-}
 .toon-drift { animation: toon-drift 22s ease-in-out infinite alternate; }
 .toon-drift-slow { animation: toon-drift 34s ease-in-out infinite alternate-reverse; }
 @keyframes toon-drift { from { transform: translateX(-24px); } to { transform: translateX(40px); } }
@@ -227,6 +216,31 @@ select optgroup {
 @keyframes toon-twinkle { 0%, 100% { transform: scale(.4) rotate(0deg); opacity: .2; } 50% { transform: scale(1) rotate(45deg); opacity: 1; } }
 .toon-float { animation: toon-float 4.5s ease-in-out infinite; }
 @keyframes toon-float { 0%, 100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-16px) rotate(8deg); } }
+/* Founder claim: the navbar name lights up when the light lands */
+.claim-glow { animation: claim-glow 2.4s cubic-bezier(.2,.8,.2,1); }
+@keyframes claim-glow {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+  12% { transform: scale(1.12); box-shadow: 0 0 0 3px rgba(255,255,255,.95), 0 0 34px 10px rgba(255,255,255,.75); background: var(--fg); color: var(--bg); }
+  45% { transform: scale(1); box-shadow: 0 0 0 1px rgba(255,255,255,.5), 0 0 22px 4px rgba(255,255,255,.35); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+}
+.claim-fresh { animation: claim-fresh .6s cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes claim-fresh { from { transform: scale(0) rotate(-90deg); } to { transform: scale(1) rotate(0); } }
+
+/* Flying bee */
+.bee .bee-wing, .bee .bee-antenna, .bee .bee-legs, .bee .bee-eye { transform-box: fill-box; }
+.bee .bee-wing { transform-origin: 30% 100%; animation: bee-wing var(--flap, 80ms) linear infinite alternate; }
+.bee .bee-wing-back { animation-delay: calc(var(--flap, 80ms) / -2); opacity: .75; }
+@keyframes bee-wing { from { transform: rotate(-18deg) scaleY(1); } to { transform: rotate(16deg) scaleY(.55); } }
+.bee .bee-antenna { transform-origin: 50% 100%; animation: bee-antenna 1.4s ease-in-out infinite; }
+@keyframes bee-antenna { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(7deg); } }
+.bee .bee-legs { transform-origin: 50% 0%; animation: bee-legs .9s ease-in-out infinite; }
+@keyframes bee-legs { 0%, 100% { transform: skewX(-12deg); } 50% { transform: skewX(14deg); } }
+.bee .bee-eye { transform-origin: 50% 50%; animation: toon-blink 3.8s infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .bee .bee-wing, .bee .bee-antenna, .bee .bee-legs, .bee .bee-eye { animation: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [class*="toon-"] { animation: none !important; }
 }

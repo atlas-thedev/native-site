@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Check, Gift, Loader2, PartyPopper } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { playClaimMagic } from "./claimMagic";
 import CapeStrip from "../CapeStrip";
 import LockerViewer from "../LockerViewer";
 import { storeAction } from "../capes/actions";
@@ -34,7 +35,11 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
       const d = await r.json().catch(() => ({}));
       if (d.expired) return void (window.location.href = "/login?next=/founder");
       if (!d.ok) throw new Error(d.error || "Couldn’t claim that cape.");
-      setPicked(d.picked ?? item.id);
+      const id = d.picked ?? item.id;
+      const thumb = document.querySelector(`[data-founder-cape="${CSS.escape(item.id)}"]`);
+      setBusy(null);
+      await playClaimMagic(thumb, { caption: `${item.name} is yours`, onArrive: () => setPicked(id) });
+      setPicked(id);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Couldn’t claim that cape.");
     } finally {
@@ -76,7 +81,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
         </h1>
         <p className="mx-auto mt-5 max-w-[560px] text-[17px] text-mute">
           {done
-            ? `${pickedItem?.name ?? "It"} lives in your locker forever. Wear it on the site now, and in the launcher and in game from day one.`
+            ? `${pickedItem?.name ?? "It"} lives in your locker forever — and you’re a Native Beta Tester, badge and all. Wear it on the site now, and in the launcher and in game from day one.`
             : `You joined before launch, so one of these is on us. Choose carefully — you get one. After launch each cape costs ${money(1.99)}.`}
         </p>
       </header>
@@ -113,7 +118,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
                     onClick={() => setSel(c.id)}
                     className={`group relative flex w-full flex-col items-center rounded-[22px] border p-3 transition ${on ? "border-fg bg-surface-2" : "border-line bg-surface hover:-translate-y-0.5 hover:bg-surface-2"} ${locked ? "opacity-40" : ""}`}
                   >
-                    <div className="dots flex aspect-[4/5] w-full items-center justify-center rounded-2xl">
+                    <div data-founder-cape={c.id} className="dots flex aspect-[4/5] w-full items-center justify-center rounded-2xl">
                       <CapeStrip strip={c.animated ? c.stripUrl : null} still={c.stillUrl} frames={c.frames} fps={c.fps} width={64} label={`${c.name} cape`} className="cutout-sm transition duration-500 group-hover:scale-[1.06]" />
                     </div>
                     <span className="mt-2.5 truncate text-[14px] font-bold tracking-tight">{c.name}</span>

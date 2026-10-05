@@ -5,7 +5,8 @@ import { Check, Crown, Loader2, Vote } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import Countdown from "./Countdown";
-import { Bee, Slime, Sparkle } from "./Toons";
+import { Slime, Sparkle } from "./Toons";
+import FlyingBee from "./FlyingBee";
 import type { Poll } from "@/lib/launch";
 
 const pct = (n: number | null, total: number | null) => (n == null || !total ? 0 : Math.round((n / total) * 100));
@@ -112,7 +113,7 @@ export default function VoteBoard({ initial, signedIn }: { initial: Poll[]; sign
       <header className="relative mb-12 overflow-hidden rounded-[28px] border border-line px-6 py-14 text-center">
         <div className="dots pointer-events-none absolute inset-0" aria-hidden />
         <Slime className="pointer-events-none absolute -bottom-2 left-4 hidden w-[90px] sm:block" />
-        <div className="toon-buzz pointer-events-none absolute left-[10%] top-6 hidden sm:block"><Bee className="w-12" /></div>
+        <FlyingBee size={52} seed={3} area={[0.05, 0.12, 0.95, 0.8]} className="hidden sm:block" />
         <Sparkle className="toon-twinkle pointer-events-none absolute right-[12%] top-10 w-5" />
         <div className="relative">
           <p className="eyebrow">Community vote</p>
