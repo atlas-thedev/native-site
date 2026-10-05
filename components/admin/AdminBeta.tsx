@@ -6,7 +6,7 @@ import {
   Clock,
   Crown,
   ExternalLink,
-  FlaskConical,
+  Bug,
   Search,
   Trash2,
   X,
@@ -476,7 +476,7 @@ export default function AdminBeta({ doc, setDoc }: Shared) {
               </>
             ) : (
               <>
-                <FlaskConical className="h-4 w-4" /> Open applications
+                <Bug className="h-4 w-4" /> Open applications
               </>
             )}
           </Btn>
@@ -529,7 +529,7 @@ export default function AdminBeta({ doc, setDoc }: Shared) {
           target="_blank"
           className="mt-4 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-mute hover:text-fg"
         >
-          <FlaskConical className="h-4 w-4" /> Open the beta page{" "}
+          <Bug className="h-4 w-4" /> Open the beta page{" "}
           <ExternalLink className="h-3.5 w-3.5" />
         </a>
       </Panel>

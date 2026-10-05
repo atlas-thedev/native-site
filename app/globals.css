@@ -808,42 +808,6 @@ select optgroup {
   }
 }
 
-/* early access banner (hero) */
-.ea-banner {
-  position: relative;
-  display: inline-flex;
-  max-width: 100%;
-  align-items: center;
-  gap: 12px;
-  overflow: hidden;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--beta) 35%, var(--line));
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  padding: 6px 6px 6px 8px;
-  backdrop-filter: blur(12px);
-  transition:
-    border-color 0.3s,
-    transform 0.3s var(--ease-out-expo),
-    box-shadow 0.3s;
-  box-shadow: 0 10px 40px -18px color-mix(in srgb, var(--beta) 55%, transparent);
-}
-.ea-banner:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--beta) 65%, var(--line));
-}
-.ea-banner-glow {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    100deg,
-    transparent 30%,
-    color-mix(in srgb, var(--beta) 16%, transparent) 50%,
-    transparent 70%
-  );
-  background-size: 250% 100%;
-  animation: ea-glow 4.5s ease-in-out infinite;
-  pointer-events: none;
-}
 @keyframes ea-glow {
   0% {
     background-position: 120% 0;
@@ -889,7 +853,6 @@ select optgroup {
   .beta-badge-img,
   .beta-badge-sheen,
   .beta-spark,
-  .ea-banner-glow,
   .btn-shine::after {
     animation: none !important;
   }

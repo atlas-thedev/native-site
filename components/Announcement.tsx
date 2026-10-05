@@ -4,7 +4,6 @@ import { ArrowRight, Tag } from "lucide-react";
 import Link from "next/link";
 import { useVersion } from "./VersionContext";
 import { useLaunch, useCountdown } from "./launch/LaunchContext";
-import BetaBadge from "./beta/BetaBadge";
 
 const pill = "inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-line px-3 py-1 text-[12px] font-semibold text-fg transition hover:bg-surface-2";
 
@@ -37,7 +36,6 @@ export default function Announcement() {
   } else if (beta.open) {
     body = (
       <>
-        <BetaBadge size={18} still />
         <span className="truncate">
           <b className="font-semibold text-fg">Early access is open.</b>
           <span className="hidden sm:inline"> Test new builds first and keep the Super Beta cape for good.</span>
