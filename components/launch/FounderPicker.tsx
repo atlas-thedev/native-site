@@ -81,7 +81,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
         </h1>
         <p className="mx-auto mt-5 max-w-[560px] text-[17px] text-mute">
           {done
-            ? `${pickedItem?.name ?? "It"} lives in your locker forever — and you’re a Native Beta Tester, badge and all. Wear it on the site now, and in the launcher and in game from day one.`
+            ? `${pickedItem?.name ?? "It"} lives in your locker forever. Wear it on the site now, and in the launcher and in game from day one.`
             : `You joined before launch, so one of these is on us. Choose carefully — you get one. After launch each cape costs ${money(1.99)}.`}
         </p>
       </header>
@@ -159,6 +159,19 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
               )}
             </AnimatePresence>
           </div>
+
+          {done && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+              <Link href="/beta" className="card group flex items-center gap-4 p-5 transition hover:bg-surface-2">
+                <img src="/badges/super-beta-tester.png" alt="" width={44} height={44} className="h-11 w-11 shrink-0 [image-rendering:pixelated]" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[16px] font-bold tracking-tight">Want to test Native early?</span>
+                  <span className="block text-[13.5px] text-mute">Apply to be a Super Beta Tester — cape, badge and Native+ forever.</span>
+                </span>
+                <span className="text-[20px] transition group-hover:translate-x-1" aria-hidden>→</span>
+              </Link>
+            </motion.div>
+          )}
 
           {launch.prelaunch && (
             <div className="card flex flex-col items-center p-6 text-center">

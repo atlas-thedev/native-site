@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Gift, Megaphone, Rocket, Shirt, Tag, Ticket, Users, Vote } from "lucide-react";
+import { BarChart3, FlaskConical, Gift, Megaphone, Rocket, Shirt, Tag, Ticket, Users, Vote } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ToastHost, adm } from "./ui";
@@ -13,6 +13,7 @@ import AdminPolls from "./AdminPolls";
 import AdminCapes from "./AdminCapes";
 import AdminUsers from "./AdminUsers";
 import AdminCodes from "./AdminCodes";
+import AdminBeta from "./AdminBeta";
 
 const TABS = [
   { id: "overview", label: "Overview", icon: BarChart3 },
@@ -20,6 +21,7 @@ const TABS = [
   { id: "site", label: "Maintenance & banner", icon: Megaphone },
   { id: "offers", label: "Offers", icon: Tag },
   { id: "votes", label: "Votes", icon: Vote },
+  { id: "beta", label: "Beta testers", icon: FlaskConical },
   { id: "capes", label: "Capes", icon: Shirt },
   { id: "users", label: "Users", icon: Users },
   { id: "codes", label: "Codes & gifts", icon: Ticket },
@@ -103,6 +105,7 @@ export default function AdminApp({ name }: { name: string }) {
               : tab === "site" ? <AdminSite {...shared} />
               : tab === "offers" ? <AdminOffers {...shared} />
               : tab === "votes" ? <AdminPolls />
+              : tab === "beta" ? <AdminBeta {...shared} />
               : tab === "capes" ? <AdminCapes {...shared} />
               : tab === "users" ? <AdminUsers items={items} />
               : <AdminCodes items={items} />}

@@ -224,8 +224,6 @@ select optgroup {
   45% { transform: scale(1); box-shadow: 0 0 0 1px rgba(255,255,255,.5), 0 0 22px 4px rgba(255,255,255,.35); }
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0); }
 }
-.claim-fresh { animation: claim-fresh .6s cubic-bezier(.3,1.6,.5,1) both; }
-@keyframes claim-fresh { from { transform: scale(0) rotate(-90deg); } to { transform: scale(1) rotate(0); } }
 
 /* Flying bee */
 .bee .bee-wing, .bee .bee-antenna, .bee .bee-legs, .bee .bee-eye { transform-box: fill-box; }
