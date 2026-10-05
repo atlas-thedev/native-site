@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
-import { ChevronRight, Menu, Shield, X } from "lucide-react";
+import { ArrowRight, Gift, Menu, Shield, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useAccount } from "./useAccount";
@@ -9,6 +9,7 @@ import { useLaunch } from "./launch/LaunchContext";
 import { nav, site } from "@/lib/site";
 import { Discord, YouTube } from "./icons";
 import ThemeToggle from "./ThemeToggle";
+import SkinHead from "./SkinHead";
 
 export default function Navbar() {
   const { scrollYProgress } = useScroll();
@@ -18,10 +19,11 @@ export default function Navbar() {
   const { launch } = useLaunch();
   const [open, setOpen] = useState(false);
 
-  const cta = launch.lockDownloads
+  const gift = launch.lockDownloads;
+  const cta = gift
     ? {
         href: name ? "/founder" : "/register?next=/founder",
-        label: name ? "Free cape" : "Join early",
+        label: name ? "Claim free cape" : "Join early",
       }
     : { href: "/download", label: "Download" };
 
@@ -29,13 +31,11 @@ export default function Navbar() {
     <Link
       href="/account"
       data-claim-target
-      className="group hidden h-11 items-center gap-2.5 rounded-2xl border border-line bg-surface px-2 pr-3 text-[14px] font-semibold transition hover:-translate-y-0.5 hover:border-fg/25 hover:bg-surface-2 sm:inline-flex"
+      title="Your account"
+      className="group hidden h-10 items-center gap-2 rounded-full border border-line bg-surface py-1 pl-1 pr-3.5 text-[14px] font-semibold transition hover:border-fg/30 hover:bg-surface-2 sm:inline-flex"
     >
-      <span className="grid h-7 w-7 place-items-center rounded-xl bg-inv text-[12px] font-extrabold uppercase text-inv-fg">
-        {name.slice(0, 1)}
-      </span>
-      <span className="max-w-28 truncate">{name}</span>
-      <ChevronRight className="h-3.5 w-3.5 text-dim transition-transform group-hover:translate-x-0.5" />
+      <SkinHead skin={me?.skin ?? null} name={name} size={30} className="!rounded-full ring-1 ring-line" />
+      <span className="max-w-[7.5rem] truncate">{name}</span>
     </Link>
   ) : (
     <Link
@@ -116,9 +116,15 @@ export default function Navbar() {
           {account}
           <Link
             href={cta.href}
-            className="ml-1 inline-flex h-10 items-center rounded-full bg-inv px-5 text-[14.5px] font-semibold text-inv-fg transition hover:opacity-85 active:scale-95"
+            className={`group ml-1 inline-flex h-10 items-center gap-2 rounded-full bg-inv text-[14.5px] font-semibold text-inv-fg transition hover:opacity-90 active:scale-95 ${gift ? "btn-shine pl-1.5 pr-4" : "px-5"}`}
           >
-            {cta.label}
+            {gift && (
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-inv-fg/10">
+                <Gift className="h-[15px] w-[15px] transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />
+              </span>
+            )}
+            <span className="whitespace-nowrap">{cta.label}</span>
+            {!gift && <ArrowRight className="-mr-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />}
           </Link>
           <button
             data-claim-target

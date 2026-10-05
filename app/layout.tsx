@@ -16,7 +16,7 @@ import MaintenanceGate from "@/components/launch/MaintenanceGate";
 const figtree = localFont({ src: "../public/fonts/Figtree-Variable.ttf", variable: "--font-figtree", display: "swap", weight: "300 900" });
 const jb = localFont({ src: "../public/fonts/JetBrainsMonoVariable.ttf", variable: "--font-jb", display: "swap", weight: "100 800" });
 
-const title = `${site.name} — ${site.tagline}`;
+const title = `${site.name} · ${site.tagline}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),

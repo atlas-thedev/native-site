@@ -6,7 +6,7 @@ const CLOUDS = [
   { size: 10, left: "90%", top: 150, delay: -71, dur: 95 },
 ];
 
-/** Pixel clouds drifting over a slanted ground stripe — same as the launcher Store. */
+/** Pixel clouds drifting over a slanted ground stripe, same as the launcher Store. */
 export default function Sky() {
   return (
     <div className="sky pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>

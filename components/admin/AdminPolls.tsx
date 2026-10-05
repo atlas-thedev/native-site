@@ -58,7 +58,7 @@ export default function AdminPolls() {
             </Field>
           </div>
         </div>
-        <p className="mb-3 mt-6 text-[13px] font-semibold text-mute">Options (2–8) — add a PNG concept image for each cape</p>
+        <p className="mb-3 mt-6 text-[13px] font-semibold text-mute">Options (2 to 8). Add a PNG concept image for each cape.</p>
         <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {f.options.map((o, i) => (
             <li key={i} className="relative flex gap-3 rounded-2xl border border-line bg-bg p-3">
@@ -119,7 +119,7 @@ export default function AdminPolls() {
               );
             })}
           </ul>
-        ) : <Empty>No votes yet. Create the first one above — it shows on /vote.</Empty>}
+        ) : <Empty>No votes yet. Create the first one above and it shows on /vote.</Empty>}
       </Panel>
     </div>
   );

@@ -73,7 +73,7 @@ export default async function AccountPage() {
           <Link href="/founder" className="dots flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-line p-5 transition hover:border-fg/40 sm:p-6">
             <span>
               <span className="block text-[20px] font-extrabold tracking-tight">You have a free founder cape waiting</span>
-              <span className="mt-1 block text-mute">You joined before launch — pick one of the founder capes, on us.</span>
+              <span className="mt-1 block text-mute">You joined before launch, so one founder cape is on us. Pick yours.</span>
             </span>
             <span className="inline-flex h-11 items-center rounded-full bg-inv px-5 text-[14.5px] font-semibold text-inv-fg">Pick it now</span>
           </Link>

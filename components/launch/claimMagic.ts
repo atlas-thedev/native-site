@@ -2,7 +2,7 @@
 
 /**
  * The founder-cape claim moment: the page dims, the cape starts to glow, a little light gathers,
- * pops out and floats along a curved path — trailing fairy dust — to your name in the navbar,
+ * pops out and floats along a curved path, trailing fairy dust, to your name in the navbar,
  * which lights up when it lands. Then the darkness lifts.
  *
  * Pure canvas + rAF, no deps. Stays in the site's black / white palette (white light on darkness).

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getLook } from "@/lib/server/store";
 import { api, clearSession, readSession, setSession, upstreamHeaders, type SiteAccount } from "@/lib/server/session";
 
 export const dynamic = "force-dynamic";
@@ -23,12 +24,16 @@ export async function GET(req: Request, ctx: { params: Promise<{ action: string 
   if (action !== "me") return json({ ok: false, error: "Not found." }, 404);
   const s = await readSession();
   if (!s) return json({ ok: true, account: null });
-  let isAdmin = false;
-  try {
-    const r = await api("/v1/admin/status", { method: "GET", headers: upstreamHeaders(req, { Authorization: `Bearer ${s.token}` }) });
-    isAdmin = r.status === 200 && r.data.isAdmin === true;
-  } catch {}
-  return json({ ok: true, account: { name: s.account.name, uuid: s.account.uuid ?? null, isAdmin } });
+  const admin = api("/v1/admin/status", { method: "GET", headers: upstreamHeaders(req, { Authorization: `Bearer ${s.token}` }) })
+    .then((r) => r.status === 200 && r.data.isAdmin === true)
+    .catch(() => false);
+  // the skin is only for the little head in the navbar, so never let it hold the response up
+  const look = Promise.race([
+    getLook(s.account.name, s.account.model).then((l) => l.skin).catch(() => null),
+    new Promise<null>((r) => setTimeout(() => r(null), 1500)),
+  ]);
+  const [isAdmin, skin] = await Promise.all([admin, look]);
+  return json({ ok: true, account: { name: s.account.name, uuid: s.account.uuid ?? null, isAdmin, skin } });
 }
 
 export async function POST(req: Request, ctx: { params: Promise<{ action: string }> }) {

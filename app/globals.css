@@ -711,3 +711,186 @@ select optgroup {
     animation: none;
   }
 }
+
+/* ── Super Beta ─────────────────────────────────────────────────── */
+:root {
+  --beta: #3ee6c8;
+}
+[data-theme="light"] {
+  --beta: #0b9c86;
+}
+.text-beta {
+  color: var(--beta);
+}
+.bg-beta {
+  background: var(--beta);
+}
+
+.beta-badge {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  isolation: isolate;
+}
+.beta-badge-img {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  user-select: none;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
+}
+.beta-badge:not(.is-still) .beta-badge-img {
+  animation: beta-bob 4.8s ease-in-out infinite;
+}
+.beta-badge-sheen {
+  position: absolute;
+  inset: 0;
+  -webkit-mask: url(/badges/super-beta-tester.png) center / contain no-repeat;
+  mask: url(/badges/super-beta-tester.png) center / contain no-repeat;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.75) 48%,
+    transparent 58%
+  );
+  background-size: 300% 100%;
+  animation: beta-sheen 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+.beta-badge:not(.is-still) .beta-badge-sheen {
+  animation-name: beta-sheen, beta-bob;
+  animation-duration: 3.6s, 4.8s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1), ease-in-out;
+}
+.beta-spark {
+  position: absolute;
+  width: 7%;
+  height: 7%;
+  min-width: 4px;
+  min-height: 4px;
+  background: #fff;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: beta-spark 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes beta-sheen {
+  0%,
+  35% {
+    background-position: 100% 0;
+  }
+  75%,
+  100% {
+    background-position: 0 0;
+  }
+}
+@keyframes beta-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-6%) rotate(2deg);
+  }
+}
+@keyframes beta-spark {
+  0%,
+  100% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  45% {
+    transform: scale(1) rotate(90deg);
+    opacity: 1;
+  }
+  70% {
+    opacity: 0;
+  }
+}
+
+/* early access banner (hero) */
+.ea-banner {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--beta) 35%, var(--line));
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  padding: 6px 6px 6px 8px;
+  backdrop-filter: blur(12px);
+  transition:
+    border-color 0.3s,
+    transform 0.3s var(--ease-out-expo),
+    box-shadow 0.3s;
+  box-shadow: 0 10px 40px -18px color-mix(in srgb, var(--beta) 55%, transparent);
+}
+.ea-banner:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--beta) 65%, var(--line));
+}
+.ea-banner-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in srgb, var(--beta) 16%, transparent) 50%,
+    transparent 70%
+  );
+  background-size: 250% 100%;
+  animation: ea-glow 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes ea-glow {
+  0% {
+    background-position: 120% 0;
+  }
+  60%,
+  100% {
+    background-position: -20% 0;
+  }
+}
+
+/* shine that runs across a button now and then */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    110deg,
+    transparent 35%,
+    color-mix(in srgb, var(--inv-fg) 10%, transparent) 50%,
+    transparent 65%
+  );
+  background-size: 260% 100%;
+  animation: ea-glow 3.8s ease-in-out infinite;
+}
+
+/* beta page sky tint */
+.beta-sky {
+  background:
+    radial-gradient(
+      55% 70% at 78% 60%,
+      color-mix(in srgb, var(--beta) 12%, transparent),
+      transparent 70%
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beta-badge-img,
+  .beta-badge-sheen,
+  .beta-spark,
+  .ea-banner-glow,
+  .btn-shine::after {
+    animation: none !important;
+  }
+}

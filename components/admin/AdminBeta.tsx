@@ -142,7 +142,7 @@ export default function AdminBeta({ doc, setDoc }: Shared) {
         }
       },
       status === "approved"
-        ? `${cur.username} is a Super Beta Tester — badge, cape and Native+ granted.`
+        ? `${cur.username} is a Super Beta Tester now. Badge, cape and Native+ granted.`
         : status === "rejected"
           ? `${cur.username} rejected.`
           : status === "waitlist"
@@ -192,7 +192,7 @@ export default function AdminBeta({ doc, setDoc }: Shared) {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat
           label="To review"
-          value={c?.pending ?? "—"}
+          value={c?.pending ?? "–"}
           hint={
             data
               ? data.open
@@ -203,13 +203,13 @@ export default function AdminBeta({ doc, setDoc }: Shared) {
         />
         <Stat
           label="Super Beta Testers"
-          value={c?.approved ?? "—"}
+          value={c?.approved ?? "–"}
           hint={beta.maxTesters ? `of ${beta.maxTesters} spots` : "No limit"}
         />
-        <Stat label="Waitlist" value={c?.waitlist ?? "—"} />
+        <Stat label="Waitlist" value={c?.waitlist ?? "–"} />
         <Stat
           label="All applications"
-          value={c?.all ?? "—"}
+          value={c?.all ?? "–"}
           hint={c ? `${c.rejected} rejected` : undefined}
         />
       </div>
@@ -251,7 +251,7 @@ export default function AdminBeta({ doc, setDoc }: Shared) {
         ) : !data.applications.length ? (
           <Empty>
             {filter === "pending"
-              ? "Inbox zero — no applications waiting."
+              ? "Inbox zero. No applications waiting."
               : "Nothing here."}
           </Empty>
         ) : (
@@ -279,7 +279,7 @@ export default function AdminBeta({ doc, setDoc }: Shared) {
                       </span>
                       <span className="block truncate text-[12.5px] text-dim">
                         {a.answers.discord} ·{" "}
-                        {PLATFORM[a.answers.platform] ?? "—"} ·{" "}
+                        {PLATFORM[a.answers.platform] ?? "–"} ·{" "}
                         {a.answers.hours >= 40 ? "40+" : a.answers.hours}h/wk
                       </span>
                     </span>
@@ -334,18 +334,18 @@ export default function AdminBeta({ doc, setDoc }: Shared) {
                   <dl className="mt-5 grid gap-x-6 gap-y-3 sm:grid-cols-2">
                     {[
                       ["Discord", cur.answers.discord],
-                      ["Age", cur.answers.age || "—"],
-                      ["Platform", PLATFORM[cur.answers.platform] ?? "—"],
-                      ["Time zone", cur.answers.timezone || "—"],
-                      ["PC", cur.answers.specs || "—"],
+                      ["Age", cur.answers.age || "–"],
+                      ["Platform", PLATFORM[cur.answers.platform] ?? "–"],
+                      ["Time zone", cur.answers.timezone || "–"],
+                      ["PC", cur.answers.specs || "–"],
                       [
                         "Hours a week",
                         cur.answers.hours >= 40
                           ? "40+"
                           : String(cur.answers.hours),
                       ],
-                      ["Versions", cur.answers.versions.join(", ") || "—"],
-                      ["Plays", cur.answers.playstyle.join(", ") || "—"],
+                      ["Versions", cur.answers.versions.join(", ") || "–"],
+                      ["Plays", cur.answers.playstyle.join(", ") || "–"],
                     ].map(([k, v]) => (
                       <div key={k}>
                         <dt className="text-[11.5px] font-semibold uppercase tracking-wider text-dim">

@@ -60,7 +60,7 @@ export default function VersionsRail({ latest }: { latest: Latest }) {
           <span className="text-mute">Every era.</span>
         </h2>
         <p className="mt-6 max-w-[420px] text-lg leading-relaxed text-mute">
-          From the combat-update classics to the newest releases and snapshots — straight from Mojang. Create an instance for any release and Native sets up the loader and Java.
+          From the combat update classics to the newest releases and snapshots, straight from Mojang. Create an instance for any release and Native sets up the loader and Java.
         </p>
         <p className="mt-8 flex items-center gap-3 font-mono text-[12px] text-dim">
           scroll <span className="h-px w-16 bg-line" />

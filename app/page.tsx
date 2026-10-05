@@ -19,7 +19,6 @@ import { faqs } from "@/lib/site";
 import { getCatalog } from "@/lib/server/store";
 import { getSiteConfig } from "@/lib/server/siteConfig";
 import DownloadGate from "@/components/launch/DownloadGate";
-import EarlyAccess from "@/components/EarlyAccess";
 
 export const revalidate = 600;
 
@@ -49,7 +48,6 @@ export default async function Home() {
         }}
       />
       <Hero founder={founder} />
-      {cfg.beta.open && <EarlyAccess closesAt={cfg.beta.closesAt} />}
       <Features />
       <LaunchPanel />
       <Community />

@@ -1,6 +1,6 @@
 import type { SVGProps } from "react";
 
-/** Native's own momentum mark — used instead of the generic sparkle icon. */
+/** Native's own momentum mark, used instead of the generic sparkle icon. */
 export default function NativeGlyph({
   className = "",
   ...props

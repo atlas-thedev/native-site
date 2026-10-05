@@ -94,9 +94,9 @@ export default function CheckoutClient() {
       {phase === "done" ? (
         <>
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-inv text-inv-fg"><Check className="h-7 w-7" /></span>
-          <h1 className="mt-6 text-[clamp(2.2rem,5vw,3.4rem)] font-extrabold leading-[1.02] tracking-[-0.04em]">Thanks — you’re all set.</h1>
+          <h1 className="mt-6 text-[clamp(2.2rem,5vw,3.4rem)] font-extrabold leading-[1.02] tracking-[-0.04em]">Thanks, you’re all set.</h1>
           <p className="mx-auto mt-4 max-w-[480px] text-[17px] text-mute">
-            Your purchase unlocks on your Native account in a few seconds. If you bought from the launcher, head back to it — it updates by itself. A receipt is on its way to your email.
+            Your purchase unlocks on your Native account in a few seconds. If you bought from the launcher, head back to it and it’ll update by itself. A receipt is on its way to your email.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href={back ?? "/account"} className={btn}>{back ? "Back to the store" : "Open your locker"}</Link>

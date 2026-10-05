@@ -22,6 +22,8 @@ const cols = [
       { label: "Your locker", href: "/account" },
       { label: "Capes", href: "/capes" },
       { label: "Native+", href: "/plus" },
+      { label: "Super Beta", href: "/beta" },
+      { label: "Community vote", href: "/vote" },
       { label: "Forgot password", href: "/forgot" },
     ],
   },
