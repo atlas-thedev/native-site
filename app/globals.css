@@ -98,11 +98,16 @@ body {
   mask: url(/brand/icon.png) center / contain no-repeat;
 }
 
+/* the real 3D "N" mark; inverted on the light theme so it stays visible */
+.logo-img { display: inline-block; object-fit: contain; user-select: none; -webkit-user-drag: none; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
+[data-theme="light"] .logo-img { filter: invert(1) drop-shadow(0 2px 6px rgba(0,0,0,.12)); }
+
 @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .marquee-track { animation: marquee 40s linear infinite; width: max-content; }
 .marquee:hover .marquee-track { animation-play-state: paused; }
 @keyframes float-y { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes blink { 50% { opacity: 0; } }
+@keyframes loadbar { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
 @keyframes pulse-soft { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
 .no-scrollbar { scrollbar-width: none; }

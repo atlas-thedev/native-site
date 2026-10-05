@@ -32,8 +32,12 @@ export default function Intro() {
           exit={{ clipPath: "inset(0% 0% 100% 0%)" }}
           transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
         >
-          <motion.span
-            className="logo-mark h-20 w-20"
+          <motion.img
+            src="/brand/icon.png"
+            alt=""
+            width={96}
+            height={96}
+            className="logo-img h-24 w-24"
             initial={{ scale: 0.4, opacity: 0, rotate: -20 }}
             animate={{ scale: 1, opacity: 1, rotate: 0 }}
             transition={{ type: "spring", stiffness: 160, damping: 14 }}
