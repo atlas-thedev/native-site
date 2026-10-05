@@ -11,10 +11,19 @@ import { useOS } from "./useOS";
 import Link from "next/link";
 import { INTRO, platforms } from "@/lib/site";
 import { useVersion } from "./VersionContext";
+import { useLaunch } from "./launch/LaunchContext";
+import LaunchHero from "./launch/LaunchHero";
+import type { StoreItem } from "@/lib/store";
 
 const MotionLink = motion.create(Link);
 
-export default function Hero() {
+export default function Hero({ founder = [] }: { founder?: StoreItem[] }) {
+  const { launch } = useLaunch();
+  if (launch.prelaunch) return <LaunchHero founder={founder} />;
+  return <LaunchedHero />;
+}
+
+function LaunchedHero() {
   const os = useOS();
   const version = useVersion();
   const OsIcon = os === "mac" ? Apple : os === "linux" ? Linux : Windows;

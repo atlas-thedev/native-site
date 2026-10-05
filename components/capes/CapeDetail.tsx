@@ -7,7 +7,9 @@ import { useEffect, useRef, useState } from "react";
 import LockerViewer, { type ViewerHandle } from "../LockerViewer";
 import { ownerLabel, storeAction, type StoreAction } from "./actions";
 import { getBilling, startCheckout, type BillingState } from "./billing";
-import { isPaid, money, type Owned, type StoreItem } from "@/lib/store";
+import { isPaid, money, priceNow, type Owned, type StoreItem } from "@/lib/store";
+import { useLaunch } from "../launch/LaunchContext";
+import Countdown from "../launch/Countdown";
 
 type Props = {
   item: StoreItem;
@@ -39,6 +41,11 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
   const member = !!bill?.plus?.active;
   const sellable = !!bill?.config?.enabled;
   const own = owned.some((o) => o.id === item.id);
+  const { launch } = useLaunch();
+  const storeLocked = launch.lockStore && !own;
+  const isFounder = launch.founderPick && launch.founderCapes.includes(item.id);
+  const price = priceNow(item);
+  const priceLabel = item.salePrice != null ? <>{money(price)} <s className="opacity-60">{money(item.price)}</s></> : money(item.price);
 
   useEffect(() => {
     if (paid) getBilling().then(setBill).catch(() => {});
@@ -140,14 +147,29 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
           <h1 className="mt-4 text-[clamp(2.2rem,4vw,3.2rem)] font-extrabold leading-[1] tracking-[-0.04em]">{item.name}</h1>
           {item.description && <p className="mt-3 text-[16px] text-mute">{item.description}</p>}
 
+          {item.offer && !storeLocked && (
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 text-[13px] font-semibold">
+              {item.offer.title} · {item.offer.percent}% off{item.offer.endsAt ? ` until ${new Date(item.offer.endsAt).toLocaleDateString()}` : ""}
+            </p>
+          )}
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            {item.exclusive && !own ? (
+            {storeLocked && !item.exclusive ? (
+              <div className="w-full rounded-[20px] border border-dashed border-line p-5">
+                <p className="flex items-center gap-2 text-[15px] font-bold"><Lock className="h-4 w-4" /> The store opens at launch</p>
+                <p className="mt-1 text-[14px] text-mute">{isFounder ? "Join before launch and this cape can be your free founder pick." : `On launch day it’s ${money(item.price)} — or included with Native+.`}</p>
+                <Countdown at={launch.at} size="sm" className="mt-4 !justify-start" />
+                <div className="mt-5 flex flex-wrap gap-3">
+                  {isFounder && <Link href={signedIn ? "/founder" : "/register?next=/founder"} className={primary}><Plus className="h-4 w-4" /> {signedIn ? "Pick it as your free cape" : "Join early · get it free"}</Link>}
+                  {!signedIn && !isFounder && <Link href="/register?next=/founder" className={primary}>Create a free account</Link>}
+                </div>
+              </div>
+            ) : item.exclusive && !own ? (
               <span className="inline-flex h-12 items-center gap-2 rounded-full border border-dashed border-line px-5 text-[14px] font-semibold text-mute" title="Not sold. The Native team gives event capes out, or with a redeem code.">
                 <Lock className="h-4 w-4" /> Event cape · given by the Native team or with a code
               </span>
             ) : !signedIn && paid ? (
               <>
-                <Link href="/login" className={primary}><ShoppingBag className="h-4 w-4" /> Sign in to buy · {money(item.price)}</Link>
+                <Link href="/login" className={primary}><ShoppingBag className="h-4 w-4" /> Sign in to buy · {priceLabel}</Link>
                 <Link href="/plus" className={ghost}><Crown className="h-4 w-4" /> Included with Native+</Link>
               </>
             ) : !signedIn ? (
@@ -170,7 +192,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
             ) : paid ? (
               <>
                 <button onClick={buy} disabled={buying || !sellable} className={primary} title={sellable || !bill ? undefined : "Payments are switched on soon."}>
-                  {buying ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />} {sellable || !bill ? `Buy · ${money(item.price)}` : `${money(item.price)} · soon`}
+                  {buying ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />} {sellable || !bill ? <>Buy · {priceLabel}</> : `${money(price)} · soon`}
                 </button>
                 <Link href="/plus" className={ghost}><Crown className="h-4 w-4" /> Get it with Native+</Link>
               </>
@@ -201,7 +223,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
 
         <dl className="card grid grid-cols-2 gap-px overflow-hidden bg-line p-0 text-[14px]">
           {[
-            ["Price", item.exclusive ? "Event only" : paid ? `${money(item.price)} or Native+` : "Free"],
+            ["Price", item.exclusive ? "Event only" : paid ? `${money(price)} or Native+` : "Free"],
             ["In lockers", ownerLabel(owners)],
             ["Type", item.animated ? "Animated" : "Classic"],
             ["Made by", item.author || "Native"],

@@ -4,6 +4,7 @@ import CapeGallery from "@/components/capes/CapeGallery";
 import { readSession } from "@/lib/server/session";
 import { getCatalog, getMine } from "@/lib/server/store";
 import { breadcrumb, pageMeta } from "@/lib/seo";
+import StoreLockBanner from "@/components/launch/StoreLockBanner";
 
 export const dynamic = "force-dynamic";
 export const metadata = pageMeta({
@@ -26,7 +27,7 @@ export default async function CapesPage() {
         <div>
           <p className="eyebrow">Native capes</p>
           <h1 className="mt-4 text-[clamp(2.6rem,6vw,4.6rem)] font-extrabold leading-[1] tracking-[-0.045em]">Capes that move.</h1>
-          <p className="mt-5 max-w-[580px] text-lg text-mute">Every Native cape in one place. Preview in 3D, add to your locker and wear it — in the launcher and in game. Most are free — paid capes are a one-off buy or included with Native+.</p>
+          <p className="mt-5 max-w-[580px] text-lg text-mute">Every Native cape in one place. Preview in 3D, add to your locker and wear it — in the launcher and in game. Every cape is a one-off $1.99 buy — or included with Native+.</p>
         </div>
         <div className="flex flex-col items-end gap-4">
           {items.length > 0 && <dl className="flex gap-8 text-right">
@@ -44,6 +45,7 @@ export default async function CapesPage() {
           )}
         </div>
       </header>
+      <StoreLockBanner signedIn={!!s} />
       <CapeGallery items={items} signedIn={!!s} owned={mine?.owned ?? []} equipped={mine?.equipped ?? null} />
     </div>
   );

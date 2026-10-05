@@ -6,6 +6,7 @@ import { readSession } from "@/lib/server/session";
 import { pageMeta } from "@/lib/seo";
 import { capeAnimOf, type CapeAnim, type StoreItem } from "@/lib/store";
 import { getCatalog, getMine } from "@/lib/server/store";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export const metadata = pageMeta({ title: "Your locker", description: "Manage your Native skin, cape and account.", path: "/account", noindex: true });
@@ -49,7 +50,13 @@ export default async function AccountPage() {
     }
   } catch {}
 
-  const [catalog, mine] = await Promise.all([getCatalog(), getMine(s.token)]);
+  const [catalog, mine, founder] = await Promise.all([
+    getCatalog(),
+    getMine(s.token),
+    fetch(`${API_URL}/v1/site/founder`, { headers: { Authorization: `Bearer ${s.token}` }, cache: "no-store", signal: AbortSignal.timeout(6000) })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null) as Promise<{ eligible?: boolean; picked?: string | null } | null>,
+  ]);
   const byId = new Map((catalog?.items ?? []).map((i) => [i.id, i]));
   const nativeCapes = (mine?.owned ?? []).map((o) => byId.get(o.id)).filter((i): i is StoreItem => !!i);
 
@@ -61,6 +68,17 @@ export default async function AccountPage() {
   const names = Object.fromEntries((catalog?.items ?? []).map((i) => [i.id, i.name]));
   return (
     <>
+      {founder?.eligible && !founder.picked && (
+        <div className="mx-auto max-w-[1280px] px-5 pt-8">
+          <Link href="/founder" className="dots flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-line p-5 transition hover:border-fg/40 sm:p-6">
+            <span>
+              <span className="block text-[20px] font-extrabold tracking-tight">You have a free founder cape waiting</span>
+              <span className="mt-1 block text-mute">You joined before launch — pick one of the founder capes, on us.</span>
+            </span>
+            <span className="inline-flex h-11 items-center rounded-full bg-inv px-5 text-[14.5px] font-semibold text-inv-fg">Pick it now</span>
+          </Link>
+        </div>
+      )}
       <Locker initial={{ name: s.account.name, email: s.account.email, skin, cape, model, capeAnim, capeStore: wornStore, nativeCapes, capeId }} />
       <BillingPanel names={names} />
     </>

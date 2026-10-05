@@ -1,9 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
-import { Menu, User, X } from "lucide-react";
+import { Menu, Shield, User, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useAccount } from "./useAccount";
+import { useLaunch } from "./launch/LaunchContext";
 import { nav, site } from "@/lib/site";
 import { Discord, YouTube } from "./icons";
 import ThemeToggle from "./ThemeToggle";
@@ -11,19 +13,13 @@ import ThemeToggle from "./ThemeToggle";
 export default function Navbar() {
   const { scrollYProgress } = useScroll();
   const prog = useSpring(scrollYProgress, { stiffness: 140, damping: 30 });
-  const [name, setName] = useState<string | null | undefined>(undefined);
+  const me = useAccount();
+  const name = me === undefined ? undefined : me?.name ?? null;
+  const { launch } = useLaunch();
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    let dead = false;
-    fetch("/api/auth/me", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d) => !dead && setName(d?.account?.name ?? null))
-      .catch(() => !dead && setName(null));
-    return () => {
-      dead = true;
-    };
-  }, []);
+  const cta = launch.lockDownloads
+    ? { href: name ? "/founder" : "/register?next=/founder", label: name ? "Free cape" : "Join early" }
+    : { href: "/download", label: "Download" };
 
   const account = name ? (
     <Link href="/account" className="hidden h-10 items-center gap-2 rounded-full border border-line px-4 text-[14.5px] font-semibold transition hover:bg-surface-2 sm:inline-flex">
@@ -43,10 +39,10 @@ export default function Navbar() {
             <img src="/brand/icon.png" alt="" width={28} height={28} className="logo-img h-7 w-7" aria-hidden />
             <span className="text-[19px] font-extrabold tracking-tight">native</span>
           </Link>
-          <ul className="hidden items-center gap-1 md:flex">
+          <ul className="hidden items-center gap-0.5 lg:flex">
             {nav.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className="rounded-full px-4 py-2 text-[14.5px] font-medium text-mute transition-colors hover:bg-surface-2 hover:text-fg">
+                <Link href={l.href} className="rounded-full px-3.5 py-2 text-[14.5px] font-medium text-mute transition-colors hover:bg-surface-2 hover:text-fg">
                   {l.label}
                 </Link>
               </li>
@@ -61,20 +57,25 @@ export default function Navbar() {
             <YouTube className="h-[20px] w-[20px]" />
           </a>
           <ThemeToggle />
+          {me?.isAdmin && (
+            <Link href="/admin" aria-label="Admin dashboard" title="Admin dashboard" className="hidden h-10 w-10 items-center justify-center rounded-full text-mute transition hover:bg-surface-2 hover:text-fg sm:flex">
+              <Shield className="h-[18px] w-[18px]" />
+            </Link>
+          )}
           {account}
-          <Link href="/download" className="ml-1 inline-flex h-10 items-center rounded-full bg-inv px-5 text-[14.5px] font-semibold text-inv-fg transition hover:opacity-85 active:scale-95">
-            Download
+          <Link href={cta.href} className="ml-1 inline-flex h-10 items-center rounded-full bg-inv px-5 text-[14.5px] font-semibold text-inv-fg transition hover:opacity-85 active:scale-95">
+            {cta.label}
           </Link>
-          <button onClick={() => setOpen((v) => !v)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="flex h-10 w-10 items-center justify-center rounded-full text-fg transition hover:bg-surface-2 md:hidden">
+          <button onClick={() => setOpen((v) => !v)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="flex h-10 w-10 items-center justify-center rounded-full text-fg transition hover:bg-surface-2 lg:hidden">
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </nav>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="overflow-hidden border-t border-line md:hidden">
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="overflow-hidden border-t border-line lg:hidden">
             <ul className="mx-auto max-w-[1280px] space-y-1 px-5 py-4">
-              {[...nav, name ? { href: "/account", label: "Account" } : { href: "/login", label: "Sign in" }].map((l) => (
+              {[...nav, ...(me?.isAdmin ? [{ href: "/admin", label: "Admin" }] : []), name ? { href: "/account", label: "Account" } : { href: "/login", label: "Sign in" }].map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} onClick={() => setOpen(false)} className="block rounded-2xl px-4 py-3 text-[17px] font-semibold hover:bg-surface-2">
                     {l.label}

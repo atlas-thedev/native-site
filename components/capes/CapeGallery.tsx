@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import CapeStrip from "../CapeStrip";
 import SortMenu from "./SortMenu";
 import { ownerLabel } from "./actions";
-import { isPaid, money, sortBy, type Owned, type SortKey, type StoreItem } from "@/lib/store";
+import { isPaid, money, priceNow, sortBy, type Owned, type SortKey, type StoreItem } from "@/lib/store";
 
 type Filter = "all" | "animated" | "static" | "free" | "paid" | "new" | "mine";
 type Props = { items: StoreItem[]; signedIn: boolean; owned: Owned[]; equipped: string | null };
@@ -95,7 +95,7 @@ export default function CapeGallery({ items, signedIn, owned, equipped }: Props)
                     <p className="truncate text-[15px] font-bold tracking-tight">{it.name}</p>
                     <p className="mt-0.5 flex items-center justify-between gap-2 text-[12.5px] text-dim">
                       <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{ownerLabel(it.owners)}</span>
-                      <span className="font-semibold text-mute">{it.exclusive ? "Event" : isPaid(it) ? money(it.price) : "Free"}</span>
+                      <span className="font-semibold text-mute">{it.exclusive ? "Event" : isPaid(it) ? (it.salePrice != null ? <>{money(priceNow(it))} <s className="font-normal opacity-60">{money(it.price)}</s></> : money(it.price)) : "Free"}</span>
                     </p>
                   </div>
                 </Link>
