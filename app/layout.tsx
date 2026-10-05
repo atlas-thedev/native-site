@@ -9,6 +9,9 @@ import JsonLd from "@/components/JsonLd";
 import { VersionProvider } from "@/components/VersionContext";
 import { getSiteVersion } from "@/lib/server/releases";
 import { site } from "@/lib/site";
+import { getSiteConfig } from "@/lib/server/siteConfig";
+import { LaunchProvider } from "@/components/launch/LaunchContext";
+import MaintenanceGate from "@/components/launch/MaintenanceGate";
 
 const figtree = localFont({ src: "../public/fonts/Figtree-Variable.ttf", variable: "--font-figtree", display: "swap", weight: "300 900" });
 const jb = localFont({ src: "../public/fonts/JetBrainsMonoVariable.ttf", variable: "--font-jb", display: "swap", weight: "100 800" });
@@ -43,7 +46,7 @@ export const viewport: Viewport = {
 const themeScript = `try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const version = await getSiteVersion();
+  const [version, config] = await Promise.all([getSiteVersion(), getSiteConfig()]);
   const graph = {
     "@context": "https://schema.org",
     "@graph": [
@@ -74,12 +77,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <a href="#main" className="skip-link">Skip to content</a>
         <VersionProvider version={version}>
+          <LaunchProvider config={config}>
+          <MaintenanceGate />
           <SmoothScroll>
             <Announcement />
             <Navbar />
             <main id="main">{children}</main>
             <Footer />
           </SmoothScroll>
+          </LaunchProvider>
         </VersionProvider>
       </body>
     </html>

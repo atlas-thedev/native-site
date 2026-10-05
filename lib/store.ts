@@ -17,6 +17,9 @@ export type StoreItem = {
   price: number;
   /** sold for money (or included with Native+) */
   paid?: boolean;
+  /** price after a live offer, null when there's no offer */
+  salePrice?: number | null;
+  offer?: { id: string; title: string; percent: number; endsAt: number | null } | null;
   animated: boolean;
   frames: number;
   fps: number;
@@ -59,3 +62,6 @@ export const sortItems = (items: StoreItem[]) => items.map((it, i) => ({ it, i }
 /** "$1.49" */
 export const money = (n: number) => `$${(Math.round(n * 100) / 100).toFixed(2)}`;
 export const isPaid = (it: Pick<StoreItem, "exclusive" | "price">) => !it.exclusive && it.price > 0;
+
+/** What a cape costs right now (after a live offer). */
+export const priceNow = (it: Pick<StoreItem, "price" | "salePrice">) => (typeof it.salePrice === "number" ? it.salePrice : it.price);

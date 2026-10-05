@@ -6,6 +6,7 @@ import { getAvailability } from "@/lib/server/releases";
 import { breadcrumb, pageMeta } from "@/lib/seo";
 import { site } from "@/lib/site";
 import Link from "next/link";
+import DownloadGate from "@/components/launch/DownloadGate";
 
 export const revalidate = 600;
 
@@ -29,12 +30,14 @@ export default async function DownloadPage() {
         <SplitText as="h1" text="Download Native Client." className="mt-5 text-[clamp(2.8rem,7vw,6rem)] font-extrabold leading-[1] tracking-[-0.045em]" />
         <Reveal delay={0.2}><p className="mx-auto mt-6 max-w-[520px] text-lg text-mute">Free for Windows, macOS and Linux. Pick your platform and you’re playing in minutes.</p></Reveal>
       </div>
+      <DownloadGate>
       <DownloadCards version={a.version} avail={a.platforms} />
       {!any && (
         <p className="mx-auto mt-10 max-w-[560px] rounded-2xl border border-line bg-surface p-5 text-center text-[15px] text-mute">
           The newest build is still being published. Check back in a little while, or ask in <a className={link} href={site.discord} target="_blank" rel="noreferrer">our Discord</a>.
         </p>
       )}
+      </DownloadGate>
       <Reveal delay={0.2} className="mt-12 text-center text-[14px] text-dim">
         See what changed in <Link className={link} href="/changes">every release</Link>. Need help? <Link className={link} href="/support">Visit support</Link> or <a className={link} href={site.discord} target="_blank" rel="noreferrer">join the Discord</a>.
       </Reveal>

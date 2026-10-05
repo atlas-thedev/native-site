@@ -58,6 +58,12 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     setBusy(false);
   };
 
+  /** Where to go after signing in / up: a same-site ?next= path, else the locker. */
+  const nextPath = () => {
+    const n = new URLSearchParams(window.location.search).get("next") || "";
+    return /^\/(?!\/)[\w\-/?=&.]*$/.test(n) ? n : "/account";
+  };
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErr("");
@@ -67,7 +73,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       setBusy(true);
       const res = await post("login", { login, password });
       if (!res.ok) return fail(res.error);
-      window.location.assign("/account");
+      window.location.assign(nextPath());
       return;
     }
     if (step === 1) {
@@ -85,7 +91,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     if (mode === "register") {
       const res = await post("verify", { email, code, username, password, model: "classic" });
       if (!res.ok) return fail(res.error);
-      window.location.assign("/account");
+      window.location.assign(nextPath() === "/account" ? "/founder?welcome=1" : nextPath());
     } else {
       const res = await post("reset", { email, code, password });
       if (!res.ok) return fail(res.error);

@@ -22,7 +22,13 @@ export async function GET(req: Request, ctx: { params: Promise<{ action: string 
   }
   if (action !== "me") return json({ ok: false, error: "Not found." }, 404);
   const s = await readSession();
-  return json({ ok: true, account: s ? { name: s.account.name, uuid: s.account.uuid ?? null } : null });
+  if (!s) return json({ ok: true, account: null });
+  let isAdmin = false;
+  try {
+    const r = await api("/v1/admin/status", { method: "GET", headers: upstreamHeaders(req, { Authorization: `Bearer ${s.token}` }) });
+    isAdmin = r.status === 200 && r.data.isAdmin === true;
+  } catch {}
+  return json({ ok: true, account: { name: s.account.name, uuid: s.account.uuid ?? null, isAdmin } });
 }
 
 export async function POST(req: Request, ctx: { params: Promise<{ action: string }> }) {

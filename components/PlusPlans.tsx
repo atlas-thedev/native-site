@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getBilling, openPortal, startCheckout, type BillingState } from "./capes/billing";
 import { money } from "@/lib/store";
+import { useLaunch } from "./launch/LaunchContext";
 
 const fmt = (t: number | null) => (t ? new Date(t).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }) : "");
 
@@ -13,6 +14,7 @@ export default function PlusPlans() {
   const [bill, setBill] = useState<BillingState | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState("");
+  const { launch } = useLaunch();
 
   useEffect(() => {
     getBilling().then(setBill).catch(() => {});
@@ -80,7 +82,9 @@ export default function PlusPlans() {
       <p className="mt-4 text-[44px] font-extrabold leading-none tracking-[-0.04em]">{money(price)}<span className="text-[17px] font-semibold text-mute"> / {per}</span></p>
       <p className="mt-2 text-[14.5px] text-mute">{note}</p>
       <div className="mt-7">
-        {bill && !bill.signedIn ? (
+        {launch.lockStore ? (
+          <span className={`${best ? primary : ghost} cursor-default opacity-60`}><Crown className="h-4 w-4" /> Opens at launch</span>
+        ) : bill && !bill.signedIn ? (
           <Link href="/login" className={best ? primary : ghost}>Sign in to join</Link>
         ) : (
           <button onClick={() => go(plan)} disabled={!!busy || !enabled} className={best ? primary : ghost}>
