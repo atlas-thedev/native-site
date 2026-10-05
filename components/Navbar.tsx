@@ -40,7 +40,7 @@ export default function Navbar() {
       <nav aria-label="Main" className="mx-auto flex h-[68px] max-w-[1280px] items-center justify-between px-5">
         <div className="flex items-center gap-9">
           <Link href="/" className="flex items-center gap-2.5" aria-label={`${site.name} home`}>
-            <span className="logo-mark h-7 w-7" aria-hidden />
+            <img src="/brand/icon.png" alt="" width={28} height={28} className="logo-img h-7 w-7" aria-hidden />
             <span className="text-[19px] font-extrabold tracking-tight">native</span>
           </Link>
           <ul className="hidden items-center gap-1 md:flex">

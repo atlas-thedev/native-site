@@ -50,7 +50,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-[1280px] gap-12 px-5 pb-14 pt-16 sm:grid-cols-2 md:grid-cols-[1.5fr_repeat(4,1fr)]">
         <div className="sm:col-span-2 md:col-span-1">
           <Link href="/" className="flex items-center gap-3">
-            <span className="logo-mark h-8 w-8" aria-hidden />
+            <img src="/brand/icon.png" alt="" width={32} height={32} className="logo-img h-8 w-8" aria-hidden />
             <span className="text-xl font-bold tracking-tight">Native Client</span>
           </Link>
           <p className="mt-4 max-w-[300px] text-[15px] leading-relaxed text-mute">{site.tagline} A modern launcher for people who care how their tools feel.</p>
