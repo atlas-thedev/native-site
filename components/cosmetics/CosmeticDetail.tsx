@@ -125,7 +125,7 @@ export default function CosmeticDetail({ item, all, signedIn, account, owned: in
   const spin_ = (k: string, icon: React.ReactNode) => (busy === k ? <Loader2 className="animate-spin" /> : icon);
   const next = `/cosmetics/${item.id}`;
   const color = SLOT_COLOR[slot];
-  const kind = item.exclusive ? "Event" : paid ? "Lifetime" : "Free";
+  const kind = item.exclusive ? "Event" : "Lifetime";
 
   let actions: React.ReactNode;
   if (item.exclusive && !own) actions = <PxButton variant="locked" size="xl" disabled><Lock /> Event cosmetic · given by the Native team</PxButton>;
