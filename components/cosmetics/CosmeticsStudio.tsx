@@ -2,8 +2,8 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Crown, Footprints, Loader2, Lock, Minus, Plus, RefreshCcw, RotateCcw, Search, ShoppingBag, Sparkles, Undo2, Users, X, ZoomIn, ZoomOut } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PxButton, PxLink, Toast, type ToastMsg } from "../ui/Px";
 import CosmeticViewer, { type CosmeticViewerHandle, type Worn } from "./CosmeticViewer";
 import { ownerLabel, storeAction, type StoreAction } from "../capes/actions";
 import { getBilling, startCheckout, type BillingState } from "../capes/billing";
@@ -28,9 +28,6 @@ type Outfit = Partial<Record<CosmeticSlot, string>>;
 const TAB_COLOR: Record<Tab, string> = { all: "#f2f2f4", hats: "#ff8a7a", glasses: "#7fb2ff", back: "#9fe0ff", shoes: "#ffb45c" };
 const SHORT: Record<CosmeticSlot, string> = { hats: "Hat", glasses: "Glasses", back: "Back", shoes: "Shoes" };
 const TAB_LABEL: Record<CosmeticSlot, string> = { hats: "Hats", glasses: "Glasses", back: "Wings", shoes: "Shoes" };
-const toggle = (on: boolean) => `inline-flex h-10 items-center gap-2 rounded-full px-4 text-[13.5px] font-semibold transition ${on ? "bg-inv text-inv-fg" : "text-mute hover:bg-surface-2 hover:text-fg"}`;
-const primary = "nx-pill nx-pill-accent h-12 px-6 text-[15px] disabled:opacity-60";
-const ghost = "nx-pill nx-pill-ghost h-12 px-5 text-[15px] disabled:opacity-60";
 
 const slotOf = (it: StoreItem) => it.slot as CosmeticSlot;
 const priceText = (it: StoreItem) => (it.exclusive ? "Event" : isPaid(it) ? money(priceNow(it)) : "Free");
@@ -56,7 +53,8 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
   const [showCape, setShowCape] = useState(false);
   const [owners, setOwners] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState<string | null>(null);
-  const [msg, setMsg] = useState<{ t: "ok" | "err"; s: string } | null>(null);
+  const [msg, setMsg] = useState<ToastMsg>(null);
+  const hideMsg = useCallback(() => setMsg(null), []);
   const [bill, setBill] = useState<BillingState | null>(null);
   const viewer = useRef<CosmeticViewerHandle>(null);
   const { launch } = useLaunch();
@@ -110,7 +108,6 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
     setOutfit((o) => ({ ...o, [slot]: it.id }));
     setFocus(slot);
     setSpin(false);
-    setMsg(null);
   };
   const takeOffTry = (slot: CosmeticSlot) => setOutfit((o) => {
     const n = { ...o };
@@ -188,7 +185,7 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
   };
 
   const lookDiffers = COSMETIC_SLOTS.some((s) => (outfit[s] ?? null) !== (wearing[s] ?? null));
-  const spinner = (k: string) => busy === k && <Loader2 className="h-4 w-4 animate-spin" />;
+  const showWear = signedIn && lookDiffers && worn.length > 0;
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:grid-rows-[auto_1fr]">
@@ -211,10 +208,10 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
             <p className="eyebrow">Fitting room</p>
             <p className="mt-2 text-[22px] font-extrabold tracking-tight sm:text-[26px]">{worn.length ? `${worn.length} piece${worn.length === 1 ? "" : "s"} on` : "Try something on"}</p>
           </div>
-          <div className="flex gap-1.5">
-            <button onClick={() => viewer.current?.zoom(1 / 1.25)} aria-label="Zoom out" title="Zoom out" className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-line bg-bg text-mute transition hover:text-fg"><ZoomOut className="h-4 w-4" /></button>
-            <button onClick={() => viewer.current?.zoom(1.25)} aria-label="Zoom in" title="Zoom in" className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-line bg-bg text-mute transition hover:text-fg"><ZoomIn className="h-4 w-4" /></button>
-            <button onClick={() => viewer.current?.reset()} aria-label="Reset camera" title="Reset camera" className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-line bg-bg text-mute transition hover:text-fg"><RotateCcw className="h-4 w-4" /></button>
+          <div className="pointer-events-auto flex gap-2">
+            <PxButton variant="ghost" size="sm" icon onClick={() => viewer.current?.zoom(1 / 1.25)} aria-label="Zoom out" title="Zoom out"><ZoomOut /></PxButton>
+            <PxButton variant="ghost" size="sm" icon onClick={() => viewer.current?.zoom(1.25)} aria-label="Zoom in" title="Zoom in"><ZoomIn /></PxButton>
+            <PxButton variant="ghost" size="sm" icon onClick={() => viewer.current?.reset()} aria-label="Reset camera" title="Reset camera"><RotateCcw /></PxButton>
           </div>
         </div>
 
@@ -244,23 +241,28 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
           })}
         </ul>
 
-        {/* Dock */}
-        <div className="relative mt-auto flex flex-col items-center gap-3 p-4 sm:p-6">
-          <p className="pointer-events-none text-[12px] font-medium text-dim">Drag to turn · pick a slot to zoom in</p>
-          <div className="flex max-w-full flex-wrap items-center justify-center gap-1 rounded-full border border-line bg-bg p-1.5">
-            <button className={toggle(walk)} onClick={() => setWalk(!walk)} aria-pressed={walk}><Footprints className="h-4 w-4" /> Walk</button>
-            <button className={toggle(spin)} onClick={() => setSpin(!spin)} aria-pressed={spin}><RefreshCcw className="h-4 w-4" /> Spin</button>
-            {cape && <button className={toggle(showCape)} onClick={() => setShowCape(!showCape)} aria-pressed={showCape}>Cloak</button>}
-            <span aria-hidden className="mx-1 h-5 w-px bg-line" />
-            <button className={toggle(false)} onClick={() => { setFocus(null); viewer.current?.reset(); }} aria-label="Whole body view">Whole body</button>
-            {signedIn && lookDiffers && <button className={toggle(false)} onClick={() => setOutfit(wearing)}><Undo2 className="h-4 w-4" /> My look</button>}
-            {worn.length > 0 && <button className={toggle(false)} onClick={() => setOutfit({})}><X className="h-4 w-4" /> Clear</button>}
+        {/* Dock: view toggles on the left, the big "start" button next to them on the right */}
+        <div className="relative mt-auto p-4 sm:p-5">
+          <p className="pointer-events-none mb-3 text-center text-[12px] font-medium text-dim">Drag to turn · pick a slot to zoom in</p>
+          <div className={`flex items-end gap-3 max-sm:flex-col max-sm:items-stretch ${showWear ? "justify-between" : "justify-center"}`}>
+            <div className={`flex min-w-0 flex-wrap items-center gap-2 ${showWear ? "flex-1" : "justify-center"}`}>
+              <PxButton variant="ghost" size="sm" on={walk} onClick={() => setWalk(!walk)} aria-pressed={walk}><Footprints /> Walk</PxButton>
+              <PxButton variant="ghost" size="sm" on={spin} onClick={() => setSpin(!spin)} aria-pressed={spin}><RefreshCcw /> Spin</PxButton>
+              {cape && <PxButton variant="ghost" size="sm" on={showCape} onClick={() => setShowCape(!showCape)} aria-pressed={showCape}>Cloak</PxButton>}
+              <PxButton variant="ghost" size="sm" onClick={() => { setFocus(null); viewer.current?.reset(); }} aria-label="Whole body view">Whole body</PxButton>
+              {signedIn && lookDiffers && <PxButton variant="ghost" size="sm" onClick={() => setOutfit(wearing)}><Undo2 /> My look</PxButton>}
+              {worn.length > 0 && <PxButton variant="ghost" size="sm" onClick={() => setOutfit({})}><X /> Clear</PxButton>}
+            </div>
+            <AnimatePresence>
+              {showWear && (
+                <motion.div initial={{ opacity: 0, scale: 0.8, x: 20 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ type: "spring", stiffness: 420, damping: 22 }} className="max-sm:w-full">
+                  <PxButton variant="gold" size="xl" onClick={wearLook} disabled={!!busy} className="max-sm:w-full">
+                    {busy === "look" ? <Loader2 className="animate-spin" /> : <Sparkles />} Wear look
+                  </PxButton>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          {signedIn && lookDiffers && worn.length > 0 && (
-            <button onClick={wearLook} disabled={!!busy} className="nx-pill nx-pill-accent h-11 px-6 text-[14.5px] disabled:opacity-60">
-              {spinner("look") || <Sparkles className="h-4 w-4" />} Wear this look
-            </button>
-          )}
         </div>
       </section>
       </div>
@@ -283,15 +285,8 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
 
         <AnimatePresence mode="wait">
           {item && (
-            <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="card p-6">
+            <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="card overflow-hidden p-0">
               <Detail item={item} own={mine.has(item.id)} isOn={wearing[slotOf(item)] === item.id} owners={ownersOf(item)} signedIn={signedIn} member={member} sellable={sellable} bill={bill} busy={busy} run={run} setMsg={setMsg} storeLocked={launch.lockStore && !mine.has(item.id)} />
-              <AnimatePresence mode="wait">
-                {msg && (
-                  <motion.p key={msg.s} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role={msg.t === "err" ? "alert" : "status"} className={`mt-4 text-[14px] ${msg.t === "err" ? "font-semibold text-fg" : "text-mute"}`}>
-                    {msg.s}
-                  </motion.p>
-                )}
-              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
@@ -344,10 +339,11 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
             </div>
             <p className="mt-6 text-[22px] font-extrabold tracking-tight">{items.length ? "Nothing matches that." : "The first cosmetics are on the way."}</p>
             <p className="mt-2 max-w-[420px] text-mute">{items.length ? "Try another slot or search." : "Native hats, glasses, wings and shoes are being made right now. They’ll drop here, in the launcher store and in your locker."}</p>
-            {!items.length && <Link href="/cloaks" className="nx-pill nx-pill-ghost mt-6 h-11 px-5 text-[14.5px]">Browse cloaks</Link>}
+            {!items.length && <PxLink href="/cloaks" variant="ghost" className="mt-6">Browse cloaks</PxLink>}
           </div>
         )}
 
+        <Toast msg={msg} onDone={hideMsg} />
         <p className="text-[13px] text-dim">Native cosmetics show on your account everywhere: the launcher, the website and in game with the Native mod. You can wear one per slot.</p>
       </section>
     </div>
@@ -366,7 +362,7 @@ type DetailProps = {
   busy: string | null;
   storeLocked: boolean;
   run: (a: StoreAction, it: StoreItem, off?: boolean) => void;
-  setMsg: (m: { t: "ok" | "err"; s: string } | null) => void;
+  setMsg: (m: ToastMsg) => void;
 };
 
 function Detail({ item, own, isOn, owners, signedIn, member, sellable, bill, busy, storeLocked, run, setMsg }: DetailProps) {
@@ -374,7 +370,6 @@ function Detail({ item, own, isOn, owners, signedIn, member, sellable, bill, bus
   const paid = isPaid(item);
   const price = priceNow(item);
   const priceLabel = item.salePrice != null ? <>{money(price)} <s className="opacity-60">{money(item.price)}</s></> : money(item.price);
-  const spin = (k: string) => busy === k && <Loader2 className="h-4 w-4 animate-spin" />;
   const buy = async () => {
     setBuying(true);
     setMsg(null);
@@ -386,72 +381,73 @@ function Detail({ item, own, isOn, owners, signedIn, member, sellable, bill, bus
     }
   };
 
+  const color = TAB_COLOR[slotOf(item)];
+  const tint = { "--tint": color } as React.CSSProperties;
+  const busyIcon = (k: string, icon: React.ReactNode) => (busy === k ? <Loader2 className="animate-spin" /> : icon);
+
+  // secondary actions sit to the left, the main one is the big button on the right
+  let side: React.ReactNode = null;
+  let main: React.ReactNode = null;
+  if (storeLocked && !item.exclusive) main = <PxButton variant="locked" disabled><Lock /> Store opens at launch</PxButton>;
+  else if (item.exclusive && !own) main = <PxButton variant="locked" disabled><Lock /> Event only</PxButton>;
+  else if (!signedIn) {
+    side = <PxLink href="/register?next=/cosmetics" variant="ghost">Create account</PxLink>;
+    main = <PxLink href="/login?next=/cosmetics" variant={paid ? "gold" : "green"}>{paid ? <><ShoppingBag /> Sign in to buy · {priceLabel}</> : <><Plus /> Sign in to add</>}</PxLink>;
+  } else if (isOn) main = <PxButton variant="ghost" onClick={() => run("equip", item, true)} disabled={!!busy}>{busyIcon("equip-off", <X />)} Take off</PxButton>;
+  else if (own) main = <PxButton variant="green" onClick={() => run("equip", item)} disabled={!!busy}>{busyIcon("equip", <Sparkles />)} Wear</PxButton>;
+  else if (paid && member) main = <PxButton variant="gold" onClick={() => run("claim", item)} disabled={!!busy}>{busyIcon("claim", <Crown />)} Add with Native+</PxButton>;
+  else if (paid) {
+    side = <PxLink href="/plus" variant="ghost"><Crown /> Native+</PxLink>;
+    main = (
+      <PxButton variant="gold" onClick={buy} disabled={buying || !sellable} title={sellable || !bill ? undefined : "Payments are switched on soon."}>
+        {buying ? <Loader2 className="animate-spin" /> : <ShoppingBag />} {sellable || !bill ? <>Buy · {priceLabel}</> : `${money(price)} · soon`}
+      </PxButton>
+    );
+  } else {
+    side = <PxButton variant="ghost" onClick={() => run("claim", item)} disabled={!!busy}>{busyIcon("claim", <Plus />)} Add to locker</PxButton>;
+    main = <PxButton variant="green" onClick={() => run("equip", item)} disabled={!!busy}>{busyIcon("equip", <Sparkles />)} Wear now</PxButton>;
+  }
+  const remove = signedIn && own && !item.exclusive && !paid && (
+    <PxButton variant="danger" icon onClick={() => run("unclaim", item)} disabled={!!busy} aria-label={`Remove ${item.name} from your locker`} title="Remove from locker">{busyIcon("unclaim", <Minus />)}</PxButton>
+  );
+
   return (
-    <>
-      <div className="flex items-start gap-4">
-        <div className="dots flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border border-line">
-          <img src={item.stillUrl} alt="" className="h-[80%] w-[80%] object-contain [image-rendering:pixelated]" />
+    <div style={tint}>
+      {/* Showcase: the item on a tinted pixel plinth, with its tags */}
+      <div className="cos-hero relative flex items-center gap-5 p-5 sm:p-6">
+        <div className="cos-plinth relative flex h-[104px] w-[104px] shrink-0 items-center justify-center sm:h-[120px] sm:w-[120px]">
+          <img src={item.stillUrl} alt="" className="relative h-[78%] w-[78%] object-contain [image-rendering:pixelated] drop-shadow-[0_6px_0_rgb(0_0_0/0.25)]" />
         </div>
-        <div className="min-w-0">
+        <div className="relative min-w-0 flex-1">
           <div className="flex flex-wrap gap-1.5">
-            <span className="rounded-full border border-line px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-mute">{SLOT_NAMES[slotOf(item)]}</span>
-            {item.motion && <span className="rounded-full bg-inv px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-inv-fg">Moves</span>}
-            {item.exclusive && <span className="rounded-full bg-gradient-to-r from-[#d9a6da] to-[#ffd68c] px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-[#160f2a]">Exclusive</span>}
-            {isOn ? <span className="rounded-full bg-inv px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-inv-fg">Wearing</span> : own && <span className="rounded-full border border-line px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider">In your locker</span>}
+            <span className="cos-tag is-tint">{SLOT_NAMES[slotOf(item)]}</span>
+            {item.motion && <span className="cos-tag">Moves</span>}
+            {item.exclusive && <span className="cos-tag is-gold">Exclusive</span>}
+            {isOn ? <span className="cos-tag is-on">Wearing</span> : own && <span className="cos-tag">In your locker</span>}
           </div>
-          <h2 className="mt-2 truncate text-[26px] font-extrabold leading-tight tracking-tight">{item.name}</h2>
-          {item.description && <p className="mt-1 text-[14.5px] text-mute">{item.description}</p>}
+          <h2 className="mt-2.5 truncate text-[28px] font-extrabold leading-[1.05] tracking-[-0.03em]">{item.name}</h2>
+          {item.description && <p className="mt-1.5 line-clamp-2 text-[14.5px] text-mute">{item.description}</p>}
         </div>
       </div>
 
-      <dl className="mt-5 grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-line bg-line text-[13.5px]">
+      <div className="grid grid-cols-3 gap-2 px-5 pt-4 sm:px-6">
         {[
           ["Price", item.exclusive ? "Event only" : paid ? `${money(price)}${member ? " · Plus" : ""}` : "Free"],
           ["In lockers", <span key="o" className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{ownerLabel(owners)}</span>],
           ["Made by", item.author || "Native"],
         ].map(([k, v]) => (
-          <div key={String(k)} className="bg-surface px-4 py-3">
-            <dt className="text-[11px] font-semibold uppercase tracking-wider text-dim">{k}</dt>
-            <dd className="mt-1 truncate font-semibold">{v}</dd>
+          <div key={String(k)} className="slot-well min-w-0 px-3.5 py-2.5">
+            <p className="text-[10.5px] font-bold uppercase tracking-wider text-dim">{k}</p>
+            <p className="mt-0.5 truncate text-[14px] font-bold">{v}</p>
           </div>
         ))}
-      </dl>
-
-      <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        {storeLocked && !item.exclusive ? (
-          <span className="inline-flex h-12 items-center gap-2 rounded-full border border-dashed border-line px-5 text-[14px] font-semibold text-mute"><Lock className="h-4 w-4" /> The store opens at launch</span>
-        ) : item.exclusive && !own ? (
-          <span className="inline-flex h-12 items-center gap-2 rounded-full border border-dashed border-line px-5 text-[14px] font-semibold text-mute"><Lock className="h-4 w-4" /> Event only · given by the Native team or with a code</span>
-        ) : !signedIn ? (
-          <>
-            <Link href="/login?next=/cosmetics" className={primary}>{paid ? <><ShoppingBag className="h-4 w-4" /> Sign in to buy · {priceLabel}</> : "Sign in to add"}</Link>
-            <Link href="/register?next=/cosmetics" className={ghost}>Create a free account</Link>
-          </>
-        ) : isOn ? (
-          <button onClick={() => run("equip", item, true)} disabled={!!busy} className={ghost}>{spin("equip-off") || <X className="h-4 w-4" />} Take off</button>
-        ) : own ? (
-          <button onClick={() => run("equip", item)} disabled={!!busy} className={primary}>{spin("equip") || <Sparkles className="h-4 w-4" />} Wear {item.name}</button>
-        ) : paid && member ? (
-          <button onClick={() => run("claim", item)} disabled={!!busy} className={primary}>{spin("claim") || <Crown className="h-4 w-4" />} Add with Native+</button>
-        ) : paid ? (
-          <>
-            <button onClick={buy} disabled={buying || !sellable} className={primary} title={sellable || !bill ? undefined : "Payments are switched on soon."}>
-              {buying ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />} {sellable || !bill ? <>Buy · {priceLabel}</> : `${money(price)} · soon`}
-            </button>
-            <Link href="/plus" className={ghost}><Crown className="h-4 w-4" /> Native+</Link>
-          </>
-        ) : (
-          <>
-            <button onClick={() => run("claim", item)} disabled={!!busy} className={primary}>{spin("claim") || <Plus className="h-4 w-4" />} Add to locker</button>
-            <button onClick={() => run("equip", item)} disabled={!!busy} className={ghost}>{spin("equip")} Wear now</button>
-          </>
-        )}
-        {signedIn && own && !item.exclusive && !paid && (
-          <button onClick={() => run("unclaim", item)} disabled={!!busy} className="inline-flex h-12 items-center gap-1.5 rounded-full px-3 text-[14px] font-semibold text-mute transition hover:text-fg disabled:opacity-60">
-            {spin("unclaim") || <Minus className="h-4 w-4" />} Remove
-          </button>
-        )}
       </div>
-    </>
+
+      <div className="flex flex-wrap items-center justify-end gap-2.5 p-5 sm:px-6">
+        {remove}
+        {side}
+        <div className="max-sm:flex-1 [&>*]:max-sm:w-full">{main}</div>
+      </div>
+    </div>
   );
 }
