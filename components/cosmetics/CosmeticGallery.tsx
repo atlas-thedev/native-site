@@ -1,126 +1,200 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Check, Search, Users, X } from "lucide-react";
+import { ArrowRight, Clock, Crown, Feather, Flame, Footprints, Glasses, LayoutGrid, Search, Sparkles, Star, X } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import SortMenu from "../capes/SortMenu";
-import { ownerLabel } from "../capes/actions";
-import { PixelStar } from "../icons";
-import { COSMETIC_SLOTS, SLOT_NAMES, isPaid, money, priceNow, sortBy, type CosmeticSlot, type Owned, type SortKey, type StoreItem, type Wearing } from "@/lib/store";
+import { useMemo, useState, type ReactNode } from "react";
+import ItemCard, { priceOf } from "../store/ItemCard";
+import SortSeg from "../store/SortSeg";
+import StoreHero from "../store/StoreHero";
+import { PxLink } from "../ui/Px";
+import { COSMETIC_SLOTS, SLOT_NAMES, sortBy, sortItems, type CosmeticSlot, type Owned, type SortKey, type StoreItem, type Wearing } from "@/lib/store";
 
-type Filter = "all" | CosmeticSlot | "moves" | "free" | "paid" | "new" | "mine";
-type Props = { items: StoreItem[]; signedIn: boolean; owned: Owned[]; wearing: Wearing };
+type Tab = "featured" | "all" | CosmeticSlot;
+type Props = { items: StoreItem[]; signedIn: boolean; owned: Owned[]; wearing: Wearing; banner?: ReactNode };
 
-const SLOT_LABEL: Record<CosmeticSlot, string> = { hats: "Hats", glasses: "Glasses", back: "Wings", shoes: "Shoes" };
-const chip = (on: boolean) => `inline-flex h-9 items-center gap-1.5 rounded-full border px-4 text-[13.5px] font-medium transition ${on ? "border-transparent bg-inv text-inv-fg" : "border-line text-mute hover:bg-surface-2 hover:text-fg"}`;
+export const SLOT_COLOR: Record<CosmeticSlot, string> = { hats: "#ff8a7a", glasses: "#7fb2ff", back: "#9fe0ff", shoes: "#ffb45c" };
+const SLOT_LABEL: Record<CosmeticSlot, string> = { hats: "Headwear", glasses: "Glasses", back: "Wings", shoes: "Shoes" };
+const SLOT_BLURB: Record<CosmeticSlot, string> = { hats: "Crowns, caps and halos", glasses: "Shades, visors and specs", back: "Wings, packs and jetpacks", shoes: "Sneakers and rocket boots" };
+const SLOT_ICON: Record<CosmeticSlot, ReactNode> = { hats: <Crown />, glasses: <Glasses />, back: <Feather />, shoes: <Footprints /> };
 
-/** Same wall as the cloaks page: search, filter, sort and a grid of cards. Each card opens its own 3D page. */
-export default function CosmeticGallery({ items, signedIn, owned, wearing }: Props) {
+/** The cosmetics shop: category tabs, then rows (featured, discover, new, trending, spotlight) or a plain grid when you search or pick a slot. */
+export default function CosmeticGallery({ items, signedIn, owned, wearing, banner }: Props) {
+  const [tab, setTab] = useState<Tab>("featured");
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<SortKey>("featured");
   const mine = useMemo(() => new Set(owned.map((o) => o.id)), [owned]);
   const worn = useMemo(() => new Set(Object.values(wearing)), [wearing]);
 
   const counts = useMemo(() => {
-    const c: Record<string, number> = { all: items.length, moves: items.filter((i) => i.motion).length, free: items.filter((i) => !i.exclusive && !isPaid(i)).length, paid: items.filter(isPaid).length, new: items.filter((i) => i.isNew).length, mine: items.filter((i) => mine.has(i.id)).length };
+    const c = { featured: items.length, all: items.length } as Record<Tab, number>;
     for (const s of COSMETIC_SLOTS) c[s] = items.filter((i) => i.slot === s).length;
     return c;
-  }, [items, mine]);
+  }, [items]);
 
+  const needle = q.trim().toLowerCase();
+  const grid = tab !== "featured" || !!needle;
   const list = useMemo(() => {
-    const needle = q.trim().toLowerCase();
-    const filtered = items.filter((it) => {
-      if ((COSMETIC_SLOTS as readonly string[]).includes(filter) && it.slot !== filter) return false;
-      if (filter === "moves" && !it.motion) return false;
-      if (filter === "free" && (it.exclusive || isPaid(it))) return false;
-      if (filter === "paid" && !isPaid(it)) return false;
-      if (filter === "new" && !it.isNew) return false;
-      if (filter === "mine" && !mine.has(it.id)) return false;
-      if (!needle) return true;
-      return [it.name, it.description, it.author, it.slot ? SLOT_NAMES[it.slot] : "", ...it.tags].some((v) => String(v ?? "").toLowerCase().includes(needle));
-    });
-    return sortBy(filtered, sort);
-  }, [items, q, filter, sort, mine]);
+    const f = items.filter((it) => (tab === "featured" || tab === "all" || it.slot === tab) && (!needle || [it.name, it.description, it.author, it.slot ? SLOT_NAMES[it.slot] : "", ...it.tags].some((v) => String(v ?? "").toLowerCase().includes(needle))));
+    return sortBy(f, sort);
+  }, [items, tab, needle, sort]);
 
-  const filters: [Filter, string][] = [
-    ["all", "All"],
-    ...COSMETIC_SLOTS.map((s) => [s, SLOT_LABEL[s]] as [Filter, string]),
-    ["moves", "Moving"],
-    ...(counts.paid ? ([["free", "Free"], ["paid", "Paid"]] as [Filter, string][]) : []),
-    ["new", "New"],
-    ...(signedIn ? ([["mine", "In my locker"]] as [Filter, string][]) : []),
-  ];
+  const featured = useMemo(() => { const f = sortItems(items); const x = f.filter((i) => i.featured); return (x.length ? x : f).slice(0, 10); }, [items]);
+  const fresh = useMemo(() => sortBy(items, "new").slice(0, 10), [items]);
+  const trending = useMemo(() => sortBy(items, "popular").slice(0, 10), [items]);
+  const pick = useMemo(() => featured.find((i) => i.motion) ?? featured[0] ?? null, [featured]);
+  const spot = useMemo(() => {
+    const seen = new Set<string>();
+    return sortItems(items).filter((i) => (i.slot && !seen.has(i.slot) ? (seen.add(i.slot), true) : false)).slice(0, 4);
+  }, [items]);
+
+  const card = (it: StoreItem, wide = false) => (
+    <div key={it.id} className={wide ? "w-[236px] sm:w-[250px]" : ""}>
+      <ItemCard
+        item={it}
+        href={`/cosmetics/${it.id}`}
+        own={mine.has(it.id)}
+        worn={worn.has(it.id)}
+        art={<img src={it.stillUrl} alt={`${it.name} ${it.slot ? SLOT_NAMES[it.slot].toLowerCase() : ""}`} loading="lazy" draggable={false} className="cutout-sm h-[190px] w-[190px] max-w-[78%] object-contain [image-rendering:pixelated]" />}
+        left={<>{it.isNew && <span className="st-tag is-inv">New</span>}{it.motion && <span className="st-tag">Moves</span>}</>}
+        right={it.exclusive ? <span className="st-tag">Event</span> : null}
+        bottom={it.slot && <span className="st-tag is-slot" style={{ "--tint": SLOT_COLOR[it.slot] } as React.CSSProperties}>{SLOT_LABEL[it.slot]}</span>}
+      />
+    </div>
+  );
+  const row = (title: string, rows: StoreItem[], more: () => void, extra?: ReactNode) =>
+    rows.length > 0 && (
+      <section className="mt-12" aria-label={title}>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="st-h2 flex items-center gap-3">{title}{extra}</h2>
+          <button onClick={more} className="pxb is-ghost is-sm"><span className="pxb-face">View all <ArrowRight /></span></button>
+        </div>
+        <div className="st-rowscroll">{rows.map((it) => card(it, true))}</div>
+      </section>
+    );
+  const open = (t: Tab, sortKey: SortKey = "featured") => { setTab(t); setSort(sortKey); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="flex h-11 min-w-[240px] flex-1 items-center gap-2.5 rounded-full border border-line bg-surface px-4 text-mute focus-within:border-fg sm:max-w-[380px]">
-          <Search className="h-4 w-4 shrink-0" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search cosmetics, tags or authors" aria-label="Search cosmetics" className="min-w-0 flex-1 bg-transparent text-[14.5px] text-fg outline-none placeholder:text-dim" />
-          {q && (
-            <button onClick={() => setQ("")} aria-label="Clear search" className="text-dim hover:text-fg">
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </label>
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter cosmetics">
-          {filters.map(([id, label]) => (
-            <button key={id} role="tab" aria-selected={filter === id} className={chip(filter === id)} onClick={() => setFilter(id)}>
-              {label}
-              <span className={`text-[12px] ${filter === id ? "opacity-70" : "text-dim"}`}>{counts[id]}</span>
-            </button>
-          ))}
-        </div>
-        <div className="ml-auto flex items-center gap-2 text-[13.5px] text-mute">
-          <span aria-hidden>Sort</span>
-          <SortMenu value={sort} onChange={setSort} />
-        </div>
+      <StoreHero
+        title="Native Cosmetics"
+        blurb={<>Hats, glasses, wings, backpacks and shoes in real 3D.<br />Preview any piece on your own skin and wear it in the launcher and in game.</>}
+        cta={{ text: "Looking for a cloak?", label: "Go to Cloaks", href: "/cloaks" }}
+        aside={
+          items.length > 0 && (
+            <label className="st-input w-[min(100%,340px)]">
+              <Search className="h-4 w-4 shrink-0" />
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search cosmetics…" aria-label="Search cosmetics" />
+              {q && <button onClick={() => setQ("")} aria-label="Clear search" className="text-dim hover:text-fg"><X className="h-4 w-4" /></button>}
+            </label>
+          )
+        }
+      />
+      {banner}
+
+      <div className="st-tabs" role="tablist" aria-label="Cosmetic categories">
+        {([["featured", "Featured", <Star key="s" />], ["all", "All", <LayoutGrid key="l" />], ...COSMETIC_SLOTS.map((s) => [s, SLOT_LABEL[s], SLOT_ICON[s]])] as [Tab, string, ReactNode][]).map(([id, label, icon]) => (
+          <button key={id} role="tab" aria-selected={tab === id} className={`st-tab ${tab === id ? "is-on" : ""}`} onClick={() => setTab(id)}>
+            {icon}{label}{id !== "featured" && <span className="n">{counts[id]}</span>}
+          </button>
+        ))}
       </div>
 
-      {list.length ? (
-        <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {list.map((it, i) => {
-            const own = mine.has(it.id);
-            const on = worn.has(it.id);
-            return (
-              <motion.li key={it.id} layout initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: Math.min(i, 10) * 0.035, ease: [0.16, 1, 0.3, 1] }}>
-                <Link href={`/cosmetics/${it.id}`} className={`group relative flex h-full flex-col rounded-[22px] border bg-surface p-3 transition hover:-translate-y-0.5 hover:border-fg/40 hover:bg-surface-2 ${on ? "border-fg/70" : "border-line"}`}>
-                  <div className="dots relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-2xl">
-                    <img src={it.stillUrl} alt={`${it.name} ${it.slot ? SLOT_NAMES[it.slot].toLowerCase() : "cosmetic"}`} loading="lazy" className="cutout-sm h-[62%] w-[62%] object-contain transition duration-500 [image-rendering:pixelated] group-hover:scale-[1.08]" />
-                    <div className="absolute left-2.5 top-2.5 flex gap-1.5">
-                      {it.motion && <span className="rounded-full bg-inv px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-inv-fg">Moves</span>}
-                      {it.isNew && <span className="rounded-full border border-line bg-bg/80 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider backdrop-blur">New</span>}
-                    </div>
-                    {it.featured && <PixelStar className="absolute right-3 top-3 h-3.5 w-3.5 text-mute" aria-label="Featured" />}
-                    {it.slot && <span className="absolute bottom-2.5 left-2.5 rounded-full border border-line bg-bg/80 px-2 py-0.5 text-[10.5px] font-semibold text-mute backdrop-blur">{SLOT_LABEL[it.slot]}</span>}
-                    {own && (
-                      <span title={on ? "You’re wearing this" : "In your locker"} aria-label={on ? "You’re wearing this" : "In your locker"} className={`absolute bottom-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full ring-2 ring-bg ${on ? "bg-inv text-inv-fg" : "bg-surface-2 text-fg"}`}>
-                        <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                      </span>
-                    )}
-                  </div>
-                  <div className="px-1.5 pb-1 pt-3">
-                    <p className="truncate text-[15px] font-bold tracking-tight">{it.name}</p>
-                    <p className="mt-0.5 flex items-center justify-between gap-2 text-[12.5px] text-dim">
-                      <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{ownerLabel(it.owners)}</span>
-                      <span className="font-semibold text-mute">{it.exclusive ? "Event" : isPaid(it) ? (it.salePrice != null ? <>{money(priceNow(it))} <s className="font-normal opacity-60">{money(it.price)}</s></> : money(it.price)) : "Free"}</span>
-                    </p>
-                  </div>
-                </Link>
-              </motion.li>
-            );
-          })}
-        </ul>
-      ) : (
-        <div className="card mt-8 flex flex-col items-center px-6 py-16 text-center">
+      {!items.length ? (
+        <div className="st-panel mt-6 flex flex-col items-center px-6 py-16 text-center">
           <div className="flex flex-wrap justify-center gap-2">
-            {COSMETIC_SLOTS.map((s) => <span key={s} className="rounded-full border border-dashed border-line px-3 py-1.5 text-[13px] font-semibold text-dim">{SLOT_LABEL[s]}</span>)}
+            {COSMETIC_SLOTS.map((s) => <span key={s} className="slot-well flex h-14 w-14 items-center justify-center text-dim [&>svg]:h-6 [&>svg]:w-6">{SLOT_ICON[s]}</span>)}
           </div>
-          <p className="mt-6 text-[22px] font-extrabold tracking-tight">{items.length ? "No cosmetics match that." : "New cosmetics are on the way."}</p>
-          <p className="mt-2 max-w-[440px] text-mute">{items.length ? "Try another search or filter." : "Native hats, glasses, wings and shoes are being made right now. They’ll show up here, in the launcher store and in your locker the moment they drop."}</p>
+          <p className="mt-6 text-[22px] font-extrabold tracking-tight">New cosmetics are on the way.</p>
+          <p className="mt-2 max-w-[440px] text-mute">Native hats, glasses, wings and shoes are being made right now. They’ll show up here, in the launcher store and in your locker the moment they drop.</p>
+          <PxLink href="/cloaks" variant="ghost" className="mt-6">Browse cloaks</PxLink>
         </div>
+      ) : grid ? (
+        <section className="mt-6" aria-label="Cosmetics">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[14px] text-mute"><b className="text-fg">{list.length}</b> {list.length === 1 ? "piece" : "pieces"}{tab !== "all" && tab !== "featured" ? ` in ${SLOT_NAMES[tab]}` : ""}{needle ? ` for “${q.trim()}”` : ""}</p>
+            <SortSeg value={sort} onChange={setSort} />
+          </div>
+          {list.length ? (
+            <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {list.map((it, i) => (
+                <motion.li key={it.id} layout initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: Math.min(i, 12) * 0.03, ease: [0.16, 1, 0.3, 1] }}>{card(it)}</motion.li>
+              ))}
+            </ul>
+          ) : (
+            <div className="st-panel flex flex-col items-center px-6 py-14 text-center">
+              <p className="text-[22px] font-extrabold tracking-tight">Nothing matches that.</p>
+              <p className="mt-2 text-mute">Try another slot or search.</p>
+            </div>
+          )}
+        </section>
+      ) : (
+        <>
+          {row("Featured", featured, () => open("all"))}
+
+          <section className="mt-12" aria-label="Discover">
+            <h2 className="st-h2 mb-4">Discover</h2>
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+              {pick && (
+                <div className="st-card flex min-h-[260px] flex-col justify-between p-7" style={{ background: `linear-gradient(120deg, color-mix(in srgb, ${SLOT_COLOR[pick.slot as CosmeticSlot]} 16%, var(--bg)), var(--bg) 80%)` }}>
+                  <span className="st-tag is-inv w-fit">Pick of the week</span>
+                  <img src={pick.stillUrl} alt="" className="cutout-sm pointer-events-none absolute right-6 top-1/2 h-[170px] w-[170px] -translate-y-1/2 object-contain [image-rendering:pixelated] max-sm:opacity-30" />
+                  <div className="relative">
+                    <h3 className="text-[26px] font-extrabold tracking-tight">{pick.name}</h3>
+                    <p className="mt-1 max-w-[300px] text-[14px] text-mute">{pick.description || "Fresh from the Native workshop."}</p>
+                    <PxLink href={`/cosmetics/${pick.id}`} variant="ghost" className="mt-5">Discover now <Sparkles /></PxLink>
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                {COSMETIC_SLOTS.map((s) => {
+                  const lead = sortItems(items.filter((i) => i.slot === s))[0];
+                  return (
+                    <button key={s} onClick={() => open(s)} className="st-card flex min-h-[122px] flex-col justify-end p-4 text-left" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${SLOT_COLOR[s]} 20%, var(--bg)), var(--bg) 85%)` }}>
+                      {lead && <img src={lead.stillUrl} alt="" className="pointer-events-none absolute -right-1 top-2 h-[84px] w-[84px] object-contain opacity-90 [image-rendering:pixelated]" />}
+                      <span className="relative text-[16px] font-bold tracking-tight">{SLOT_LABEL[s]}</span>
+                      <span className="relative text-[12.5px] text-mute">{counts[s] ? `${counts[s]} ${counts[s] === 1 ? "piece" : "pieces"}` : "Coming soon"} · {SLOT_BLURB[s]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <Link href="/cloaks" className="st-card mt-4 flex flex-row items-center justify-between gap-4 p-6 sm:p-7">
+              <span>
+                <span className="block text-[20px] font-extrabold tracking-tight">Complete your look with a cloak</span>
+                <span className="mt-1 block text-[14px] text-mute">Animated and classic cloaks that sit right behind your new gear.</span>
+              </span>
+              <span className="pxb is-light is-sm shrink-0"><span className="pxb-face">Browse cloaks <ArrowRight /></span></span>
+            </Link>
+          </section>
+
+          {row("New cosmetics", fresh, () => open("all", "new"), <Clock className="h-4 w-4 text-dim" />)}
+          {row("Trending", trending, () => open("all", "popular"), <Flame className="h-4 w-4 text-dim" />)}
+
+          {spot.length > 0 && (
+            <section className="mt-12" aria-label="Spotlight">
+              <h2 className="st-h2 mb-4">Spotlight</h2>
+              <ul className="grid gap-4 sm:grid-cols-2">
+                {spot.map((it) => (
+                  <li key={it.id}>
+                    <Link href={`/cosmetics/${it.id}`} className="st-card flex flex-row items-center gap-5 p-5" style={{ background: `linear-gradient(110deg, color-mix(in srgb, ${SLOT_COLOR[it.slot as CosmeticSlot]} 24%, var(--bg)), color-mix(in srgb, ${SLOT_COLOR[it.slot as CosmeticSlot]} 8%, var(--bg)) 70%)` }}>
+                      <span className="flex h-[88px] w-[88px] shrink-0 items-center justify-center"><img src={it.stillUrl} alt="" className="cutout-sm h-full w-full object-contain [image-rendering:pixelated]" /></span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-mono text-[10.5px] uppercase tracking-[0.16em] text-mute">{SLOT_LABEL[it.slot as CosmeticSlot]}</span>
+                        <span className="mt-0.5 block truncate text-[20px] font-extrabold tracking-tight">{it.name}</span>
+                        <span className="mt-0.5 line-clamp-1 block text-[13px] text-mute">{it.description}</span>
+                        <span className="mt-2 flex items-center justify-between gap-3">
+                          <span className="font-mono text-[14px] font-bold">{priceOf(it)}</span>
+                          <span className="pxb is-ghost is-sm"><span className="pxb-face">View <ArrowRight /></span></span>
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </>
       )}
     </div>
   );
