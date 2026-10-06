@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ItemCard from "@/components/store/ItemCard";
 import ItemHead from "@/components/store/ItemHead";
+import WishButton from "@/components/store/WishButton";
 import { notFound, redirect } from "next/navigation";
 import CapeStrip from "@/components/CapeStrip";
 import JsonLd from "@/components/JsonLd";
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     title: `${item.name} cloak`,
     description: item.description || `${item.animated ? "Animated" : "Classic"} Native cloak. Preview it in 3D and wear it in the launcher and in game.`,
     path: `/cloaks/${item.id}`,
+    image: `/api/og/item/${item.id}`,
   });
 }
 
@@ -41,7 +43,7 @@ export default async function CapePage({ params }: Params) {
   return (
     <div className="mx-auto max-w-[1280px] px-5 pb-32 pt-8 sm:pt-10">
       <JsonLd data={breadcrumb([{ name: "Cloaks", path: "/cloaks" }, { name: item.name, path: `/cloaks/${item.id}` }])} />
-      <ItemHead trail={[{ label: "Store", href: "/cloaks" }, { label: "Cloaks", href: "/cloaks" }, { label: item.name }]} back="/cloaks" title={item.name} />
+      <ItemHead trail={[{ label: "Store", href: "/cloaks" }, { label: "Cloaks", href: "/cloaks" }, { label: item.name }]} back="/cloaks" title={item.name} aside={<WishButton itemId={item.id} signedIn={!!s} />} />
       <CapeDetail item={item} signedIn={!!s} owned={mine?.owned ?? []} equipped={mine?.equipped ?? null} skin={look.skin} model={look.model} account={s?.account.name ?? null} />
 
       {related.length > 0 && (

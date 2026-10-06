@@ -144,7 +144,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
           <div className="pointer-events-none absolute inset-x-4 top-4 flex items-start justify-between">
             <div className="flex gap-1.5">
               {item.animated && <span className="st-tag is-inv">Animated</span>}
-              {item.exclusive && <span className="st-tag">Exclusive</span>}
+              {item.exclusive && <span className="st-tag" style={{ background: "#9b6bff", color: "#fff" }}>Event</span>}
               {item.isNew && !item.exclusive && <span className="st-tag">New</span>}
               {item.featured && <span className="st-tag">Featured</span>}
             </div>

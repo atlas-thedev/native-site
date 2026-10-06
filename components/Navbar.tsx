@@ -17,6 +17,7 @@ const nav = [
   { href: "/#features", label: "Features" },
   { href: "/cloaks", label: "Cloaks" },
   { href: "/cosmetics", label: "Cosmetics" },
+  { href: "/players", label: "Players" },
   { href: "/beta", label: "Beta" },
   { href: "/changes", label: "Changes" },
   { href: "/support", label: "Support" },

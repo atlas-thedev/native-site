@@ -83,3 +83,21 @@ export const isPaid = (it: Pick<StoreItem, "exclusive" | "price">) => !it.exclus
 
 /** What a cape costs right now (after a live offer). */
 export const priceNow = (it: Pick<StoreItem, "price" | "salePrice">) => (typeof it.salePrice === "number" ? it.salePrice : it.price);
+
+/** A player's public store profile (GET /v1/store/users/:name). */
+export type PlayerProfile = {
+  name: string;
+  uuid: string;
+  model: "default" | "slim";
+  joinedAt: number;
+  badges: string[];
+  admin: boolean;
+  plus: boolean;
+  equipped: string | null;
+  wearing: Wearing;
+  counts: { owned: number; wishlist: number };
+  hidden: { locker: boolean; wishlist: boolean };
+  owned: { id: string; acquiredAt: number }[];
+  wishlist: { id: string; addedAt: number }[];
+};
+export type PlayerHit = { name: string; uuid: string; model: "default" | "slim"; joinedAt: number; owned: number };
