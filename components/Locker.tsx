@@ -334,7 +334,7 @@ export default function Locker({ initial }: { initial: Initial }) {
             <h2 id="cp" className="text-[22px] font-extrabold tracking-tight">Cloak</h2>
             <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
               <p className="text-[14px] text-dim">{initial.premium ? "Wear a Native cloak over your Minecraft cape, or go without. Your Minecraft capes are in the launcher's Locker." : "Pick a Native cloak or a classic cape, or go without."}</p>
-              <Link href="/capes" className="inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-[13px] font-semibold transition hover:bg-surface-2">Browse Native cloaks <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <Link href="/cloaks" className="inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-[13px] font-semibold transition hover:bg-surface-2">Browse Native cloaks <ArrowRight className="h-3.5 w-3.5" /></Link>
             </div>
             {(initial.nativeCapes?.length ?? 0) > 0 && (
               <>

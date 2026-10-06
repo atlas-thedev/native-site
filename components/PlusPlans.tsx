@@ -63,7 +63,7 @@ export default function PlusPlans() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Link href="/capes" className="inline-flex h-11 items-center rounded-full bg-inv px-5 text-[14.5px] font-semibold text-inv-fg transition hover:opacity-85">Pick your capes</Link>
+          <Link href="/cloaks" className="inline-flex h-11 items-center rounded-full bg-inv px-5 text-[14.5px] font-semibold text-inv-fg transition hover:opacity-85">Pick your cloaks</Link>
           <button onClick={manage} disabled={busy === "portal"} className="inline-flex h-11 items-center gap-2 rounded-full border border-line px-5 text-[14.5px] font-semibold transition hover:bg-surface-2">
             {busy === "portal" && <Loader2 className="h-4 w-4 animate-spin" />} Manage billing
           </button>

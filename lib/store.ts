@@ -28,13 +28,31 @@ export type StoreItem = {
   /** null for static capes */
   stripUrl: string | null;
   stillUrl: string;
+  /** "cosmetic" for 3D hats, glasses, back items and shoes; capes otherwise */
+  kind?: "cape" | "cosmetic";
+  /** cosmetic slot: hats | glasses | back | shoes */
+  slot?: CosmeticSlot;
+  /** the cosmetic model has moving parts */
+  motion?: boolean;
+  /** NCM v1 model JSON (cosmetics only) */
+  modelUrl?: string | null;
+  /** model texture PNG (cosmetics only) */
+  textureUrl?: string | null;
 };
+
+export const COSMETIC_SLOTS = ["hats", "glasses", "back", "shoes"] as const;
+export type CosmeticSlot = (typeof COSMETIC_SLOTS)[number];
+export const SLOT_NAMES: Record<CosmeticSlot, string> = { hats: "Hats", glasses: "Glasses", back: "Wings & Backpacks", shoes: "Shoes" };
+export const isCosmetic = (it: Pick<StoreItem, "kind" | "slot">) => it.kind === "cosmetic" && !!it.slot && (COSMETIC_SLOTS as readonly string[]).includes(it.slot);
+/** What a profile wears in each cosmetic slot. */
+export type Wearing = Partial<Record<CosmeticSlot, string>>;
 
 export type Owned = { id: string; acquiredAt: number; source?: string };
 
-export type Catalog = { rev: number; sections: { id: string; name: string; blurb: string }[]; items: StoreItem[] };
+/** `items` are the cloaks; `cosmetics` the 3D hats, glasses, back items and shoes. */
+export type Catalog = { rev: number; sections: { id: string; name: string; blurb: string }[]; items: StoreItem[]; cosmetics: StoreItem[] };
 
-export const toHttps = (u: unknown) => (typeof u === "string" && u ? u.replace(/^http:\/\//, "https://") : null);
+export const toHttps = (u: unknown) => (typeof u === "string" && u ? u.replace(/^http:\/\/(?!localhost[:/]|127\.0\.0\.1[:/])/, "https://") : null);
 
 /** Normalises `capeAnimation` from a public CSL profile. */
 export function capeAnimOf(v: unknown): CapeAnim | null {

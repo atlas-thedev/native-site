@@ -133,7 +133,7 @@ export default async function PlusPage() {
                 Get Native+
               </a>
               <Link
-                href="/capes"
+                href="/cloaks"
                 className="inline-flex h-12 items-center rounded-full border border-line px-7 text-[15px] font-semibold transition hover:bg-surface-2"
               >
                 Browse capes
@@ -185,7 +185,7 @@ export default async function PlusPage() {
               </p>
             </div>
             <Link
-              href="/capes"
+              href="/cloaks"
               className="text-[14.5px] font-semibold underline underline-offset-4 hover:opacity-70"
             >
               All capes

@@ -1,6 +1,6 @@
 import { permanentRedirect } from "next/navigation";
 
-/** The cape store moved to /capes. */
+/** The cape store moved to /cloaks. */
 export default function StorePage() {
-  permanentRedirect("/capes");
+  permanentRedirect("/cloaks");
 }

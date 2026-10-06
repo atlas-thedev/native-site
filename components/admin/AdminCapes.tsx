@@ -6,32 +6,34 @@ import { useState } from "react";
 import CapeStrip from "../CapeStrip";
 import type { Shared } from "./AdminApp";
 import type { AdminItem } from "./types";
+import { SLOT_NAMES, isCosmetic } from "@/lib/store";
 import { Badge, Btn, Empty, Field, Panel, Toggle, adm, fileToBase64, fmtDate, input, textarea, useAction, usd } from "./ui";
 
 type Owner = { userId: string; username: string | null; acquiredAt: number; source: string };
 
-function Row({ it, onSaved }: { it: AdminItem; onSaved: (items: AdminItem[]) => void }) {
+export function Row({ it, onSaved }: { it: AdminItem; onSaved: (items: AdminItem[]) => void }) {
   const [price, setPrice] = useState(String(it.price));
   const [owners, setOwners] = useState<Owner[] | null>(null);
   const [grantTo, setGrantTo] = useState("");
   const { busy, run } = useAction();
+  const cosmetic = isCosmetic(it);
   const patch = (body: object, key: string, ok: string) => run(key, async () => onSaved((await adm<{ items: AdminItem[] }>("PATCH", `store/items/${it.id}`, body)).items), ok);
   const loadOwners = () => run("owners", async () => setOwners((await adm<{ owners: Owner[] }>("GET", `store/items/${it.id}/owners`)).owners));
   const grant = () => run("grant", async () => {
     const d = await adm<{ owners: Owner[]; items: AdminItem[] }>("POST", `store/items/${it.id}/grant`, { username: grantTo.trim() });
     setOwners(d.owners); onSaved(d.items); setGrantTo("");
   }, `${it.name} given to ${grantTo}.`);
-  const del = () => confirm(`Delete ${it.name}? Everyone who owns it loses it.`) && run("del", async () => onSaved((await adm<{ items: AdminItem[] }>("DELETE", `store/items/${it.id}`)).items), "Cape deleted.");
+  const del = () => confirm(`Delete ${it.name}? Everyone who owns it loses it.`) && run("del", async () => onSaved((await adm<{ items: AdminItem[] }>("DELETE", `store/items/${it.id}`)).items), cosmetic ? "Cosmetic deleted." : "Cape deleted.");
 
   return (
     <li className="rounded-2xl border border-line bg-bg p-4">
       <div className="flex flex-wrap items-center gap-4">
-        <div className="dots flex h-24 w-[74px] shrink-0 items-center justify-center rounded-xl">
-          <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={48} label={it.name} />
+        <div className={`dots flex shrink-0 items-center justify-center rounded-xl ${cosmetic ? "h-20 w-20" : "h-24 w-[74px]"}`}>
+          {cosmetic ? <img src={it.stillUrl} alt={it.name} className="h-[80%] w-[80%] object-contain [image-rendering:pixelated]" /> : <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={48} label={it.name} />}
         </div>
         <div className="min-w-[180px] flex-1">
           <p className="flex flex-wrap items-center gap-1.5 text-[16px] font-bold">{it.name}
-            {it.animated && <Badge>Animated</Badge>}{it.featured && <Badge solid>Featured</Badge>}{it.hidden && <Badge>Hidden</Badge>}{it.exclusive && <Badge>Event</Badge>}
+            {cosmetic && it.slot && <Badge>{SLOT_NAMES[it.slot]}</Badge>}{cosmetic && it.motion && <Badge>Moves</Badge>}{it.animated && <Badge>Animated</Badge>}{it.featured && <Badge solid>Featured</Badge>}{it.hidden && <Badge>Hidden</Badge>}{it.exclusive && <Badge>Event</Badge>}
           </p>
           <p className="mt-0.5 text-[13px] text-mute">{it.id} · {it.owners ?? 0} owners · {it.exclusive ? "never sold" : it.price > 0 ? usd(it.price) : "free"}{it.salePrice != null ? ` (on sale ${usd(it.salePrice)})` : ""}</p>
         </div>
@@ -48,14 +50,14 @@ function Row({ it, onSaved }: { it: AdminItem; onSaved: (items: AdminItem[]) => 
         <Btn variant="ghost" busy={busy === "h"} onClick={() => patch({ hidden: !it.hidden }, "h", it.hidden ? "Visible in the store." : "Hidden from the store.")}>{it.hidden ? "Show" : "Hide"}</Btn>
         <Btn variant="ghost" busy={busy === "x"} onClick={() => patch({ exclusive: !it.exclusive }, "x", "Saved.")}>{it.exclusive ? "Make buyable" : "Make event-only"}</Btn>
         <Btn variant="ghost" busy={busy === "owners"} onClick={loadOwners}><Users className="h-4 w-4" /> Owners</Btn>
-        <Link href={`/capes/${it.id}`} target="_blank" className="inline-flex h-10 items-center gap-1.5 rounded-full border border-line px-4 text-[14px] font-semibold hover:bg-surface-2"><ExternalLink className="h-4 w-4" /> View</Link>
+        <Link href={cosmetic ? `/cosmetics?item=${it.id}` : `/cloaks/${it.id}`} target="_blank" className="inline-flex h-10 items-center gap-1.5 rounded-full border border-line px-4 text-[14px] font-semibold hover:bg-surface-2"><ExternalLink className="h-4 w-4" /> View</Link>
         <Btn variant="danger" busy={busy === "del"} onClick={del} title="Delete"><Trash2 className="h-4 w-4" /></Btn>
       </div>
       {owners && (
         <div className="mt-4 rounded-xl border border-line p-3">
           <div className="flex flex-wrap gap-2">
             <input className={`${input} h-10 max-w-[240px]`} placeholder="Give to username…" value={grantTo} onChange={(e) => setGrantTo(e.target.value)} />
-            <Btn busy={busy === "grant"} disabled={!grantTo.trim()} onClick={grant}>Give cape</Btn>
+            <Btn busy={busy === "grant"} disabled={!grantTo.trim()} onClick={grant}>Give {cosmetic ? "it" : "cape"}</Btn>
           </div>
           {owners.length ? (
             <ul className="mt-3 max-h-56 divide-y divide-line overflow-auto text-[13.5px]">
@@ -70,7 +72,8 @@ function Row({ it, onSaved }: { it: AdminItem; onSaved: (items: AdminItem[]) => 
 
 const blank = { name: "", description: "", tags: "", price: "1.99", animated: true, frames: "24", fps: "12", featured: false, hidden: false, exclusive: false };
 
-export default function AdminCapes({ items, setItems, reload }: Shared) {
+export default function AdminCapes({ items: all, setItems, reload }: Shared) {
+  const items = all.filter((i) => !isCosmetic(i));
   const [bulk, setBulk] = useState("1.99");
   const [f, setF] = useState(blank);
   const [strip, setStrip] = useState<File | null>(null);
