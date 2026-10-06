@@ -1,10 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
-import { Crown, Loader2, Lock, Minus, Plus, RotateCcw, ShoppingBag, ZoomIn, ZoomOut } from "lucide-react";
-import Link from "next/link";
+import { Crown, Loader2, Lock, Minus, Plus, RotateCcw, ShoppingBag, Sparkles, X, ZoomIn, ZoomOut } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CosmeticViewer, { type CosmeticViewerHandle, type Worn } from "./CosmeticViewer";
+import { SLOT_COLOR } from "./CosmeticGallery";
+import BuyPanel from "../store/BuyPanel";
+import { PxButton, PxLink } from "../ui/Px";
 import { ownerLabel, storeAction, type StoreAction } from "../capes/actions";
 import { getBilling, startCheckout, type BillingState } from "../capes/billing";
 import { useLaunch } from "../launch/LaunchContext";
@@ -13,9 +14,10 @@ import { COSMETIC_SLOTS, SLOT_NAMES, isPaid, money, priceNow, type CosmeticSlot,
 
 type Props = {
   item: StoreItem;
-  /** every cosmetic, to show what the account already wears next to this piece */
+  /** every cosmetic, to try other pieces on next to this one */
   all: StoreItem[];
   signedIn: boolean;
+  account: string | null;
   owned: Owned[];
   wearing: Wearing;
   skin: string | null;
@@ -24,12 +26,8 @@ type Props = {
   cape: string | null;
 };
 
-const chip = (on: boolean) => `rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition ${on ? "border-transparent bg-inv text-inv-fg" : "border-line text-mute hover:bg-surface-2 hover:text-fg"}`;
-const primary = "inline-flex h-12 items-center gap-2 rounded-full bg-inv px-7 text-[15px] font-semibold text-inv-fg transition hover:opacity-85 disabled:opacity-60";
-const ghost = "inline-flex h-12 items-center gap-2 rounded-full border border-line px-6 text-[15px] font-semibold transition hover:bg-surface-2 disabled:opacity-60";
-
-/** One cosmetic: big 3D preview on your skin + add to locker / wear / take off. */
-export default function CosmeticDetail({ item, all, signedIn, owned: initialOwned, wearing: initialWearing, skin, model, cape }: Props) {
+/** One cosmetic: the 3D stage on your skin, a "complete the look" try-on list and the buy box. */
+export default function CosmeticDetail({ item, all, signedIn, account, owned: initialOwned, wearing: initialWearing, skin, model, cape }: Props) {
   const slot = item.slot as CosmeticSlot;
   const [owned, setOwned] = useState(initialOwned);
   const [wearing, setWearing] = useState(initialWearing);
@@ -38,8 +36,9 @@ export default function CosmeticDetail({ item, all, signedIn, owned: initialOwne
   const [msg, setMsg] = useState<{ t: "ok" | "err"; s: string } | null>(null);
   const [walk, setWalk] = useState(false);
   const [spin, setSpin] = useState(true);
-  const [withLook, setWithLook] = useState(true);
   const [withCape, setWithCape] = useState(false);
+  // what's tried on next to this piece, one id per slot; starts with what the account wears
+  const [extra, setExtra] = useState<Partial<Record<CosmeticSlot, string | null>>>({});
   const viewer = useRef<CosmeticViewerHandle>(null);
   const [bill, setBill] = useState<BillingState | null>(null);
   const [buying, setBuying] = useState(false);
@@ -52,6 +51,7 @@ export default function CosmeticDetail({ item, all, signedIn, owned: initialOwne
   const on = wearing[slot] === item.id;
   const price = priceNow(item);
   const priceLabel = item.salePrice != null ? <>{money(price)} <s className="opacity-60">{money(item.price)}</s></> : money(item.price);
+  const byId = useMemo(() => new Map(all.map((i) => [i.id, i])), [all]);
 
   useEffect(() => {
     if (paid && signedIn) getBilling().then(setBill).catch(() => {});
@@ -74,13 +74,15 @@ export default function CosmeticDetail({ item, all, signedIn, owned: initialOwne
     return () => document.removeEventListener("visibilitychange", onVis);
   }, [signedIn]);
 
-  // this piece first, then the rest of what the account wears (one per slot)
+  // "Complete the look": the other slots, each with a few pieces; the one on the model is checked
+  const others = COSMETIC_SLOTS.filter((s) => s !== slot);
+  const chosen = (s: CosmeticSlot) => (s in extra ? extra[s] ?? null : wearing[s] ?? null);
   const worn = useMemo<Worn[]>(() => {
-    const byId = new Map(all.map((i) => [i.id, i]));
-    return COSMETIC_SLOTS.map((s) => (s === slot ? item : withLook && wearing[s] ? byId.get(wearing[s]!) : undefined))
+    const ids = COSMETIC_SLOTS.map((s) => (s === slot ? item.id : (s in extra ? extra[s] : wearing[s]) ?? null));
+    return ids.map((id) => (id ? byId.get(id) : undefined))
       .filter((it): it is StoreItem => !!it && !!it.modelUrl && !!it.textureUrl)
       .map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, slot: it.slot }));
-  }, [all, item, slot, wearing, withLook]);
+  }, [byId, item.id, slot, extra, wearing]);
 
   const buy = async () => {
     setBuying(true);
@@ -120,123 +122,122 @@ export default function CosmeticDetail({ item, all, signedIn, owned: initialOwne
     }
   };
 
-  const spinner = (k: string) => busy === k && <Loader2 className="h-4 w-4 animate-spin" />;
-  const round = "flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/70 text-mute backdrop-blur transition hover:text-fg";
+  const spin_ = (k: string, icon: React.ReactNode) => (busy === k ? <Loader2 className="animate-spin" /> : icon);
+  const next = `/cosmetics/${item.id}`;
+  const color = SLOT_COLOR[slot];
+  const kind = item.exclusive ? "Event" : paid ? "Lifetime" : "Free";
+
+  let actions: React.ReactNode;
+  if (item.exclusive && !own) actions = <PxButton variant="locked" size="xl" disabled><Lock /> Event cosmetic · given by the Native team</PxButton>;
+  else if (!signedIn && paid) actions = <><PxLink href={`/login?next=${next}`} variant="gold" size="xl"><ShoppingBag /> Sign in to buy · {priceLabel}</PxLink><PxLink href="/plus" variant="ghost"><Crown /> Included with Native+</PxLink></>;
+  else if (!signedIn) actions = <><PxLink href={`/login?next=${next}`} variant="green" size="xl"><Plus /> Sign in to add</PxLink><PxLink href={`/register?next=${next}`} variant="ghost">Create a free account</PxLink></>;
+  else if (on) actions = <PxButton variant="ghost" size="xl" onClick={() => run("equip", true)} disabled={!!busy}>{spin_("off", <X />)} Take off</PxButton>;
+  else if (own) actions = <PxButton variant="green" size="xl" onClick={() => run("equip")} disabled={!!busy}>{spin_("equip", <Sparkles />)} Wear {item.name}</PxButton>;
+  else if (paid && member) actions = <PxButton variant="gold" size="xl" onClick={() => run("claim")} disabled={!!busy}>{spin_("claim", <Crown />)} Add with Native+</PxButton>;
+  else if (paid) actions = <><PxButton variant="gold" size="xl" onClick={buy} disabled={buying || !sellable} title={sellable || !bill ? undefined : "Payments are switched on soon."}>{buying ? <Loader2 className="animate-spin" /> : <ShoppingBag />} {sellable || !bill ? <>Buy · {priceLabel}</> : `${money(price)} · soon`}</PxButton><PxLink href="/plus" variant="ghost"><Crown /> Get it with Native+</PxLink></>;
+  else actions = <><PxButton variant="green" size="xl" onClick={() => run("claim")} disabled={!!busy}>{spin_("claim", <Plus />)} Add to locker · Free</PxButton><PxButton variant="ghost" onClick={() => run("equip")} disabled={!!busy}>{spin_("equip", <Sparkles />)} Wear now</PxButton></>;
+  const remove = signedIn && own && !item.exclusive && !paid && (
+    <PxButton variant="ghost" size="sm" onClick={() => run("unclaim")} disabled={!!busy}>{spin_("unclaim", <Minus />)} Remove from locker</PxButton>
+  );
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-      <div className="card overflow-hidden">
-        <div className="dots relative h-[440px] sm:h-[600px]">
-          <CosmeticViewer ref={viewer} skin={skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")} model={model} cape={withCape ? cape : null} worn={worn} walk={walk} spin={spin} focus={slot} />
-          <div className="absolute right-4 top-4 flex gap-2">
-            <button onClick={() => viewer.current?.zoom(1 / 1.25)} aria-label="Zoom out" className={round}><ZoomOut className="h-4 w-4" /></button>
-            <button onClick={() => viewer.current?.zoom(1.25)} aria-label="Zoom in" className={round}><ZoomIn className="h-4 w-4" /></button>
-            <button onClick={() => viewer.current?.reset()} aria-label="Reset camera" className={round}><RotateCcw className="h-4 w-4" /></button>
+      <div className="flex min-w-0 flex-col gap-4">
+        <div className="st-panel overflow-hidden">
+          <div className="st-art relative h-[440px] sm:h-[580px]" style={{ boxShadow: "none" }}>
+            <div className="absolute inset-0">
+              <CosmeticViewer ref={viewer} skin={skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")} model={model} cape={withCape ? cape : null} worn={worn} walk={walk} spin={spin} focus={slot} />
+            </div>
+            <div className="pointer-events-none absolute inset-x-4 top-4 flex items-start justify-between">
+              <div className="flex gap-1.5">
+                <span className="st-tag is-slot" style={{ "--tint": color } as React.CSSProperties}>{SLOT_NAMES[slot]}</span>
+                {item.motion && <span className="st-tag is-inv">Moves</span>}
+                {item.isNew && <span className="st-tag">New</span>}
+              </div>
+              <div className="pointer-events-auto flex gap-2">
+                <PxButton variant="ghost" size="sm" icon onClick={() => viewer.current?.zoom(1 / 1.25)} aria-label="Zoom out"><ZoomOut /></PxButton>
+                <PxButton variant="ghost" size="sm" icon onClick={() => viewer.current?.zoom(1.25)} aria-label="Zoom in"><ZoomIn /></PxButton>
+                <PxButton variant="ghost" size="sm" icon onClick={() => viewer.current?.reset()} aria-label="Reset camera"><RotateCcw /></PxButton>
+              </div>
+            </div>
+            <div aria-hidden className="stage-floor pointer-events-none absolute inset-x-0 bottom-0 h-[16%]" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2 border-t-2 border-line p-3.5">
+            <PxButton variant="ghost" size="sm" on={walk} onClick={() => setWalk(!walk)} aria-pressed={walk}>Walk</PxButton>
+            <PxButton variant="ghost" size="sm" on={spin} onClick={() => setSpin(!spin)} aria-pressed={spin}>Spin</PxButton>
+            {cape && <PxButton variant="ghost" size="sm" on={withCape} onClick={() => setWithCape(!withCape)} aria-pressed={withCape}>Cloak</PxButton>}
+            <span className="ml-auto text-[12px] text-dim max-sm:hidden">Drag to turn · scroll to zoom</span>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 border-t border-line p-4">
-          <button className={chip(walk)} onClick={() => setWalk(!walk)} aria-pressed={walk}>Walk</button>
-          <button className={chip(spin)} onClick={() => setSpin(!spin)} aria-pressed={spin}>Spin</button>
-          {signedIn && <button className={chip(withLook)} onClick={() => setWithLook(!withLook)} aria-pressed={withLook}>My look</button>}
-          {cape && <button className={chip(withCape)} onClick={() => setWithCape(!withCape)} aria-pressed={withCape}>Cloak</button>}
+
+        <div className="st-panel p-5">
+          <div className="flex items-center justify-between gap-3">
+            <p className="flex items-center gap-2 text-[15px] font-bold"><Sparkles className="h-4 w-4 text-dim" /> Complete the look</p>
+            {Object.keys(extra).length > 0 && <button onClick={() => setExtra({})} className="text-[12.5px] font-semibold text-mute hover:text-fg">Reset</button>}
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            {others.map((s) => {
+              const pool = all.filter((i) => i.slot === s);
+              const cur = chosen(s);
+              return (
+                <div key={s}>
+                  <p className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-dim">{SLOT_NAMES[s]}</p>
+                  {pool.length ? (
+                    <ul className="flex flex-wrap gap-1.5">
+                      {pool.slice(0, 6).map((p) => (
+                        <li key={p.id}>
+                          <button onClick={() => setExtra((e) => ({ ...e, [s]: cur === p.id ? null : p.id }))} aria-pressed={cur === p.id} title={p.name} aria-label={`Try ${p.name}`}
+                            className={`slot-well flex h-12 w-12 items-center justify-center outline outline-2 outline-offset-2 transition ${cur === p.id ? "outline-fg" : "outline-transparent hover:outline-line"}`}>
+                            <img src={p.stillUrl} alt="" className="h-[78%] w-[78%] object-contain [image-rendering:pixelated]" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : <p className="text-[12.5px] text-dim">Nothing here yet</p>}
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-3 text-[12px] text-dim">Only a preview. Each piece is added on its own page.</p>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-        <div className="card p-7">
-          <div className="flex flex-wrap gap-2">
-            <span className="rounded-full border border-line px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-wider">{SLOT_NAMES[slot]}</span>
-            {item.motion && <span className="rounded-full bg-inv px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-wider text-inv-fg">Moves</span>}
-            {item.exclusive && <span className="rounded-full bg-gradient-to-r from-[#d9a6da] to-[#ffd68c] px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-wider text-[#160f2a]">Exclusive</span>}
-            {item.isNew && !item.exclusive && <span className="rounded-full border border-line px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-wider">New</span>}
-            {item.featured && <span className="rounded-full border border-line px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-wider">Featured</span>}
-          </div>
-          <h1 className="mt-4 text-[clamp(2.2rem,4vw,3.2rem)] font-extrabold leading-[1] tracking-[-0.04em]">{item.name}</h1>
-          {item.description && <p className="mt-3 text-[16px] text-mute">{item.description}</p>}
-
-          {item.offer && !storeLocked && (
-            <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 text-[13px] font-semibold">
-              {item.offer.title} · {item.offer.percent}% off{item.offer.endsAt ? ` until ${new Date(item.offer.endsAt).toLocaleDateString()}` : ""}
-            </p>
-          )}
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            {storeLocked && !item.exclusive ? (
-              <div className="w-full rounded-[20px] border border-dashed border-line p-5">
-                <p className="flex items-center gap-2 text-[15px] font-bold"><Lock className="h-4 w-4" /> The store opens at launch</p>
-                <p className="mt-1 text-[14px] text-mute">On launch day it’s {paid ? `${money(item.price)}, or free with Native+` : "free"}.</p>
-                <Countdown at={launch.at} size="sm" className="mt-4 justify-start!" />
-                {!signedIn && <div className="mt-5 flex flex-wrap gap-3"><Link href="/register?next=/founder" className={primary}>Create a free account</Link></div>}
-              </div>
-            ) : item.exclusive && !own ? (
-              <span className="inline-flex h-12 items-center gap-2 rounded-full border border-dashed border-line px-5 text-[14px] font-semibold text-mute" title="Not sold. The Native team gives event cosmetics out, or with a redeem code.">
-                <Lock className="h-4 w-4" /> Event cosmetic · given by the Native team or with a code
-              </span>
-            ) : !signedIn && paid ? (
-              <>
-                <Link href={`/login?next=/cosmetics/${item.id}`} className={primary}><ShoppingBag className="h-4 w-4" /> Sign in to buy · {priceLabel}</Link>
-                <Link href="/plus" className={ghost}><Crown className="h-4 w-4" /> Included with Native+</Link>
-              </>
-            ) : !signedIn ? (
-              <>
-                <Link href={`/login?next=/cosmetics/${item.id}`} className={primary}>Sign in to add</Link>
-                <Link href={`/register?next=/cosmetics/${item.id}`} className={ghost}>Create a free account</Link>
-              </>
-            ) : on ? (
-              <button onClick={() => run("equip", true)} disabled={!!busy} className={ghost}>{spinner("off")} Take off</button>
-            ) : own ? (
-              <button onClick={() => run("equip")} disabled={!!busy} className={primary}>{spinner("equip")} Wear {item.name}</button>
-            ) : paid && member ? (
-              <button onClick={() => run("claim")} disabled={!!busy} className={primary}>{spinner("claim") || <Crown className="h-4 w-4" />} Add with Native+</button>
-            ) : paid ? (
-              <>
-                <button onClick={buy} disabled={buying || !sellable} className={primary} title={sellable || !bill ? undefined : "Payments are switched on soon."}>
-                  {buying ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />} {sellable || !bill ? <>Buy · {priceLabel}</> : `${money(price)} · soon`}
-                </button>
-                <Link href="/plus" className={ghost}><Crown className="h-4 w-4" /> Get it with Native+</Link>
-              </>
-            ) : (
-              <>
-                <button onClick={() => run("claim")} disabled={!!busy} className={primary}>{spinner("claim") || <Plus className="h-4 w-4" />} Add to locker · Free</button>
-                <button onClick={() => run("equip")} disabled={!!busy} className={ghost}>{spinner("equip")} Wear now</button>
-              </>
-            )}
-            {signedIn && own && !item.exclusive && !paid && (
-              <button onClick={() => run("unclaim")} disabled={!!busy} className="inline-flex h-12 items-center gap-1.5 rounded-full px-4 text-[14px] font-semibold text-mute transition hover:text-fg disabled:opacity-60">
-                {spinner("unclaim") || <Minus className="h-4 w-4" />} Remove from locker
-              </button>
-            )}
-          </div>
-          <AnimatePresence mode="wait">
-            {msg && (
-              <motion.p key={msg.s} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role={msg.t === "err" ? "alert" : "status"} className={`mt-4 text-[14px] ${msg.t === "err" ? "font-semibold text-fg" : "text-mute"}`}>
-                {msg.s}
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
-
-        <dl className="card grid grid-cols-2 gap-px overflow-hidden bg-line p-0 text-[14px]">
-          {[
-            ["Price", item.exclusive ? "Event only" : paid ? `${money(price)} or Native+` : "Free"],
-            ["In lockers", ownerLabel(owners)],
-            ["Slot", SLOT_NAMES[slot]],
-            ["Made by", item.author || "Native"],
-          ].map(([k, v]) => (
-            <div key={k} className="bg-surface p-5">
-              <dt className="text-[12.5px] font-semibold uppercase tracking-wider text-dim">{k}</dt>
-              <dd className="mt-1.5 font-semibold">{v}</dd>
+      <div className="flex flex-col gap-5 lg:sticky lg:top-24 lg:self-start">
+        <BuyPanel
+          color={color}
+          kind={kind}
+          price={item.exclusive ? "Not for sale" : paid ? priceLabel : "Free"}
+          creator={item.author || "Native"}
+          signedIn={signedIn}
+          account={account}
+          loginHref={`/login?next=${next}`}
+          lines={["Visible in Minecraft to all Native users", "Visible on your Native profile"]}
+          msg={msg}
+          foot={paid ? "Secure checkout · Available instantly" : "Free to wear · Available instantly"}
+          locked={storeLocked && !item.exclusive ? (
+            <div className="rounded-[8px] border-2 border-dashed border-line p-5">
+              <p className="flex items-center gap-2 text-[15px] font-bold"><Lock className="h-4 w-4" /> The store opens at launch</p>
+              <p className="mt-1 text-[14px] text-mute">On launch day it’s {paid ? `${money(item.price)}, or free with Native+` : "free"}.</p>
+              <Countdown at={launch.at} size="sm" className="mt-4 justify-start!" />
+              {!signedIn && <div className="mt-5"><PxLink href="/register?next=/founder" variant="light">Create a free account</PxLink></div>}
             </div>
-          ))}
-        </dl>
+          ) : undefined}
+        >
+          {actions}
+          {remove}
+        </BuyPanel>
 
-        {item.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {item.tags.map((t) => (
-              <span key={t} className="rounded-full border border-line px-3 py-1 text-[13px] text-mute">#{t}</span>
+        <div className="st-panel p-6">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-dim">About</h2>
+          <p className="mt-2 text-[15px] leading-relaxed text-mute">{item.description || `A Native ${SLOT_NAMES[slot].toLowerCase()} cosmetic.`}</p>
+          <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-[8px] border-2 border-line bg-line text-[14px]">
+            {[["In lockers", ownerLabel(owners)], ["Slot", SLOT_NAMES[slot]], ["Type", item.motion ? "Animated" : "Static"], ["Made by", item.author || "Native"]].map(([k, v]) => (
+              <div key={k} className="bg-bg p-4"><dt className="text-[11.5px] font-semibold uppercase tracking-wider text-dim">{k}</dt><dd className="mt-1 font-semibold">{v}</dd></div>
             ))}
-          </div>
-        )}
-        <p className="text-[13.5px] text-dim">Native cosmetics show on your account everywhere: the launcher, the website and in game with the Native mod. You can wear one piece per slot.</p>
+          </dl>
+          {item.tags.length > 0 && <div className="mt-4 flex flex-wrap gap-1.5">{item.tags.map((t) => <span key={t} className="st-tag">#{t}</span>)}</div>}
+          <p className="mt-4 text-[12.5px] text-dim">You can wear one piece per slot. It shows on your account everywhere: the launcher, the website and in game with the Native mod.</p>
+        </div>
       </div>
     </div>
   );

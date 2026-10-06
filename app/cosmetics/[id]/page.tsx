@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { ArrowLeft, Users } from "lucide-react";
-import Link from "next/link";
+import ItemCard from "@/components/store/ItemCard";
+import ItemHead from "@/components/store/ItemHead";
 import { notFound, redirect } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
 import CosmeticDetail from "@/components/cosmetics/CosmeticDetail";
@@ -40,26 +40,18 @@ export default async function CosmeticPage({ params }: Params) {
     .map((x) => x.i);
 
   return (
-    <div className="mx-auto max-w-[1280px] px-5 pb-32 pt-10 sm:pt-14">
+    <div className="mx-auto max-w-[1280px] px-5 pb-32 pt-8 sm:pt-10">
       <JsonLd data={breadcrumb([{ name: "Cosmetics", path: "/cosmetics" }, { name: item.name, path: `/cosmetics/${item.id}` }])} />
-      <Link href="/cosmetics" className="mb-6 inline-flex items-center gap-1.5 text-[14px] font-semibold text-mute transition hover:text-fg">
-        <ArrowLeft className="h-4 w-4" /> All cosmetics
-      </Link>
-      <CosmeticDetail item={item} all={all} signedIn={!!s} owned={mine?.owned ?? []} wearing={mine?.wearing ?? {}} skin={look.skin} model={look.model} cape={cape} />
+      <ItemHead trail={[{ label: "Store", href: "/cosmetics" }, { label: "Cosmetics", href: "/cosmetics" }, { label: item.slot ? SLOT_NAMES[item.slot] : "Cosmetic" }, { label: item.name }]} back="/cosmetics" title={item.name} />
+      <CosmeticDetail item={item} all={all} signedIn={!!s} account={s?.account.name ?? null} owned={mine?.owned ?? []} wearing={mine?.wearing ?? {}} skin={look.skin} model={look.model} cape={cape} />
 
       {related.length > 0 && (
-        <section className="mt-16" aria-labelledby="more">
-          <h2 id="more" className="text-[24px] font-extrabold tracking-tight">More cosmetics</h2>
-          <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <section className="st-sep mt-14 pt-10" aria-labelledby="more">
+          <h2 id="more" className="st-h2">More cosmetics</h2>
+          <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {related.map((it) => (
               <li key={it.id}>
-                <Link href={`/cosmetics/${it.id}`} className="group flex flex-col rounded-[22px] border border-line bg-surface p-3 transition hover:-translate-y-0.5 hover:bg-surface-2">
-                  <div className="dots flex aspect-[4/5] items-center justify-center rounded-2xl">
-                    <img src={it.stillUrl} alt="" loading="lazy" className="cutout-sm h-[62%] w-[62%] object-contain transition duration-500 [image-rendering:pixelated] group-hover:scale-[1.08]" />
-                  </div>
-                  <p className="truncate px-1.5 pt-3 text-[15px] font-bold tracking-tight">{it.name}</p>
-                  <p className="flex items-center gap-1 px-1.5 pb-1 text-[12.5px] text-dim"><Users className="h-3.5 w-3.5" />{(it.owners ?? 0).toLocaleString()}</p>
-                </Link>
+                <ItemCard item={it} href={`/cosmetics/${it.id}`} art={<img src={it.stillUrl} alt="" loading="lazy" className="cutout-sm h-[150px] w-[150px] max-w-[78%] object-contain [image-rendering:pixelated]" />} left={it.isNew ? <span className="st-tag is-inv">New</span> : null} />
               </li>
             ))}
           </ul>

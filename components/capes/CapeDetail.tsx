@@ -1,8 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
-import { Crown, Loader2, Lock, Minus, Plus, RotateCcw, ShoppingBag, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { Crown, Loader2, Lock, Minus, Plus, RotateCcw, ShoppingBag, Sparkles, X } from "lucide-react";
+import BuyPanel from "../store/BuyPanel";
+import { PxButton, PxLink } from "../ui/Px";
 import { useEffect, useRef, useState } from "react";
 import LockerViewer, { type ViewerHandle } from "../LockerViewer";
 import { ownerLabel, storeAction, type StoreAction } from "./actions";
@@ -18,14 +18,12 @@ type Props = {
   equipped: string | null;
   skin: string | null;
   model: "default" | "slim";
+  account: string | null;
 };
 
-const chip = (on: boolean) => `rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition ${on ? "border-transparent bg-inv text-inv-fg" : "border-line text-mute hover:bg-surface-2 hover:text-fg"}`;
-const primary = "inline-flex h-12 items-center gap-2 rounded-full bg-inv px-7 text-[15px] font-semibold text-inv-fg transition hover:opacity-85 disabled:opacity-60";
-const ghost = "inline-flex h-12 items-center gap-2 rounded-full border border-line px-6 text-[15px] font-semibold transition hover:bg-surface-2 disabled:opacity-60";
 
 /** One cape: big 3D preview + add to locker / wear / take off. */
-export default function CapeDetail({ item, signedIn, owned: initialOwned, equipped: initialEquipped, skin, model }: Props) {
+export default function CapeDetail({ item, signedIn, owned: initialOwned, equipped: initialEquipped, skin, model, account }: Props) {
   const [owned, setOwned] = useState(initialOwned);
   const [equipped, setEquipped] = useState(initialEquipped);
   const [owners, setOwners] = useState(item.owners ?? 0);
@@ -107,144 +105,105 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
     }
   };
 
-  const spinner = (k: string) => busy === k && <Loader2 className="h-4 w-4 animate-spin" />;
+  const spin_ = (k: string, icon: React.ReactNode) => (busy === k ? <Loader2 className="animate-spin" /> : icon);
+  const next = `/cloaks/${item.id}`;
+  const kind = item.exclusive ? "Event" : paid ? "Lifetime" : "Free";
+
+  let actions: React.ReactNode;
+  if (item.id === "super-beta-tester" && !own) actions = <PxLink href="/beta" variant="light" size="xl"><Sparkles /> Super Beta Testers only · Apply</PxLink>;
+  else if (item.exclusive && !own) actions = <PxButton variant="locked" size="xl" disabled><Lock /> Event cloak · given by the Native team</PxButton>;
+  else if (!signedIn && paid) actions = <><PxLink href={`/login?next=${next}`} variant="gold" size="xl"><ShoppingBag /> Sign in to buy · {priceLabel}</PxLink><PxLink href="/plus" variant="ghost"><Crown /> Included with Native+</PxLink></>;
+  else if (!signedIn) actions = <><PxLink href={`/login?next=${next}`} variant="green" size="xl"><Plus /> Sign in to add</PxLink><PxLink href={`/register?next=${next}`} variant="ghost">Create a free account</PxLink></>;
+  else if (worn) actions = <PxButton variant="ghost" size="xl" onClick={() => run("equip", true)} disabled={!!busy}>{spin_("off", <X />)} Take off</PxButton>;
+  else if (own) actions = <PxButton variant="green" size="xl" onClick={() => run("equip")} disabled={!!busy}>{spin_("equip", <Sparkles />)} Wear {item.name}</PxButton>;
+  else if (paid && member) actions = <PxButton variant="gold" size="xl" onClick={() => run("claim")} disabled={!!busy}>{spin_("claim", <Crown />)} Add with Native+</PxButton>;
+  else if (paid) actions = <><PxButton variant="gold" size="xl" onClick={buy} disabled={buying || !sellable} title={sellable || !bill ? undefined : "Payments are switched on soon."}>{buying ? <Loader2 className="animate-spin" /> : <ShoppingBag />} {sellable || !bill ? <>Buy · {priceLabel}</> : `${money(price)} · soon`}</PxButton><PxLink href="/plus" variant="ghost"><Crown /> Get it with Native+</PxLink></>;
+  else actions = <><PxButton variant="green" size="xl" onClick={() => run("claim")} disabled={!!busy}>{spin_("claim", <Plus />)} Add to locker · Free</PxButton><PxButton variant="ghost" onClick={() => run("equip")} disabled={!!busy}>{spin_("equip", <Sparkles />)} Wear now</PxButton></>;
+  const remove = signedIn && own && !item.exclusive && !paid && (
+    <PxButton variant="ghost" size="sm" onClick={() => run("unclaim")} disabled={!!busy}>{spin_("unclaim", <Minus />)} Remove from locker</PxButton>
+  );
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-      <div className="card overflow-hidden">
-        <div className="dots relative h-[440px] sm:h-[600px]">
-          <LockerViewer
-            ref={viewer}
-            skin={skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")}
-            model={model}
-            cape={item.stillUrl}
-            capeAnim={item.animated && item.stripUrl ? { url: item.stripUrl, frames: item.frames, fps: item.fps } : null}
-            walk={walk}
-            spin={spin}
-            showCape
-            layers
-            elytra={elytra}
-          />
-          <button onClick={() => viewer.current?.reset()} aria-label="Reset camera" className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/70 text-mute backdrop-blur transition hover:text-fg">
-            <RotateCcw className="h-4 w-4" />
-          </button>
+      <div className="st-panel min-w-0 self-start overflow-hidden">
+        <div className="st-art relative h-[440px] sm:h-[600px]" style={{ boxShadow: "none" }}>
+          <div className="absolute inset-0">
+            <LockerViewer
+              ref={viewer}
+              skin={skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")}
+              model={model}
+              cape={item.stillUrl}
+              capeAnim={item.animated && item.stripUrl ? { url: item.stripUrl, frames: item.frames, fps: item.fps } : null}
+              walk={walk}
+              spin={spin}
+              showCape
+              layers
+              elytra={elytra}
+            />
+          </div>
+          <div className="pointer-events-none absolute inset-x-4 top-4 flex items-start justify-between">
+            <div className="flex gap-1.5">
+              {item.animated && <span className="st-tag is-inv">Animated</span>}
+              {item.exclusive && <span className="st-tag">Exclusive</span>}
+              {item.isNew && !item.exclusive && <span className="st-tag">New</span>}
+              {item.featured && <span className="st-tag">Featured</span>}
+            </div>
+            <PxButton variant="ghost" size="sm" icon className="pointer-events-auto" onClick={() => viewer.current?.reset()} aria-label="Reset camera"><RotateCcw /></PxButton>
+          </div>
+          <div aria-hidden className="stage-floor pointer-events-none absolute inset-x-0 bottom-0 h-[16%]" />
         </div>
-        <div className="flex flex-wrap gap-2 border-t border-line p-4">
-          <button className={chip(walk)} onClick={() => setWalk(!walk)} aria-pressed={walk}>Walk</button>
-          <button className={chip(spin)} onClick={() => setSpin(!spin)} aria-pressed={spin}>Spin</button>
-          <button className={chip(elytra)} onClick={() => setElytra(!elytra)} aria-pressed={elytra}>Elytra</button>
+        <div className="flex flex-wrap items-center gap-2 border-t-2 border-line p-3.5">
+          <PxButton variant="ghost" size="sm" on={walk} onClick={() => setWalk(!walk)} aria-pressed={walk}>Walk</PxButton>
+          <PxButton variant="ghost" size="sm" on={spin} onClick={() => setSpin(!spin)} aria-pressed={spin}>Spin</PxButton>
+          <PxButton variant="ghost" size="sm" on={elytra} onClick={() => setElytra(!elytra)} aria-pressed={elytra}>Elytra</PxButton>
+          <span className="ml-auto text-[12px] text-dim max-sm:hidden">Drag to turn</span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-        <div className="card p-7">
-          <div className="flex flex-wrap gap-2">
-            {item.animated && <span className="rounded-full bg-inv px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-wider text-inv-fg">Animated</span>}
-            {item.exclusive && <span className="rounded-full bg-gradient-to-r from-[#d9a6da] to-[#ffd68c] px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-wider text-[#160f2a]">Exclusive</span>}
-            {item.isNew && !item.exclusive && <span className="rounded-full border border-line px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-wider">New</span>}
-            {item.featured && <span className="rounded-full border border-line px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-wider">Featured</span>}
-          </div>
-          <h1 className="mt-4 text-[clamp(2.2rem,4vw,3.2rem)] font-extrabold leading-[1] tracking-[-0.04em]">{item.name}</h1>
-          {item.description && <p className="mt-3 text-[16px] text-mute">{item.description}</p>}
+      <div className="flex flex-col gap-5 lg:sticky lg:top-24 lg:self-start">
+        <BuyPanel
+          color="#f2f2f4"
+          kind={kind}
+          price={item.exclusive ? "Not for sale" : paid ? priceLabel : "Free"}
+          creator={item.author || "Native"}
+          signedIn={signedIn}
+          account={account}
+          loginHref={`/login?next=${next}`}
+          lines={["Visible in Minecraft to all Native users", "Visible on your Native profile"]}
+          msg={msg}
+          foot={paid ? "Secure checkout · Available instantly" : "Free to wear · Available instantly"}
+          locked={storeLocked && !item.exclusive ? (
+            <div className="rounded-[8px] border-2 border-dashed border-line p-5">
+              <p className="flex items-center gap-2 text-[15px] font-bold"><Lock className="h-4 w-4" /> The store opens at launch</p>
+              <p className="mt-1 text-[14px] text-mute">{isFounder ? "Join before launch and this cloak can be your free founder pick." : `On launch day it’s ${money(item.price)}, or free with Native+.`}</p>
+              <Countdown at={launch.at} size="sm" className="mt-4 justify-start!" />
+              <div className="mt-5 flex flex-wrap gap-3">
+                {isFounder && <PxLink href={signedIn ? "/founder" : "/register?next=/founder"} variant="light"><Plus /> {signedIn ? "Pick it as your free cape" : "Join early · get it free"}</PxLink>}
+                {!signedIn && !isFounder && <PxLink href="/register?next=/founder" variant="light">Create a free account</PxLink>}
+              </div>
+            </div>
+          ) : undefined}
+        >
+          {actions}
+          {remove}
+        </BuyPanel>
 
+        <div className="st-panel p-6">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wider text-dim">About</h2>
+          <p className="mt-2 text-[15px] leading-relaxed text-mute">{item.description || `${item.animated ? "An animated" : "A classic"} Native cloak.`}</p>
           {item.offer && !storeLocked && (
-            <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 text-[13px] font-semibold">
+            <p className="mt-4 inline-flex items-center gap-2 rounded-[6px] border-2 border-line px-3 py-1 text-[13px] font-semibold">
               {item.offer.title} · {item.offer.percent}% off{item.offer.endsAt ? ` until ${new Date(item.offer.endsAt).toLocaleDateString()}` : ""}
             </p>
           )}
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            {storeLocked && !item.exclusive ? (
-              <div className="w-full rounded-[20px] border border-dashed border-line p-5">
-                <p className="flex items-center gap-2 text-[15px] font-bold"><Lock className="h-4 w-4" /> The store opens at launch</p>
-                <p className="mt-1 text-[14px] text-mute">{isFounder ? "Join before launch and this cloak can be your free founder pick." : `On launch day it’s ${money(item.price)}, or free with Native+.`}</p>
-                <Countdown at={launch.at} size="sm" className="mt-4 justify-start!" />
-                <div className="mt-5 flex flex-wrap gap-3">
-                  {isFounder && <Link href={signedIn ? "/founder" : "/register?next=/founder"} className={primary}><Plus className="h-4 w-4" /> {signedIn ? "Pick it as your free cape" : "Join early · get it free"}</Link>}
-                  {!signedIn && !isFounder && <Link href="/register?next=/founder" className={primary}>Create a free account</Link>}
-                </div>
-              </div>
-            ) : item.id === "super-beta-tester" && !own ? (
-              <Link href="/beta" className={primary}><Sparkles className="h-4 w-4" /> Super Beta Testers only · Apply</Link>
-            ) : item.exclusive && !own ? (
-              <span className="inline-flex h-12 items-center gap-2 rounded-full border border-dashed border-line px-5 text-[14px] font-semibold text-mute" title="Not sold. The Native team gives event cloaks out, or with a redeem code.">
-                <Lock className="h-4 w-4" /> Event cloak · given by the Native team or with a code
-              </span>
-            ) : !signedIn && paid ? (
-              <>
-                <Link href="/login" className={primary}><ShoppingBag className="h-4 w-4" /> Sign in to buy · {priceLabel}</Link>
-                <Link href="/plus" className={ghost}><Crown className="h-4 w-4" /> Included with Native+</Link>
-              </>
-            ) : !signedIn ? (
-              <>
-                <Link href="/login" className={primary}>Sign in to add</Link>
-                <Link href="/register" className={ghost}>Create a free account</Link>
-              </>
-            ) : worn ? (
-              <button onClick={() => run("equip", true)} disabled={!!busy} className={ghost}>
-                {spinner("off")} Take off
-              </button>
-            ) : own ? (
-              <button onClick={() => run("equip")} disabled={!!busy} className={primary}>
-                {spinner("equip")} Wear {item.name}
-              </button>
-            ) : paid && member ? (
-              <button onClick={() => run("claim")} disabled={!!busy} className={primary}>
-                {spinner("claim") || <Crown className="h-4 w-4" />} Add with Native+
-              </button>
-            ) : paid ? (
-              <>
-                <button onClick={buy} disabled={buying || !sellable} className={primary} title={sellable || !bill ? undefined : "Payments are switched on soon."}>
-                  {buying ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />} {sellable || !bill ? <>Buy · {priceLabel}</> : `${money(price)} · soon`}
-                </button>
-                <Link href="/plus" className={ghost}><Crown className="h-4 w-4" /> Get it with Native+</Link>
-              </>
-            ) : (
-              <>
-                <button onClick={() => run("claim")} disabled={!!busy} className={primary}>
-                  {spinner("claim") || <Plus className="h-4 w-4" />} Add to locker · Free
-                </button>
-                <button onClick={() => run("equip")} disabled={!!busy} className={ghost}>
-                  {spinner("equip")} Wear now
-                </button>
-              </>
-            )}
-            {signedIn && own && !item.exclusive && !paid && (
-              <button onClick={() => run("unclaim")} disabled={!!busy} className="inline-flex h-12 items-center gap-1.5 rounded-full px-4 text-[14px] font-semibold text-mute transition hover:text-fg disabled:opacity-60">
-                {spinner("unclaim") || <Minus className="h-4 w-4" />} Remove from locker
-              </button>
-            )}
-          </div>
-          <AnimatePresence mode="wait">
-            {msg && (
-              <motion.p key={msg.s} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role={msg.t === "err" ? "alert" : "status"} className={`mt-4 text-[14px] ${msg.t === "err" ? "font-semibold text-fg" : "text-mute"}`}>
-                {msg.s}
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
-
-        <dl className="card grid grid-cols-2 gap-px overflow-hidden bg-line p-0 text-[14px]">
-          {[
-            ["Price", item.exclusive ? "Event only" : paid ? `${money(price)} or Native+` : "Free"],
-            ["In lockers", ownerLabel(owners)],
-            ["Type", item.animated ? "Animated" : "Classic"],
-            ["Made by", item.author || "Native"],
-          ].map(([k, v]) => (
-            <div key={k} className="bg-surface p-5">
-              <dt className="text-[12.5px] font-semibold uppercase tracking-wider text-dim">{k}</dt>
-              <dd className="mt-1.5 font-semibold">{v}</dd>
-            </div>
-          ))}
-        </dl>
-
-        {item.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {item.tags.map((t) => (
-              <span key={t} className="rounded-full border border-line px-3 py-1 text-[13px] text-mute">#{t}</span>
+          <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-[8px] border-2 border-line bg-line text-[14px]">
+            {[["In lockers", ownerLabel(owners)], ["Type", item.animated ? "Animated" : "Classic"], ["Price", item.exclusive ? "Event only" : paid ? `${money(price)} or Native+` : "Free"], ["Made by", item.author || "Native"]].map(([k, v]) => (
+              <div key={k} className="bg-bg p-4"><dt className="text-[11.5px] font-semibold uppercase tracking-wider text-dim">{k}</dt><dd className="mt-1 font-semibold">{v}</dd></div>
             ))}
-          </div>
-        )}
-        <p className="text-[13.5px] text-dim">Native cloaks show on your account everywhere: the launcher, the website and in game with the Native mod. You can only wear Native cloaks and the classic presets. Custom cloak uploads aren’t allowed.</p>
+          </dl>
+          {item.tags.length > 0 && <div className="mt-4 flex flex-wrap gap-1.5">{item.tags.map((t) => <span key={t} className="st-tag">#{t}</span>)}</div>}
+          <p className="mt-4 text-[12.5px] text-dim">Native cloaks show on your account everywhere: the launcher, the website and in game with the Native mod.</p>
+        </div>
       </div>
     </div>
   );
