@@ -1,39 +1,40 @@
 import JsonLd from "@/components/JsonLd";
-import CosmeticsStudio from "@/components/cosmetics/CosmeticsStudio";
+import CosmeticGallery from "@/components/cosmetics/CosmeticGallery";
+import StoreHero from "@/components/store/StoreHero";
 import StoreLockBanner from "@/components/launch/StoreLockBanner";
 import { readSession } from "@/lib/server/session";
-import { getCatalog, getLook, getMine } from "@/lib/server/store";
+import { getCatalog, getMine } from "@/lib/server/store";
 import { breadcrumb, pageMeta } from "@/lib/seo";
+import { COSMETIC_SLOTS, isPaid, sortItems } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 export const metadata = pageMeta({
   title: "Cosmetics",
-  description: "Native 3D cosmetics: hats, glasses, wings, backpacks and shoes. Try any mix on your own skin in 3D, then wear it in the launcher and in game.",
+  description: "Native 3D cosmetics: hats, glasses, wings, backpacks and shoes. Preview them on your own skin in 3D, then wear them in the launcher and in game.",
   path: "/cosmetics",
 });
 
-type Search = { searchParams: Promise<{ item?: string | string[] }> };
-
-export default async function CosmeticsPage({ searchParams }: Search) {
-  const [{ item }, catalog, s] = await Promise.all([searchParams, getCatalog(), readSession()]);
-  const [mine, look] = s ? await Promise.all([getMine(s.token), getLook(s.account.name, s.account.model)]) : [null, { skin: null, model: "default" as const }];
-  const cosmetics = catalog?.cosmetics ?? [];
-  const cape = mine?.equipped ? catalog?.items.find((i) => i.id === mine.equipped)?.stillUrl ?? null : null;
+export default async function CosmeticsPage() {
+  const [catalog, s] = await Promise.all([getCatalog(), readSession()]);
+  const mine = s ? await getMine(s.token) : null;
+  const items = catalog?.cosmetics ?? [];
+  const show = sortItems(items).slice(0, 3);
 
   return (
     <div className="mx-auto max-w-[1280px] px-5 pb-32 pt-10 sm:pt-14">
       <JsonLd data={breadcrumb([{ name: "Cosmetics", path: "/cosmetics" }])} />
-      <StoreLockBanner signedIn={!!s} />
-      <CosmeticsStudio
-        items={cosmetics}
-        signedIn={!!s}
-        owned={mine?.owned ?? []}
-        wearing={mine?.wearing ?? {}}
-        skin={look.skin}
-        model={look.model}
-        cape={cape}
-        initialId={typeof item === "string" ? item : null}
+      <StoreHero
+        active="cosmetics"
+        eyebrow="Native store"
+        title="Cosmetics"
+        blurb="Hats, glasses, wings, backpacks and shoes in real 3D. Preview any piece on your own skin, add it to your locker, then wear it in the launcher and in game."
+        stats={[["Cosmetics", items.length], ["Slots", COSMETIC_SLOTS.length], ["Free", items.filter((i) => !i.exclusive && !isPaid(i)).length]]}
+        previews={show.map((it, i) => (
+          <img key={it.id} src={it.stillUrl} alt="" className={`cutout-sm object-contain [image-rendering:pixelated] ${i === 1 ? "h-24 w-24 -mb-3" : "h-20 w-20"}`} />
+        ))}
       />
+      <StoreLockBanner signedIn={!!s} />
+      <CosmeticGallery items={items} signedIn={!!s} owned={mine?.owned ?? []} wearing={mine?.wearing ?? {}} />
     </div>
   );
 }
