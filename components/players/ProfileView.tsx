@@ -74,8 +74,8 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
   return (
     <>
       <section className="grid gap-6 lg:grid-cols-[360px_1fr]">
-        <div className="st-panel overflow-hidden">
-          <div className="relative h-[420px] bg-gradient-to-b from-[#7ec8ff]/25 to-transparent">
+        <div className="st-panel overflow-hidden !bg-black">
+          <div className="relative h-[420px] bg-black">
             <LockerViewer skin={skin} model={model} cape={cape?.stillUrl ?? null} capeAnim={cape?.animated && cape.stripUrl ? { url: cape.stripUrl, frames: cape.frames, fps: cape.fps } : null} walk spin showCape layers worn={worn} />
           </div>
         </div>
