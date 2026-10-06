@@ -107,7 +107,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
 
   const spin_ = (k: string, icon: React.ReactNode) => (busy === k ? <Loader2 className="animate-spin" /> : icon);
   const next = `/cloaks/${item.id}`;
-  const kind = item.exclusive ? "Event" : paid ? "Lifetime" : "Free";
+  const kind = item.exclusive ? "Event" : "Lifetime";
 
   let actions: React.ReactNode;
   if (item.id === "super-beta-tester" && !own) actions = <PxLink href="/beta" variant="light" size="xl"><Sparkles /> Super Beta Testers only · Apply</PxLink>;

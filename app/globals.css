@@ -1072,12 +1072,10 @@ select optgroup {
   position: absolute;
   width: 84px;
   height: 30px;
-  opacity: 0.5;
   pointer-events: none;
   background:
-    linear-gradient(var(--fg), var(--fg)) 22% 0 / 56% 36% no-repeat,
-    linear-gradient(var(--fg), var(--fg)) 0 36% / 100% 64% no-repeat;
-  filter: opacity(0.14);
+    linear-gradient(color-mix(in srgb, var(--fg) 9%, transparent), color-mix(in srgb, var(--fg) 9%, transparent)) 22% 0 / 56% 36% no-repeat,
+    linear-gradient(color-mix(in srgb, var(--fg) 9%, transparent), color-mix(in srgb, var(--fg) 9%, transparent)) 0 36% / 100% 64% no-repeat;
 }
 .st-card {
   position: relative;
