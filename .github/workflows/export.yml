@@ -1,0 +1,21 @@
+name: export
+on:
+  push:
+    branches: [export-src]
+permissions:
+  contents: write
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - run: |
+          git archive --format=tar.gz -o /tmp/src.tar.gz HEAD
+          git fetch origin export-src --depth=1
+          git checkout -B export-src origin/export-src
+          mkdir -p export && cp /tmp/src.tar.gz export/src.tar.gz
+          git config user.name bot && git config user.email bot@nativelaunch.xyz
+          git add export && git commit -m 'tmp archive' && git push origin export-src
