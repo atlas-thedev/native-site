@@ -101,7 +101,7 @@ export async function playerCard(name: string, owned: number, wished: number, it
   return new ImageResponse(
     (
       <Frame>
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, padding: "0 80px 40px" }}>
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, padding: "0 80px 140px" }}>
           <div style={{ display: "flex", gap: 12, marginBottom: 22 }}>
             <Pill>Native player</Pill>
             {plus ? <Pill bg="#ffd166" fg="#2a1c00">Native+</Pill> : <div style={{ display: "flex" }} />}
