@@ -83,6 +83,7 @@ export default function CapeGallery({ items, signedIn, owned, equipped, banner }
                 href={`/cloaks/${it.id}`}
                 aspect="aspect-[4/5]"
                 players
+                wish={{ signedIn }}
                 own={mine.has(it.id)}
                 worn={equipped === it.id}
                 art={<CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={84} label={`${it.name} cloak`} className="cutout-sm" />}
