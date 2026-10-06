@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { site } from "@/lib/site";
-import { getLook } from "@/lib/server/store";
+import { getAccountSkin } from "@/lib/server/store";
 import { api, clearSession, readSession, setSession, upstreamHeaders, type SiteAccount } from "@/lib/server/session";
 
 export const dynamic = "force-dynamic";
@@ -45,8 +45,8 @@ export async function GET(req: Request, ctx: { params: Promise<{ action: string 
     .catch(() => false);
   // the skin is only for the little head in the navbar, so never let it hold the response up
   const look = Promise.race([
-    getLook(s.account.name, s.account.model).then((l) => l.skin).catch(() => null),
-    new Promise<null>((r) => setTimeout(() => r(null), 1500)),
+    getAccountSkin(s.token, s.account.name, s.account.uuid).catch(() => null),
+    new Promise<null>((r) => setTimeout(() => r(null), 3000)),
   ]);
   const [isAdmin, skin] = await Promise.all([admin, look]);
   return json({ ok: true, account: { name: s.account.name, uuid: s.account.uuid ?? null, isAdmin, skin } });
