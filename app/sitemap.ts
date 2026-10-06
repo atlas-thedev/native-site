@@ -18,9 +18,12 @@ const pages: [string, number, MetadataRoute.Sitemap[number]["changeFrequency"]][
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const capes = (await getCatalog())?.items ?? [];
+  const catalog = await getCatalog();
+  const capes = catalog?.items ?? [];
+  const cosmetics = catalog?.cosmetics ?? [];
   return [
     ...pages.map(([p, priority, changeFrequency]) => ({ url: `${site.url}${p}`, lastModified: new Date(), changeFrequency, priority })),
     ...capes.map((c) => ({ url: `${site.url}/cloaks/${c.id}`, lastModified: new Date(c.createdAt || Date.now()), changeFrequency: "weekly" as const, priority: 0.6 })),
+    ...cosmetics.map((c) => ({ url: `${site.url}/cosmetics/${c.id}`, lastModified: new Date(c.createdAt || Date.now()), changeFrequency: "weekly" as const, priority: 0.6 })),
   ];
 }

@@ -28,7 +28,7 @@ export default async function CapePage({ params }: Params) {
   const [catalog, s] = await Promise.all([getCatalog(), readSession()]);
   const items = catalog?.items ?? [];
   const item = items.find((i) => i.id === id);
-  if (!item && catalog?.cosmetics.some((c) => c.id === id)) redirect(`/cosmetics?item=${encodeURIComponent(id)}`);
+  if (!item && catalog?.cosmetics.some((c) => c.id === id)) redirect(`/cosmetics/${encodeURIComponent(id)}`);
   if (!item) notFound();
   const [mine, look] = s ? await Promise.all([getMine(s.token), getLook(s.account.name, s.account.model)]) : [null, { skin: null, model: "default" as const }];
   const related = items
