@@ -19,7 +19,7 @@ export default function FinalCta() {
           className="mx-auto max-w-[900px] text-balance text-[clamp(2.6rem,6.4vw,5.4rem)] font-extrabold leading-[0.98] tracking-[-0.045em]"
         />
         <Reveal delay={0.15}>
-          <p className="mx-auto mt-6 max-w-[520px] text-lg text-mute">{pre ? "Make your free account now and grab a founder cape before launch." : "Free to download. Built for Windows, macOS and Linux."}</p>
+          <p className="mx-auto mt-6 max-w-[520px] text-lg text-mute">{pre ? "Make your free account now and grab a founder cloak before launch." : "Free to download. Built for Windows, macOS and Linux."}</p>
         </Reveal>
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button href={pre ? "/register?next=/founder" : "/download"} size="lg">{pre ? "Create your account" : "Get started"}</Button>

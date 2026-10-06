@@ -38,7 +38,7 @@ export default function Announcement() {
       <>
         <span className="truncate">
           <b className="font-semibold text-fg">Early access is open.</b>
-          <span className="hidden sm:inline"> Test new builds first and keep the Super Beta cape for good.</span>
+          <span className="hidden sm:inline"> Test new builds first and keep the Super Beta cloak for good.</span>
         </span>
         {launch.prelaunch && (
           <span className="hidden items-center gap-2 md:flex">
@@ -54,8 +54,8 @@ export default function Announcement() {
     body = (
       <>
         <Tag className="h-3.5 w-3.5 shrink-0 text-fg" />
-        <span className="truncate"><b className="text-fg">{offer.title}</b> · {offer.percent}% off{offer.itemIds.length ? " selected capes" : " every cape"}</span>
-        <Link href="/capes" className={pill}>Shop capes <ArrowRight className="h-3 w-3" /></Link>
+        <span className="truncate"><b className="text-fg">{offer.title}</b> · {offer.percent}% off{offer.itemIds.length ? " selected cloaks" : " every cloak"}</span>
+        <Link href="/capes" className={pill}>Shop cloaks <ArrowRight className="h-3 w-3" /></Link>
       </>
     );
   } else if (launch.prelaunch) {
@@ -64,7 +64,7 @@ export default function Announcement() {
         <span className="hidden sm:inline">Native launches in</span>
         <Mini at={launch.at} />
         {launch.founderPick && (
-          <Link href="/founder" className={pill}>Claim a free cape <ArrowRight className="h-3 w-3" /></Link>
+          <Link href="/founder" className={pill}>Claim a free cloak <ArrowRight className="h-3 w-3" /></Link>
         )}
       </>
     );

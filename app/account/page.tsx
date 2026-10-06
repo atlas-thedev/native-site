@@ -9,7 +9,7 @@ import { getCatalog, getMine } from "@/lib/server/store";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
-export const metadata = pageMeta({ title: "Your locker", description: "Manage your Native skin, cape and account.", path: "/account", noindex: true });
+export const metadata = pageMeta({ title: "Your locker", description: "Manage your Native skin, cloak and account.", path: "/account", noindex: true });
 
 /** sha256 of the classic cape PNGs in /public/capes (the server names textures by their sha256). */
 const PRESET_CAPE_IDS: Record<string, string> = {
@@ -29,9 +29,15 @@ export default async function AccountPage() {
   if (!s) redirect("/login");
 
   // Validate the session; a 401 means it expired or was revoked.
+  let authType = "native", mcUuid: string | null = s.account.uuid ?? null;
   try {
     const r = await fetch(`${API_URL}/v1/account/minecraft`, { headers: { Authorization: `Bearer ${s.token}` }, cache: "no-store", signal: AbortSignal.timeout(8000) });
     if (r.status === 401) redirect("/api/auth/expired");
+    if (r.ok) {
+      const j = await r.json();
+      if (typeof j?.account?.type === "string") authType = j.account.type;
+      if (typeof j?.profile?.uuid === "string") mcUuid = j.profile.uuid;
+    }
   } catch (e) {
     if (e && typeof e === "object" && "digest" in e) throw e; // Next redirect
   }
@@ -50,6 +56,25 @@ export default async function AccountPage() {
     }
   } catch {}
 
+  // Premium (Microsoft) accounts wear their real Minecraft skin and cape.
+  const premium = authType === "premium" || authType === "merged";
+  let mojangCape: string | null = null;
+  if (premium && mcUuid) {
+    try {
+      const r = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${mcUuid.replace(/-/g, "")}`, { cache: "no-store", signal: AbortSignal.timeout(6000) });
+      if (r.ok) {
+        const p = await r.json();
+        const v = (p.properties ?? []).find((x: { name: string }) => x.name === "textures")?.value;
+        const t = v ? JSON.parse(Buffer.from(v, "base64").toString("utf8")).textures ?? {} : {};
+        if (t.SKIN?.url) {
+          skin = https(t.SKIN.url);
+          model = t.SKIN.metadata?.model === "slim" ? "slim" : "default";
+        }
+        mojangCape = https(t.CAPE?.url);
+      }
+    } catch {}
+  }
+
   const [catalog, mine, founder] = await Promise.all([
     getCatalog(),
     getMine(s.token),
@@ -60,10 +85,11 @@ export default async function AccountPage() {
   const byId = new Map((catalog?.items ?? []).map((i) => [i.id, i]));
   const nativeCapes = (mine?.owned ?? []).map((o) => byId.get(o.id)).filter((i): i is StoreItem => !!i);
 
-  // Show the worn cape as its own card (a classic cape or a Native cape), never as a vague "current cape".
+  // Show the worn cape as its own card (a classic cape or a Native cloak), never as a vague "current cape".
   const wornStore = mine?.equipped ?? capeStore;
   const capeHash = (cape?.match(/\/textures\/([a-f0-9]{64})/i) || [])[1]?.toLowerCase();
   const capeId = !cape ? "none" : wornStore ? "store" : (capeHash && PRESET_CAPE_IDS[capeHash]) || "current";
+  if (premium && !wornStore && mojangCape) cape = mojangCape;
 
   const names = Object.fromEntries((catalog?.items ?? []).map((i) => [i.id, i.name]));
   return (
@@ -72,14 +98,14 @@ export default async function AccountPage() {
         <div className="mx-auto max-w-[1280px] px-5 pt-8">
           <Link href="/founder" className="dots flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-line p-5 transition hover:border-fg/40 sm:p-6">
             <span>
-              <span className="block text-[20px] font-extrabold tracking-tight">You have a free founder cape waiting</span>
-              <span className="mt-1 block text-mute">You joined before launch, so one founder cape is on us. Pick yours.</span>
+              <span className="block text-[20px] font-extrabold tracking-tight">You have a free founder cloak waiting</span>
+              <span className="mt-1 block text-mute">You joined before launch, so one founder cloak is on us. Pick yours.</span>
             </span>
             <span className="inline-flex h-11 items-center rounded-full bg-inv px-5 text-[14.5px] font-semibold text-inv-fg">Pick it now</span>
           </Link>
         </div>
       )}
-      <Locker initial={{ name: s.account.name, email: s.account.email, skin, cape, model, capeAnim, capeStore: wornStore, nativeCapes, capeId }} />
+      <Locker initial={{ name: s.account.name, email: s.account.email, premium, skin, cape, model, capeAnim, capeStore: wornStore, nativeCapes, capeId }} />
       <BillingPanel names={names} />
     </>
   );

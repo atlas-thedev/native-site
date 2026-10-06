@@ -8,7 +8,7 @@ import { pageMeta } from "@/lib/seo";
 import type { StoreItem } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
-export const metadata = pageMeta({ title: "Your free founder cape", description: "Join Native before launch and pick one exclusive cape for free.", path: "/founder", noindex: true });
+export const metadata = pageMeta({ title: "Your free founder cloak", description: "Join Native before launch and pick one exclusive cloak for free.", path: "/founder", noindex: true });
 
 type Founder = { eligible?: boolean; picked?: string | null; capes?: string[] };
 

@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import LockerViewer, { type ViewerHandle } from "./LockerViewer";
 
 type Model = "default" | "slim";
-type Initial = { name: string; email: string; skin: string | null; cape: string | null; model: Model; capeAnim?: CapeAnim | null; capeStore?: string | null; nativeCapes?: StoreItem[]; capeId?: string };
+type Initial = { name: string; email: string; premium?: boolean; skin: string | null; cape: string | null; model: Model; capeAnim?: CapeAnim | null; capeStore?: string | null; nativeCapes?: StoreItem[]; capeId?: string };
 
 const PRESET_SKINS = [
   { id: "steve", name: "Steve", src: "/skins/steve.png", model: "default" as Model },
@@ -160,7 +160,7 @@ export default function Locker({ initial }: { initial: Initial }) {
     await pickSkin(await toDataUrl(f), { detect: true, name: f.name.replace(/\.png$/i, "").replace(/[-_]+/g, " ") });
   };
 
-  // Native capes are worn straight away (they live on the server, not in the unsaved draft).
+  // Native cloaks are worn straight away (they live on the server, not in the unsaved draft).
   const [wearing, setWearing] = useState<string | null>(initial.capeStore ?? null);
   const [wearBusy, setWearBusy] = useState<string | null>(null);
   const wearNative = async (id: string | null) => {
@@ -170,7 +170,7 @@ export default function Locker({ initial }: { initial: Initial }) {
       setWearing(r.equipped);
       window.location.reload();
     } catch (e) {
-      setMsg({ t: "err", s: e instanceof Error ? e.message : "Couldn’t change your cape." });
+      setMsg({ t: "err", s: e instanceof Error ? e.message : "Couldn’t change your cloak." });
       setWearBusy(null);
     }
   };
@@ -243,7 +243,7 @@ export default function Locker({ initial }: { initial: Initial }) {
         <div className="min-w-0 flex-1">
           <p className="eyebrow">Your locker</p>
           <h1 className="truncate text-[clamp(1.8rem,4vw,2.8rem)] font-extrabold leading-tight tracking-[-0.04em]">{initial.name}</h1>
-          <p className="truncate text-[14px] text-dim">{initial.email}</p>
+          <p className="truncate text-[14px] text-dim">{initial.email || (initial.premium ? "Signed in with Microsoft" : "")}</p>
         </div>
         <button onClick={signOut} className="inline-flex h-11 items-center gap-2 rounded-full border border-line px-5 text-[14.5px] font-semibold transition hover:bg-surface-2">
           <LogOut className="h-4 w-4" /> Sign out
@@ -273,11 +273,14 @@ export default function Locker({ initial }: { initial: Initial }) {
           <section className="card p-6 sm:p-8" aria-labelledby="sk">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 id="sk" className="text-[22px] font-extrabold tracking-tight">Skin</h2>
-              <div role="group" aria-label="Arm model" className="flex gap-2">
+              {!initial.premium && <div role="group" aria-label="Arm model" className="flex gap-2">
                 <button className={chip(model === "default")} onClick={() => setModel("default")} aria-pressed={model === "default"}>Classic</button>
                 <button className={chip(model === "slim")} onClick={() => setModel("slim")} aria-pressed={model === "slim"}>Slim</button>
-              </div>
+              </div>}
             </div>
+            {initial.premium ? (
+              <p className="mt-4 text-[14.5px] text-mute">Your skin comes from your Minecraft profile. Change it in the Native launcher&apos;s Locker, it updates everywhere.</p>
+            ) : (<>
             <div
               onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
               onDragLeave={() => setDrag(false)}
@@ -324,33 +327,34 @@ export default function Locker({ initial }: { initial: Initial }) {
                 ))}
               </ul>
             )}
+            </>)}
           </section>
 
           <section className="card p-6 sm:p-8" aria-labelledby="cp">
-            <h2 id="cp" className="text-[22px] font-extrabold tracking-tight">Cape</h2>
+            <h2 id="cp" className="text-[22px] font-extrabold tracking-tight">Cloak</h2>
             <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[14px] text-dim">Pick a Native cape, or go without.</p>
-              <Link href="/capes" className="inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-[13px] font-semibold transition hover:bg-surface-2">Browse Native capes <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <p className="text-[14px] text-dim">{initial.premium ? "Wear a Native cloak over your Minecraft cape, or go without. Your Minecraft capes are in the launcher's Locker." : "Pick a Native cloak or a classic cape, or go without."}</p>
+              <Link href="/capes" className="inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-[13px] font-semibold transition hover:bg-surface-2">Browse Native cloaks <ArrowRight className="h-3.5 w-3.5" /></Link>
             </div>
             {(initial.nativeCapes?.length ?? 0) > 0 && (
               <>
-                <p className="eyebrow mt-6">Your Native capes</p>
+                <p className="eyebrow mt-6">Your Native cloaks</p>
                 <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                   {initial.nativeCapes!.map((c) => {
                     const on = wearing === c.id;
                     return (
                       <button key={c.id} onClick={() => wearNative(on ? null : c.id)} disabled={!!wearBusy} aria-pressed={on} title={on ? "Take off" : `Wear ${c.name}`} className={`flex items-center gap-3 rounded-2xl border p-3 text-left text-[14px] font-medium transition disabled:opacity-60 ${on ? "border-fg bg-surface-2 text-fg" : "border-line text-mute hover:bg-surface-2 hover:text-fg"}`}>
-                        <span className="flex h-12 w-[30px] shrink-0 items-center justify-center"><CapeStrip strip={c.animated ? c.stripUrl : null} still={c.stillUrl} frames={c.frames} fps={c.fps} width={30} label={`${c.name} cape`} /></span>
+                        <span className="flex h-12 w-[30px] shrink-0 items-center justify-center"><CapeStrip strip={c.animated ? c.stripUrl : null} still={c.stillUrl} frames={c.frames} fps={c.fps} width={30} label={`${c.name} cloak`} /></span>
                         <span className="min-w-0 leading-tight"><span className="block truncate">{c.name}</span>{c.animated && <span className="text-[11.5px] text-dim">Animated</span>}</span>
                         {wearBusy === c.id ? <Loader2 className="ml-auto h-4 w-4 shrink-0 animate-spin" /> : on && <Check className="ml-auto h-4 w-4 shrink-0" />}
                       </button>
                     );
                   })}
                 </div>
-                <p className="eyebrow mt-6">Classic capes</p>
+                {!initial.premium && <p className="eyebrow mt-6">Classic capes</p>}
               </>
             )}
-            <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+            {!initial.premium && <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
               {[{ id: "none", name: "No cape", src: null as string | null }, ...(base.current.capeId === "current" && base.current.capeUrl ? [{ id: "current", name: "Current cape", src: base.current.capeUrl }] : []), ...CAPES].map((c) => {
                 const on = capeId === c.id;
                 return (
@@ -361,7 +365,7 @@ export default function Locker({ initial }: { initial: Initial }) {
                   </button>
                 );
               })}
-            </div>
+            </div>}
           </section>
         </div>
       </div>

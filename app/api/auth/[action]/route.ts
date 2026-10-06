@@ -21,6 +21,21 @@ export async function GET(req: Request, ctx: { params: Promise<{ action: string 
     await clearSession();
     return NextResponse.redirect(new URL("/login", req.url), 302);
   }
+  // One-time sign-in link from the launcher (Open website). 60 s, single use.
+  if (action === "link") {
+    const code = str(new URL(req.url).searchParams.get("code"), 128);
+    if (code) {
+      try {
+        const r = await api("/v1/auth/web-link/redeem", { method: "POST", headers: upstreamHeaders(req), body: JSON.stringify({ code }) });
+        if (r.ok && typeof r.data.token === "string") {
+          const a = (r.data.account ?? {}) as Record<string, unknown>;
+          await setSession(r.data.token, { id: a.id as number, name: str(a.name), email: str(a.email), uuid: a.uuid ? str(a.uuid) : undefined, model: a.model ? str(a.model) : undefined });
+          return NextResponse.redirect(new URL("/account", req.url), 302);
+        }
+      } catch {}
+    }
+    return NextResponse.redirect(new URL("/login?link=expired", req.url), 302);
+  }
   if (action !== "me") return json({ ok: false, error: "Not found." }, 404);
   const s = await readSession();
   if (!s) return json({ ok: true, account: null });
@@ -40,6 +55,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ action: string
   const { action } = await ctx.params;
 
   if (action === "logout") {
+    const s = await readSession();
+    if (s) await api("/v1/auth/logout", { method: "POST", headers: upstreamHeaders(req, { Authorization: `Bearer ${s.token}` }), body: "{}" }).catch(() => null);
     await clearSession();
     return json({ ok: true });
   }

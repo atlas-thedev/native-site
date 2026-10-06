@@ -8,8 +8,8 @@ import StoreLockBanner from "@/components/launch/StoreLockBanner";
 
 export const dynamic = "force-dynamic";
 export const metadata = pageMeta({
-  title: "Capes",
-  description: "Browse every Native cape, animated and classic. Preview them in 3D, add them to your locker and wear them in the launcher and in game.",
+  title: "Cloaks",
+  description: "Browse every Native cloak, animated and classic. Preview them in 3D, add them to your locker and wear them in the launcher and in game.",
   path: "/capes",
 });
 
@@ -22,16 +22,16 @@ export default async function CapesPage() {
 
   return (
     <div className="mx-auto max-w-[1280px] px-5 pb-32 pt-16 sm:pt-24">
-      <JsonLd data={breadcrumb([{ name: "Capes", path: "/capes" }])} />
+      <JsonLd data={breadcrumb([{ name: "Cloaks", path: "/capes" }])} />
       <header className="mb-10 flex flex-wrap items-end justify-between gap-6">
         <div>
-          <p className="eyebrow">Native capes</p>
-          <h1 className="mt-4 text-[clamp(2.6rem,6vw,4.6rem)] font-extrabold leading-[1] tracking-[-0.045em]">Capes that move.</h1>
-          <p className="mt-5 max-w-[580px] text-lg text-mute">Every Native cape in one place. Preview them in 3D, add them to your locker and wear them in the launcher and in game. Each cape is a one-off $1.99, or free with Native+.</p>
+          <p className="eyebrow">Native cloaks</p>
+          <h1 className="mt-4 text-[clamp(2.6rem,6vw,4.6rem)] font-extrabold leading-[1] tracking-[-0.045em]">Cloaks that move.</h1>
+          <p className="mt-5 max-w-[580px] text-lg text-mute">Every Native cloak in one place. Preview them in 3D, add them to your locker and wear them in the launcher and in game. Each cloak is a one-off $1.99, or free with Native+.</p>
         </div>
         <div className="flex flex-col items-end gap-4">
           {items.length > 0 && <dl className="flex gap-8 text-right">
-            {[["Capes", items.length], ["Animated", animated], ["In lockers", owners]].map(([k, v]) => (
+            {[["Cloaks", items.length], ["Animated", animated], ["In lockers", owners]].map(([k, v]) => (
               <div key={k}>
                 <dd className="text-[28px] font-extrabold tracking-tight">{Number(v).toLocaleString()}</dd>
                 <dt className="text-[12.5px] font-semibold uppercase tracking-wider text-dim">{k}</dt>
