@@ -77,7 +77,7 @@ export default function CapeGallery({ items, signedIn, owned, equipped }: Props)
             const worn = equipped === it.id;
             return (
               <motion.li key={it.id} layout initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: Math.min(i, 10) * 0.035, ease: [0.16, 1, 0.3, 1] }}>
-                <Link href={`/capes/${it.id}`} className={`group relative flex h-full flex-col rounded-[22px] border bg-surface p-3 transition hover:-translate-y-0.5 hover:border-fg/40 hover:bg-surface-2 ${worn ? "border-fg/70" : "border-line"}`}>
+                <Link href={`/cloaks/${it.id}`} className={`group relative flex h-full flex-col rounded-[22px] border bg-surface p-3 transition hover:-translate-y-0.5 hover:border-fg/40 hover:bg-surface-2 ${worn ? "border-fg/70" : "border-line"}`}>
                   <div className="dots relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-2xl">
                     <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={84} label={`${it.name} cloak`} className="cutout-sm transition duration-500 group-hover:scale-[1.06]" />
                     <div className="absolute left-2.5 top-2.5 flex gap-1.5">

@@ -7,6 +7,7 @@ import {
   Megaphone,
   Rocket,
   Shirt,
+  Glasses,
   Tag,
   Ticket,
   Users,
@@ -22,6 +23,7 @@ import AdminSite from "./AdminSite";
 import AdminOffers from "./AdminOffers";
 import AdminPolls from "./AdminPolls";
 import AdminCapes from "./AdminCapes";
+import AdminCosmetics from "./AdminCosmetics";
 import AdminUsers from "./AdminUsers";
 import AdminCodes from "./AdminCodes";
 import AdminBeta from "./AdminBeta";
@@ -33,7 +35,8 @@ const TABS = [
   { id: "offers", label: "Offers", icon: Tag },
   { id: "votes", label: "Votes", icon: Vote },
   { id: "beta", label: "Beta testers", icon: Bug },
-  { id: "capes", label: "Capes", icon: Shirt },
+  { id: "capes", label: "Cloaks", icon: Shirt },
+  { id: "cosmetics", label: "Cosmetics", icon: Glasses },
   { id: "users", label: "Users", icon: Users },
   { id: "codes", label: "Codes & gifts", icon: Ticket },
 ] as const;
@@ -184,6 +187,8 @@ export default function AdminApp({ name }: { name: string }) {
               <AdminBeta {...shared} />
             ) : tab === "capes" ? (
               <AdminCapes {...shared} />
+            ) : tab === "cosmetics" ? (
+              <AdminCosmetics {...shared} />
             ) : tab === "users" ? (
               <AdminUsers items={items} />
             ) : (

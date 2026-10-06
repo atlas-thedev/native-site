@@ -17,7 +17,7 @@ export default function AdminLaunch({ doc, setDoc, items }: Shared) {
   const save = (patch: Partial<Settings["launch"]>, key: string, ok: string) => run(key, async () => setDoc(await adm<SiteDoc>("POST", "site", { launch: patch })), ok);
   const dirty = JSON.stringify(l) !== JSON.stringify(doc.settings.launch);
   const live = doc.config.launch;
-  const sellable = items.filter((i) => !i.exclusive);
+  const sellable = items.filter((i) => !i.exclusive && i.kind !== "cosmetic");
 
   return (
     <div className="flex flex-col gap-6">

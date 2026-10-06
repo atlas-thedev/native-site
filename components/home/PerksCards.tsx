@@ -18,14 +18,14 @@ export default function PerksCards() {
       <div className="grid gap-5 lg:grid-cols-2">
         <Reveal className="h-full">
           <div className="nx-panel flex h-full flex-col p-8 sm:p-10">
-            <p className="eyebrow">Capes</p>
+            <p className="eyebrow">Cloaks</p>
             <h3 className="mt-4 text-[clamp(1.9rem,3.4vw,2.8rem)] font-extrabold leading-[1.05] tracking-[-0.035em]">
               Your skin. Your cape.
             </h3>
             <p className="mt-4 max-w-[420px] text-[16.5px] leading-relaxed text-mute">
               Browse Native capes, preview them in 3D and wear them everywhere you play.
             </p>
-            <Link href="/capes" className="nx-pill nx-pill-ghost mt-7 h-12 w-fit px-6 text-[15px]">
+            <Link href="/cloaks" className="nx-pill nx-pill-ghost mt-7 h-12 w-fit px-6 text-[15px]">
               Browse capes <ArrowUpRight className="h-4 w-4" />
             </Link>
             <div className="nx-shot mt-9 hidden sm:block">

@@ -100,7 +100,7 @@ export default function CheckoutClient() {
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href={back ?? "/account"} className={btn}>{back ? "Back to the store" : "Open your locker"}</Link>
-            <Link href="/capes" className={ghost}>Browse capes</Link>
+            <Link href="/cloaks" className={ghost}>Browse cloaks</Link>
           </div>
         </>
       ) : phase === "closed" ? (
@@ -109,7 +109,7 @@ export default function CheckoutClient() {
           <p className="mx-auto mt-4 max-w-[460px] text-[17px] text-mute">You haven’t been charged. Pick up where you left off, or go back.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button onClick={reopen} className={btn}>Continue to payment</button>
-            <Link href={back ?? "/capes"} className={ghost}>Go back</Link>
+            <Link href={back ?? "/cloaks"} className={ghost}>Go back</Link>
           </div>
         </>
       ) : phase === "error" ? (
@@ -117,7 +117,7 @@ export default function CheckoutClient() {
           <h1 className="text-[clamp(2.2rem,5vw,3.4rem)] font-extrabold leading-[1.02] tracking-[-0.04em]">Checkout unavailable</h1>
           <p className="mx-auto mt-4 max-w-[460px] text-[17px] text-mute" role="alert">{error}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href={back ?? "/capes"} className={btn}>Back to capes</Link>
+            <Link href={back ?? "/cloaks"} className={btn}>Back to cloaks</Link>
             <Link href="/support" className={ghost}>Get help</Link>
           </div>
         </>
