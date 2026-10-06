@@ -18,6 +18,8 @@ const COS_TABS = [
   { id: "glasses", label: "Glasses", noun: "glasses" },
   { id: "back", label: "Wings", noun: "wings or backpacks" },
   { id: "shoes", label: "Shoes", noun: "shoes" },
+  { id: "hand", label: "Hand", noun: "hand items" },
+  { id: "balloon", label: "Balloons", noun: "balloons" },
 ] as const;
 type CosTab = (typeof COS_TABS)[number]["id"];
 const priceOf = (it: StoreItem) => (it.exclusive ? "Event" : it.paid ? `$${Number(it.price).toFixed(2)}` : "Free");

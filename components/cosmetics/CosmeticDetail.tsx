@@ -10,7 +10,7 @@ import { ownerLabel, storeAction, type StoreAction } from "../capes/actions";
 import { getBilling, startCheckout, type BillingState } from "../capes/billing";
 import { useLaunch } from "../launch/LaunchContext";
 import Countdown from "../launch/Countdown";
-import { COSMETIC_SLOTS, SLOT_NAMES, isPaid, money, priceNow, type CosmeticSlot, type Owned, type StoreItem, type Wearing } from "@/lib/store";
+import { COSMETIC_SLOTS, SIDED_SLOTS, SLOT_NAMES, type Side, isPaid, money, priceNow, type CosmeticSlot, type Owned, type StoreItem, type Wearing } from "@/lib/store";
 
 type Props = {
   item: StoreItem;
@@ -40,6 +40,10 @@ export default function CosmeticDetail({ item, all, signedIn, account, owned: in
   // what's tried on next to this piece, one id per slot; starts with what the account wears
   const [extra, setExtra] = useState<Partial<Record<CosmeticSlot, string | null>>>({});
   const viewer = useRef<CosmeticViewerHandle>(null);
+  // hand items and balloons: which side they sit on (null = the item's own default)
+  const [sides, setSides] = useState<Record<string, string>>({});
+  const [mySide, setMySide] = useState<Side | null>(null);
+  const sided = SIDED_SLOTS.includes(slot);
   const [bill, setBill] = useState<BillingState | null>(null);
   const [buying, setBuying] = useState(false);
   const paid = isPaid(item);
@@ -66,6 +70,7 @@ export default function CosmeticDetail({ item, all, signedIn, account, owned: in
         .then((d) => {
           if (!d?.signedIn) return;
           if (d.wearing) setWearing(d.wearing);
+          if (d.sides) { setSides(d.sides); setMySide((cur) => cur ?? ((d.sides[slot] as Side | undefined) ?? null)); }
           if (Array.isArray(d.owned)) setOwned(d.owned);
         })
         .catch(() => {});
@@ -81,8 +86,8 @@ export default function CosmeticDetail({ item, all, signedIn, account, owned: in
     const ids = COSMETIC_SLOTS.map((s) => (s === slot ? item.id : (s in extra ? extra[s] : wearing[s]) ?? null));
     return ids.map((id) => (id ? byId.get(id) : undefined))
       .filter((it): it is StoreItem => !!it && !!it.modelUrl && !!it.textureUrl)
-      .map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, slot: it.slot }));
-  }, [byId, item.id, slot, extra, wearing]);
+      .map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, slot: it.slot, side: it.slot === slot ? mySide : ((sides[it.slot ?? ""] as Side | undefined) ?? null) }));
+  }, [byId, item.id, slot, extra, wearing, mySide, sides]);
 
   const buy = async () => {
     setBuying(true);
@@ -99,7 +104,7 @@ export default function CosmeticDetail({ item, all, signedIn, account, owned: in
     setBusy(off ? "off" : action);
     setMsg(null);
     try {
-      const r = await storeAction(action, off ? null : item.id, off ? slot : undefined);
+      const r = await storeAction(action, off ? null : item.id, off ? slot : undefined, !off && sided && mySide ? mySide : undefined);
       setWearing(r.wearing);
       if (r.owned) setOwned(r.owned);
       if (action === "claim" || (action === "equip" && !off && !own)) {
@@ -122,6 +127,16 @@ export default function CosmeticDetail({ item, all, signedIn, account, owned: in
     }
   };
 
+  const pickSide = async (next: Side) => {
+    setMySide(next);
+    if (!on || !signedIn) return;
+    try {
+      const r = await storeAction("equip", null, slot, next);
+      if (r.sides) setSides(r.sides);
+    } catch (e) {
+      setMsg({ t: "err", s: e instanceof Error ? e.message : "Couldn’t change that." });
+    }
+  };
   const spin_ = (k: string, icon: React.ReactNode) => (busy === k ? <Loader2 className="animate-spin" /> : icon);
   const next = `/cosmetics/${item.id}`;
   const color = SLOT_COLOR[slot];
@@ -165,6 +180,9 @@ export default function CosmeticDetail({ item, all, signedIn, account, owned: in
           <div className="flex flex-wrap items-center gap-2 border-t-2 border-line p-3.5">
             <PxButton variant="ghost" size="sm" on={walk} onClick={() => setWalk(!walk)} aria-pressed={walk}>Walk</PxButton>
             <PxButton variant="ghost" size="sm" on={spin} onClick={() => setSpin(!spin)} aria-pressed={spin}>Spin</PxButton>
+            {sided && (["left", "right"] as const).map((sd) => (
+              <PxButton key={sd} variant="ghost" size="sm" on={(mySide ?? "") === sd} onClick={() => pickSide(sd)} aria-pressed={(mySide ?? "") === sd}>{slot === "hand" ? (sd === "left" ? "Left hand" : "Right hand") : sd === "left" ? "Left side" : "Right side"}</PxButton>
+            ))}
             {cape && <PxButton variant="ghost" size="sm" on={withCape} onClick={() => setWithCape(!withCape)} aria-pressed={withCape}>Cloak</PxButton>}
             <span className="ml-auto text-[12px] text-dim max-sm:hidden">Drag to turn · scroll to zoom</span>
           </div>

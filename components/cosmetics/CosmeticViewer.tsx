@@ -4,7 +4,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import type { CosmeticSlot } from "@/lib/store";
 
 export type CosmeticViewerHandle = { reset: () => void; zoom: (factor: number) => void };
-export type Worn = { id: string; modelUrl: string; textureUrl: string; slot?: string };
+export type Worn = { id: string; modelUrl: string; textureUrl: string; slot?: string; side?: "left" | "right" | null };
 type Built = { model: { flat: { anim: unknown[] }[] }; update: (t: number, walk: number) => void; dispose: () => void };
 type Props = {
   skin: string;
@@ -26,6 +26,8 @@ const SHOTS: Record<CosmeticSlot | "all", [number, number, number]> = {
   glasses: [0.3, 9, 1.0],
   back: [Math.PI - 0.6, 3, 0.62],
   shoes: [0.7, -17, 0.95],
+  hand: [0.55, -2, 0.7],
+  balloon: [0.4, 6, 0.55],
 };
 
 const models = new Map<string, Promise<unknown>>();
@@ -178,6 +180,7 @@ const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function Cosmetic
               const g = (o as import("three").Mesh).geometry;
               if (g && !g.attributes.normal) g.computeVertexNormals();
             });
+          (b as unknown as { setSide?: (s: unknown) => void }).setSide?.(w.side);
           next.push(ncm.attachToPlayer(b, v.current.playerObject.skin));
         } catch {
           /* a broken cosmetic is skipped, the rest still show */
