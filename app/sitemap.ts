@@ -7,6 +7,7 @@ const pages: [string, number, MetadataRoute.Sitemap[number]["changeFrequency"]][
   ["/download", 0.9, "weekly"],
   ["/cloaks", 0.8, "daily"],
   ["/cosmetics", 0.8, "daily"],
+  ["/players", 0.5, "daily"],
   ["/plus", 0.7, "monthly"],
   ["/vote", 0.6, "daily"],
   ["/beta", 0.7, "weekly"],

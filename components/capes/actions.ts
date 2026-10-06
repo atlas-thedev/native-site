@@ -3,6 +3,14 @@
 import type { CosmeticSlot, Owned, Wearing } from "@/lib/store";
 
 export type StoreAction = "claim" | "unclaim" | "equip";
+
+/** Lower-level call for wishlist / privacy actions. */
+export async function storeActionRaw(body: Record<string, unknown>): Promise<{ ok: boolean; error?: string; wishlist?: string[] }> {
+  const r = await fetch("/api/store", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const d = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string; expired?: boolean; wishlist?: string[] };
+  if (d.expired) { window.location.href = "/login"; return { ok: false, error: "Your session expired." }; }
+  return { ok: !!d.ok, error: d.error, wishlist: d.wishlist };
+}
 export type ActionResult = { equipped: string | null; wearing: Wearing; owned?: Owned[] };
 
 /** Calls the site's store proxy. Sends the user to /login if the session expired. */

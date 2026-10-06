@@ -1,0 +1,178 @@
+"use client";
+
+import { Check, Copy, Crown, EyeOff, Heart, Lock, Package } from "lucide-react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import CapeStrip from "../CapeStrip";
+import LockerViewer from "../LockerViewer";
+import type { Worn } from "../cosmetics/CosmeticViewer";
+import ItemCard from "../store/ItemCard";
+import { SLOT_COLOR } from "../cosmetics/CosmeticGallery";
+import { COSMETIC_SLOTS, SLOT_NAMES, isCosmetic, type PlayerProfile, type StoreItem } from "@/lib/store";
+import { storeActionRaw } from "../capes/actions";
+
+type Tab = "locker" | "wishlist";
+type Filter = "all" | "capes" | (typeof COSMETIC_SLOTS)[number];
+
+const TAG = (it: StoreItem) => (it.exclusive ? <span className="st-tag" style={{ background: "#9b6bff", color: "#fff" }}>Event</span> : null);
+
+type Props = {
+  profile: PlayerProfile;
+  /** every item the player owns or wishes for, from the catalog */
+  items: StoreItem[];
+  skin: string;
+  model: "default" | "slim";
+  own: boolean;
+  initialPrefs: { hideLocker: boolean; hideWishlist: boolean };
+  joined: string;
+};
+
+/** A player's page: 3D look, stats, their locker and their wishlist. */
+export default function ProfileView({ profile, items, skin, model, own, initialPrefs, joined }: Props) {
+  const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
+  const [tab, setTab] = useState<Tab>("locker");
+  const [filter, setFilter] = useState<Filter>("all");
+  const [prefs, setPrefs] = useState(initialPrefs);
+  const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const wornIds = useMemo(() => new Set([profile.equipped, ...Object.values(profile.wearing)].filter(Boolean) as string[]), [profile]);
+  const ownedItems = useMemo(() => profile.owned.map((o) => byId.get(o.id)).filter((i): i is StoreItem => !!i), [profile.owned, byId]);
+  const wishItems = useMemo(() => profile.wishlist.map((o) => byId.get(o.id)).filter((i): i is StoreItem => !!i), [profile.wishlist, byId]);
+  const source = tab === "locker" ? ownedItems : wishItems;
+  const matches = (it: StoreItem, f: Filter) => f === "all" || (f === "capes" ? !isCosmetic(it) : it.slot === f);
+  const list = source.filter((it) => matches(it, filter));
+  const cape = profile.equipped ? byId.get(profile.equipped) : undefined;
+  const worn: Worn[] = COSMETIC_SLOTS.map((s) => profile.wearing[s]).map((id) => (id ? byId.get(id) : undefined))
+    .filter((it): it is StoreItem => !!it && !!it.modelUrl && !!it.textureUrl).map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, slot: it.slot }));
+
+  const hidden = tab === "locker" ? profile.hidden.locker : profile.hidden.wishlist;
+  const filters = ([
+    ["all", "All", source.length],
+    ["capes", "Cloaks", source.filter((i) => matches(i, "capes")).length],
+    ...COSMETIC_SLOTS.map((s) => [s, SLOT_NAMES[s], source.filter((i) => i.slot === s).length]),
+  ] as [Filter, string, number][]).filter(([id, , n]) => id === "all" || n > 0);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/u/${encodeURIComponent(profile.name)}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2200);
+    } catch {}
+  };
+  const toggle = async (key: "hideLocker" | "hideWishlist") => {
+    setSaving(true);
+    const next = !prefs[key];
+    try {
+      const r = await storeActionRaw({ action: "prefs", [key]: next });
+      if (r.ok) setPrefs({ ...prefs, [key]: next });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      <section className="grid gap-6 lg:grid-cols-[360px_1fr]">
+        <div className="st-panel overflow-hidden">
+          <div className="relative h-[420px] bg-gradient-to-b from-[#7ec8ff]/25 to-transparent">
+            <LockerViewer skin={skin} model={model} cape={cape?.stillUrl ?? null} capeAnim={cape?.animated && cape.stripUrl ? { url: cape.stripUrl, frames: cape.frames, fps: cape.fps } : null} walk spin showCape layers worn={worn} />
+          </div>
+        </div>
+        <div className="st-panel p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="truncate text-[clamp(2rem,4vw,2.9rem)] font-extrabold leading-none tracking-[-0.035em]">{profile.name}</h1>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {profile.plus && <span className="st-tag is-inv"><Crown className="h-3 w-3" /> Native+</span>}
+                {profile.admin && <span className="st-tag">Team</span>}
+                {profile.badges.map((b) => <span key={b} className="st-tag">{b}</span>)}
+                <span className="text-[13px] text-dim">Joined {joined}</span>
+              </div>
+            </div>
+            <button onClick={copy} className="pxb is-ghost"><span className="pxb-face">{copied ? <><Check /> Copied</> : <><Copy /> Share profile</>}</span></button>
+          </div>
+          <dl className="mt-6 grid grid-cols-3 gap-3">
+            {[
+              ["In locker", profile.hidden.locker ? "Hidden" : profile.counts.owned.toLocaleString()],
+              ["Wishlist", profile.hidden.wishlist ? "Hidden" : profile.counts.wishlist.toLocaleString()],
+              ["Wearing", String(wornIds.size)],
+            ].map(([k, v]) => (
+              <div key={k} className="rounded-[8px] border-2 border-line bg-black/20 p-3 shadow-[inset_0_2px_0_rgb(0_0_0/0.3)]">
+                <dt className="text-[11.5px] font-semibold uppercase tracking-wider text-dim">{k}</dt>
+                <dd className="mt-1 text-[24px] font-extrabold leading-none tracking-tight">{v}</dd>
+              </div>
+            ))}
+          </dl>
+          {wornIds.size > 0 && (
+            <div className="mt-6">
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-dim">Wearing now</p>
+              <ul className="mt-2 flex flex-wrap gap-2.5">
+                {[...wornIds].map((id) => byId.get(id)).filter((i): i is StoreItem => !!i).map((it) => (
+                  <li key={it.id}>
+                    <Link href={`/${isCosmetic(it) ? "cosmetics" : "cloaks"}/${it.id}`} className="inline-flex items-center gap-2.5 rounded-[8px] border-2 border-line bg-surface px-2.5 py-2 transition hover:border-fg/40" style={it.slot ? ({ borderLeftColor: SLOT_COLOR[it.slot], borderLeftWidth: 4 } as React.CSSProperties) : undefined}>
+                      <span className="flex h-9 w-9 items-center justify-center">
+                        {isCosmetic(it) ? <img src={it.stillUrl} alt="" className="h-9 w-9 object-contain [image-rendering:pixelated]" /> : <CapeStrip strip={null} still={it.stillUrl} frames={1} fps={1} width={22} label={it.name} />}
+                      </span>
+                      <span className="text-[13.5px] font-bold">{it.name}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {own && (
+            <div className="st-sep mt-6 pt-5">
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-dim">Privacy · only you see this</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button disabled={saving} onClick={() => toggle("hideLocker")} className={`pxb is-ghost is-sm ${prefs.hideLocker ? "is-on" : ""}`} aria-pressed={prefs.hideLocker}><span className="pxb-face"><EyeOff /> Hide my locker</span></button>
+                <button disabled={saving} onClick={() => toggle("hideWishlist")} className={`pxb is-ghost is-sm ${prefs.hideWishlist ? "is-on" : ""}`} aria-pressed={prefs.hideWishlist}><span className="pxb-face"><EyeOff /> Hide my wishlist</span></button>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
+        <div className="st-seg" role="tablist" aria-label="Profile sections">
+          <button role="tab" aria-selected={tab === "locker"} className={tab === "locker" ? "is-on" : ""} onClick={() => { setTab("locker"); setFilter("all"); }}><Package /> Locker</button>
+          <button role="tab" aria-selected={tab === "wishlist"} className={tab === "wishlist" ? "is-on" : ""} onClick={() => { setTab("wishlist"); setFilter("all"); }}><Heart /> Wishlist</button>
+        </div>
+      </div>
+      {!hidden && filters.length > 1 && (
+        <div className="st-tabs mt-3" role="tablist" aria-label="Filter items">
+          {filters.map(([id, label, n]) => (
+            <button key={id} role="tab" aria-selected={filter === id} className={`st-tab ${filter === id ? "is-on" : ""}`} onClick={() => setFilter(id)}>{label}<span className="n">{n}</span></button>
+          ))}
+        </div>
+      )}
+
+      {hidden ? (
+        <div className="st-panel mt-6 flex flex-col items-center gap-2 p-12 text-center">
+          <Lock className="h-6 w-6 text-dim" />
+          <p className="text-[16px] font-bold">{profile.name} keeps their {tab === "locker" ? "locker" : "wishlist"} private</p>
+        </div>
+      ) : list.length ? (
+        <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+          {list.map((it) => (
+            <li key={it.id}>
+              <ItemCard
+                item={it}
+                href={`/${isCosmetic(it) ? "cosmetics" : "cloaks"}/${it.id}`}
+                aspect="aspect-[4/5]"
+                worn={wornIds.has(it.id)}
+                own={wornIds.has(it.id)}
+                art={isCosmetic(it)
+                  ? <img src={it.stillUrl} alt={it.name} loading="lazy" draggable={false} className="cutout-sm h-[150px] w-[150px] max-w-[78%] object-contain [image-rendering:pixelated]" />
+                  : <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={72} label={`${it.name} cloak`} className="cutout-sm" />}
+                left={<>{it.animated || it.motion ? <span className="st-tag is-inv">{isCosmetic(it) ? "Moves" : "Animated"}</span> : null}{TAG(it)}</>}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="st-panel mt-6 p-12 text-center text-[15px] text-mute">{tab === "locker" ? "Nothing in this locker yet." : "Nothing on this wishlist yet."}</div>
+      )}
+    </>
+  );
+}

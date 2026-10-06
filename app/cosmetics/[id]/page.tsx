@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ItemCard from "@/components/store/ItemCard";
 import ItemHead from "@/components/store/ItemHead";
+import WishButton from "@/components/store/WishButton";
 import { notFound, redirect } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
 import CosmeticDetail from "@/components/cosmetics/CosmeticDetail";
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     title: `${item.name} ${item.slot ? SLOT_NAMES[item.slot].toLowerCase() : "cosmetic"}`,
     description: item.description || "Native 3D cosmetic. Preview it on your skin and wear it in the launcher and in game.",
     path: `/cosmetics/${item.id}`,
+    image: `/api/og/item/${item.id}`,
   });
 }
 
@@ -42,7 +44,7 @@ export default async function CosmeticPage({ params }: Params) {
   return (
     <div className="mx-auto max-w-[1280px] px-5 pb-32 pt-8 sm:pt-10">
       <JsonLd data={breadcrumb([{ name: "Cosmetics", path: "/cosmetics" }, { name: item.name, path: `/cosmetics/${item.id}` }])} />
-      <ItemHead trail={[{ label: "Store", href: "/cosmetics" }, { label: "Cosmetics", href: "/cosmetics" }, { label: item.slot ? SLOT_NAMES[item.slot] : "Cosmetic" }, { label: item.name }]} back="/cosmetics" title={item.name} />
+      <ItemHead trail={[{ label: "Store", href: "/cosmetics" }, { label: "Cosmetics", href: "/cosmetics" }, { label: item.slot ? SLOT_NAMES[item.slot] : "Cosmetic" }, { label: item.name }]} back="/cosmetics" title={item.name} aside={<WishButton itemId={item.id} signedIn={!!s} />} />
       <CosmeticDetail item={item} all={all} signedIn={!!s} account={s?.account.name ?? null} owned={mine?.owned ?? []} wearing={mine?.wearing ?? {}} skin={look.skin} model={look.model} cape={cape} />
 
       {related.length > 0 && (
