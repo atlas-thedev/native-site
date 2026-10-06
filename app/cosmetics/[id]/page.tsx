@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import WornShot from "@/components/cosmetics/WornShot";
 import ItemCard from "@/components/store/ItemCard";
 import ItemHead from "@/components/store/ItemHead";
 import WishButton from "@/components/store/WishButton";
@@ -32,7 +33,7 @@ export default async function CosmeticPage({ params }: Params) {
   const item = all.find((i) => i.id === id);
   if (!item && catalog?.items.some((c) => c.id === id)) redirect(`/cloaks/${encodeURIComponent(id)}`);
   if (!item) notFound();
-  const [mine, look] = s ? await Promise.all([getMine(s.token), getLook(s.account.name, s.account.model)]) : [null, { skin: null, model: "default" as const }];
+  const [mine, look] = s ? await Promise.all([getMine(s.token), getLook(s.account.name, s.account.model, s.account.uuid)]) : [null, { skin: null, model: "default" as const }];
   const cape = mine?.equipped ? catalog?.items.find((i) => i.id === mine.equipped)?.stillUrl ?? null : null;
   const related = all
     .filter((i) => i.id !== item.id)
@@ -53,7 +54,7 @@ export default async function CosmeticPage({ params }: Params) {
           <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {related.map((it) => (
               <li key={it.id}>
-                <ItemCard item={it} href={`/cosmetics/${it.id}`} art={<img src={it.stillUrl} alt="" loading="lazy" className="cutout-sm h-[150px] w-[150px] max-w-[78%] object-contain [image-rendering:pixelated]" />} left={it.isNew ? <span className="st-tag is-inv">New</span> : null} />
+                <ItemCard item={it} href={`/cosmetics/${it.id}`} art={<WornShot item={it} skin={look.skin} model={look.model} className="cutout-sm h-[150px] w-[150px] max-w-[78%] object-contain" />} left={it.isNew ? <span className="st-tag is-inv">New</span> : null} />
               </li>
             ))}
           </ul>

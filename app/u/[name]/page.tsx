@@ -26,7 +26,7 @@ export default async function PlayerPage({ params }: Params) {
   const name = decodeURIComponent((await params).name);
   const [p, catalog, s] = await Promise.all([getPlayer(name), getCatalog(), readSession()]);
   if (!p) notFound();
-  const look = await getLook(p.name, p.model);
+  const look = await getLook(p.name, p.model, p.uuid);
   const own = !!s && s.account.name.toLowerCase() === p.name.toLowerCase();
   const mine = own && s ? await getMine(s.token) : null;
   const items = [...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])];

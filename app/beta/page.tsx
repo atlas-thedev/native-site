@@ -28,7 +28,7 @@ export default async function BetaPage() {
       }
     } catch {}
   }
-  const look = s ? await getLook(s.account.name, s.account.model) : { skin: null, model: "default" as const };
+  const look = s ? await getLook(s.account.name, s.account.model, s.account.uuid) : { skin: null, model: "default" as const };
   const cape = catalog?.items.find((i) => i.id === "super-beta-tester") ?? null;
   return <BetaProgram signedIn={!!s} name={s?.account.name ?? null} open={open} initial={application} cape={cape} skin={look.skin} model={look.model} />;
 }

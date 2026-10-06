@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { ArrowRight, Clock, Crown, Feather, Flame, Footprints, Glasses, LayoutGrid, Search, Sparkles, Star, X } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
+import WornShot from "./WornShot";
 import ItemCard, { priceOf } from "../store/ItemCard";
 import SortSeg from "../store/SortSeg";
 import StoreHero from "../store/StoreHero";
@@ -11,7 +12,7 @@ import { PxLink } from "../ui/Px";
 import { COSMETIC_SLOTS, SLOT_NAMES, sortBy, sortItems, type CosmeticSlot, type Owned, type SortKey, type StoreItem, type Wearing } from "@/lib/store";
 
 type Tab = "featured" | "all" | CosmeticSlot;
-type Props = { items: StoreItem[]; signedIn: boolean; owned: Owned[]; wearing: Wearing; banner?: ReactNode };
+type Props = { items: StoreItem[]; signedIn: boolean; owned: Owned[]; wearing: Wearing; banner?: ReactNode; skin?: string | null; model?: "default" | "slim" };
 
 export const SLOT_COLOR: Record<CosmeticSlot, string> = { hats: "#ff8a7a", glasses: "#7fb2ff", back: "#9fe0ff", shoes: "#ffb45c" };
 const SLOT_LABEL: Record<CosmeticSlot, string> = { hats: "Headwear", glasses: "Glasses", back: "Wings", shoes: "Shoes" };
@@ -19,7 +20,8 @@ const SLOT_BLURB: Record<CosmeticSlot, string> = { hats: "Crowns, caps and halos
 const SLOT_ICON: Record<CosmeticSlot, ReactNode> = { hats: <Crown />, glasses: <Glasses />, back: <Feather />, shoes: <Footprints /> };
 
 /** The cosmetics shop: category tabs, then rows (featured, discover, new, trending, spotlight) or a plain grid when you search or pick a slot. */
-export default function CosmeticGallery({ items, signedIn, owned, wearing, banner }: Props) {
+export default function CosmeticGallery({ items, signedIn, owned, wearing, banner, skin = null, model = "default" }: Props) {
+  const shot = (it: StoreItem, className: string, alt = "") => <WornShot item={it} skin={skin} model={model} className={className} alt={alt} />;
   const [tab, setTab] = useState<Tab>("featured");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<SortKey>("featured");
@@ -55,7 +57,8 @@ export default function CosmeticGallery({ items, signedIn, owned, wearing, banne
         href={`/cosmetics/${it.id}`}
         own={mine.has(it.id)}
         worn={worn.has(it.id)}
-        art={<img src={it.stillUrl} alt={`${it.name} ${it.slot ? SLOT_NAMES[it.slot].toLowerCase() : ""}`} loading="lazy" draggable={false} className="cutout-sm h-[190px] w-[190px] max-w-[78%] object-contain [image-rendering:pixelated]" />}
+        wish={{ signedIn }}
+        art={shot(it, "cutout-sm h-[190px] w-[190px] max-w-[78%] object-contain", `${it.name} ${it.slot ? SLOT_NAMES[it.slot].toLowerCase() : ""}`)}
         left={<>{it.isNew && <span className="st-tag is-inv">New</span>}{it.motion && <span className="st-tag">Moves</span>}</>}
         right={it.exclusive ? <span className="st-tag">Event</span> : null}
         bottom={it.slot && <span className="st-tag is-slot" style={{ "--tint": SLOT_COLOR[it.slot] } as React.CSSProperties}>{SLOT_LABEL[it.slot]}</span>}
@@ -138,7 +141,7 @@ export default function CosmeticGallery({ items, signedIn, owned, wearing, banne
               {pick && (
                 <div className="st-card flex min-h-[260px] flex-col justify-between p-7" style={{ background: `linear-gradient(120deg, color-mix(in srgb, ${SLOT_COLOR[pick.slot as CosmeticSlot]} 16%, var(--bg)), var(--bg) 80%)` }}>
                   <span className="st-tag is-inv w-fit">Pick of the week</span>
-                  <img src={pick.stillUrl} alt="" className="cutout-sm pointer-events-none absolute right-6 top-1/2 h-[170px] w-[170px] -translate-y-1/2 object-contain [image-rendering:pixelated] max-sm:opacity-30" />
+                  {shot(pick, "cutout-sm pointer-events-none absolute right-6 top-1/2 h-[170px] w-[170px] -translate-y-1/2 object-contain max-sm:opacity-30")}
                   <div className="relative">
                     <h3 className="text-[26px] font-extrabold tracking-tight">{pick.name}</h3>
                     <p className="mt-1 max-w-[300px] text-[14px] text-mute">{pick.description || "Fresh from the Native workshop."}</p>
@@ -151,7 +154,7 @@ export default function CosmeticGallery({ items, signedIn, owned, wearing, banne
                   const lead = sortItems(items.filter((i) => i.slot === s))[0];
                   return (
                     <button key={s} onClick={() => open(s)} className="st-card flex min-h-[122px] flex-col justify-end p-4 text-left" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${SLOT_COLOR[s]} 20%, var(--bg)), var(--bg) 85%)` }}>
-                      {lead && <img src={lead.stillUrl} alt="" className="pointer-events-none absolute -right-1 top-2 h-[84px] w-[84px] object-contain opacity-90 [image-rendering:pixelated]" />}
+                      {lead && shot(lead, "pointer-events-none absolute -right-1 top-2 h-[84px] w-[84px] object-contain opacity-90")}
                       <span className="relative text-[16px] font-bold tracking-tight">{SLOT_LABEL[s]}</span>
                       <span className="relative text-[12.5px] text-mute">{counts[s] ? `${counts[s]} ${counts[s] === 1 ? "piece" : "pieces"}` : "Coming soon"} · {SLOT_BLURB[s]}</span>
                     </button>
@@ -178,7 +181,7 @@ export default function CosmeticGallery({ items, signedIn, owned, wearing, banne
                 {spot.map((it) => (
                   <li key={it.id}>
                     <Link href={`/cosmetics/${it.id}`} className="st-card flex flex-row items-center gap-5 p-5" style={{ background: `linear-gradient(110deg, color-mix(in srgb, ${SLOT_COLOR[it.slot as CosmeticSlot]} 24%, var(--bg)), color-mix(in srgb, ${SLOT_COLOR[it.slot as CosmeticSlot]} 8%, var(--bg)) 70%)` }}>
-                      <span className="flex h-[88px] w-[88px] shrink-0 items-center justify-center"><img src={it.stillUrl} alt="" className="cutout-sm h-full w-full object-contain [image-rendering:pixelated]" /></span>
+                      <span className="flex h-[88px] w-[88px] shrink-0 items-center justify-center">{shot(it, "cutout-sm h-full w-full object-contain")}</span>
                       <span className="min-w-0 flex-1">
                         <span className="block font-mono text-[10.5px] uppercase tracking-[0.16em] text-mute">{SLOT_LABEL[it.slot as CosmeticSlot]}</span>
                         <span className="mt-0.5 block truncate text-[20px] font-extrabold tracking-tight">{it.name}</span>

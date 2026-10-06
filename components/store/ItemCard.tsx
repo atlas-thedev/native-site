@@ -1,6 +1,7 @@
 import { Check, Users } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import WishHeart from "./WishHeart";
 import { isPaid, money, priceNow, type StoreItem } from "@/lib/store";
 
 export const priceOf = (it: StoreItem) =>
@@ -20,17 +21,19 @@ type Props = {
   aspect?: string;
   /** show how many players have it under the name */
   players?: boolean;
+  /** show a wishlist heart (pass whether the visitor is signed in) */
+  wish?: { signedIn: boolean };
 };
 
 /** One tile in the store: bevelled card, picture with badges, a footer with the name and the price. */
-export default function ItemCard({ item, href, art, left, right, bottom, own, worn, aspect = "aspect-square", players }: Props) {
+export default function ItemCard({ item, href, art, left, right, bottom, own, worn, aspect = "aspect-square", players, wish }: Props) {
   return (
     <Link href={href} className={`st-card group flex h-full flex-col ${worn ? "is-on" : ""}`}>
       <div className={`st-art ${aspect}`}>
         <div className="transition duration-300 group-hover:scale-[1.06]">{art}</div>
         <div className="absolute inset-x-2.5 top-2.5 flex items-start justify-between gap-2">
           <div className="flex flex-wrap gap-1.5">{left}</div>
-          <div className="flex flex-col items-end gap-1.5">{right}</div>
+          <div className="flex flex-col items-end gap-1.5">{right}{wish && <WishHeart itemId={item.id} signedIn={wish.signedIn} />}</div>
         </div>
         {bottom && <div className="absolute bottom-2.5 left-2.5 flex flex-col items-start gap-1.5">{bottom}</div>}
         {own && (

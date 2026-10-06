@@ -32,7 +32,7 @@ export default async function CapePage({ params }: Params) {
   const item = items.find((i) => i.id === id);
   if (!item && catalog?.cosmetics.some((c) => c.id === id)) redirect(`/cosmetics/${encodeURIComponent(id)}`);
   if (!item) notFound();
-  const [mine, look] = s ? await Promise.all([getMine(s.token), getLook(s.account.name, s.account.model)]) : [null, { skin: null, model: "default" as const }];
+  const [mine, look] = s ? await Promise.all([getMine(s.token), getLook(s.account.name, s.account.model, s.account.uuid)]) : [null, { skin: null, model: "default" as const }];
   const related = items
     .filter((i) => i.id !== item.id)
     .map((i) => ({ i, score: i.tags.filter((t) => item.tags.includes(t)).length * 2 + Number(i.animated === item.animated) }))

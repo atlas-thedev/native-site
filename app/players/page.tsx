@@ -20,7 +20,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
   const players = await findPlayers(q);
   const exact = q && players.find((p) => p.name.toLowerCase() === q.toLowerCase());
   if (exact) redirect(`/u/${encodeURIComponent(exact.name)}`);
-  const looks = await Promise.all(players.map((p) => getLook(p.name, p.model)));
+  const looks = await Promise.all(players.map((p) => getLook(p.name, p.model, p.uuid)));
 
   return (
     <div className="mx-auto max-w-[1280px] px-5 pb-32 pt-8 sm:pt-10">
