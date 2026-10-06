@@ -986,7 +986,8 @@ select optgroup {
 [data-theme="light"] .pxb.is-danger { --pxb-ink: #c42b2b; }
 .pxb.is-danger .pxb-face { box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.05), inset 0 -2px 0 rgb(0 0 0 / 0.3); }
 .pxb.is-locked { --pxb-base: transparent; --pxb-ink: var(--mute); --pxb-depth: 0px; box-shadow: none; cursor: default; }
-.pxb.is-locked .pxb-face { background: repeating-linear-gradient(135deg, var(--surface) 0 6px, transparent 6px 12px); box-shadow: inset 0 0 0 2px var(--line); }
+.pxb.is-locked .pxb-face { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font-weight: 700; }
+.pxb.is-locked:disabled .pxb-face { filter: none; }
 .pxb.is-locked:hover .pxb-face { transform: none; filter: none; }
 
 .pxb.is-sm { --pxb-h: 36px; --pxb-pad: 13px; --pxb-depth: 3px; --pxb-radius: 8px; --pxb-size: 13px; }
@@ -1030,7 +1031,9 @@ select optgroup {
 }
 .cos-plinth {
   border-radius: 14px;
-  background-color: color-mix(in srgb, var(--tint) 22%, var(--bg));
+  background-color: color-mix(in srgb, var(--tint) 16%, var(--bg));
+  background-image: radial-gradient(color-mix(in srgb, var(--tint) 30%, transparent) 1px, transparent 1.5px);
+  background-size: 14px 14px;
   box-shadow: inset 0 3px 0 rgb(255 255 255 / 0.14), inset 0 -5px 0 rgb(0 0 0 / 0.3), 0 0 0 1px color-mix(in srgb, var(--tint) 40%, transparent);
 }
 .cos-tag {
