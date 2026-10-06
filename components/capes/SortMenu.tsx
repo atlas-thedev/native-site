@@ -56,7 +56,7 @@ export default function SortMenu({ value, onChange }: { value: SortKey; onChange
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={`${id}-list`}
-        aria-label={`Sort capes: ${current.label}`}
+        aria-label={`Sort cloaks: ${current.label}`}
         onClick={() => (open ? setOpen(false) : show())}
         onKeyDown={(e) => { if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); show(); } }}
         className={`inline-flex h-9 items-center gap-2 rounded-full border px-4 text-[13.5px] font-medium text-fg transition ${open ? "border-fg bg-surface-2" : "border-line bg-surface hover:bg-surface-2"}`}
@@ -72,7 +72,7 @@ export default function SortMenu({ value, onChange }: { value: SortKey; onChange
             role="listbox"
             tabIndex={-1}
             style={{ outline: "none" }}
-            aria-label="Sort capes"
+            aria-label="Sort cloaks"
             aria-activedescendant={`${id}-${OPTIONS[active].id}`}
             onKeyDown={onKey}
             initial={{ opacity: 0, y: -6, scale: 0.98 }}

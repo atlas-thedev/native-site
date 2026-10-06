@@ -15,7 +15,7 @@ type Props = { items: StoreItem[]; signedIn: boolean; owned: Owned[]; equipped: 
 
 const chip = (on: boolean) => `inline-flex h-9 items-center gap-1.5 rounded-full border px-4 text-[13.5px] font-medium transition ${on ? "border-transparent bg-inv text-inv-fg" : "border-line text-mute hover:bg-surface-2 hover:text-fg"}`;
 
-/** laby.net-style cape wall: search, filter, sort, and a grid of live cape previews. */
+/** laby.net-style cloak wall: search, filter, sort, and a grid of live cloak previews. */
 export default function CapeGallery({ items, signedIn, owned, equipped }: Props) {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -49,14 +49,14 @@ export default function CapeGallery({ items, signedIn, owned, equipped }: Props)
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex h-11 min-w-[240px] flex-1 items-center gap-2.5 rounded-full border border-line bg-surface px-4 text-mute focus-within:border-fg sm:max-w-[380px]">
           <Search className="h-4 w-4 shrink-0" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search capes, tags or authors" aria-label="Search capes" className="min-w-0 flex-1 bg-transparent text-[14.5px] text-fg outline-none placeholder:text-dim" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search cloaks, tags or authors" aria-label="Search cloaks" className="min-w-0 flex-1 bg-transparent text-[14.5px] text-fg outline-none placeholder:text-dim" />
           {q && (
             <button onClick={() => setQ("")} aria-label="Clear search" className="text-dim hover:text-fg">
               <X className="h-4 w-4" />
             </button>
           )}
         </label>
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter capes">
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter cloaks">
           {filters.map(([id, label]) => (
             <button key={id} role="tab" aria-selected={filter === id} className={chip(filter === id)} onClick={() => setFilter(id)}>
               {label}
@@ -79,7 +79,7 @@ export default function CapeGallery({ items, signedIn, owned, equipped }: Props)
               <motion.li key={it.id} layout initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: Math.min(i, 10) * 0.035, ease: [0.16, 1, 0.3, 1] }}>
                 <Link href={`/capes/${it.id}`} className={`group relative flex h-full flex-col rounded-[22px] border bg-surface p-3 transition hover:-translate-y-0.5 hover:border-fg/40 hover:bg-surface-2 ${worn ? "border-fg/70" : "border-line"}`}>
                   <div className="dots relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-2xl">
-                    <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={84} label={`${it.name} cape`} className="cutout-sm transition duration-500 group-hover:scale-[1.06]" />
+                    <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={84} label={`${it.name} cloak`} className="cutout-sm transition duration-500 group-hover:scale-[1.06]" />
                     <div className="absolute left-2.5 top-2.5 flex gap-1.5">
                       {it.animated && <span className="rounded-full bg-inv px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-inv-fg">Animated</span>}
                       {it.isNew && <span className="rounded-full border border-line bg-bg/80 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider backdrop-blur">New</span>}
@@ -106,8 +106,8 @@ export default function CapeGallery({ items, signedIn, owned, equipped }: Props)
       ) : (
         <div className="card mt-8 flex flex-col items-center px-6 py-16 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-2"><PixelCape className="h-6 w-6" /></span>
-          <p className="mt-5 text-[22px] font-extrabold tracking-tight">{items.length ? "No capes match that." : "New capes are on the way."}</p>
-          <p className="mt-2 max-w-[440px] text-mute">{items.length ? "Try another search or filter." : "The first Native capes are being made right now. They’ll show up here and in your locker the moment they drop."}</p>
+          <p className="mt-5 text-[22px] font-extrabold tracking-tight">{items.length ? "No cloaks match that." : "New cloaks are on the way."}</p>
+          <p className="mt-2 max-w-[440px] text-mute">{items.length ? "Try another search or filter." : "The first Native cloaks are being made right now. They’ll show up here and in your locker the moment they drop."}</p>
         </div>
       )}
     </div>

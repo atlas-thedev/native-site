@@ -35,7 +35,9 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const [cool, setCool] = useState(0);
 
   useEffect(() => {
-    if (mode === "login" && new URLSearchParams(window.location.search).has("reset")) setInfo("Password updated. You can sign in now.");
+    const q = new URLSearchParams(window.location.search);
+    if (mode === "login" && q.has("reset")) setInfo("Password updated. You can sign in now.");
+    if (mode === "login" && q.get("link") === "expired") setInfo("That sign-in link expired. Press Open website in the Native launcher again.");
   }, [mode]);
 
   useEffect(() => {
@@ -172,6 +174,11 @@ export default function AuthForm({ mode }: { mode: Mode }) {
             <>Back to <Link href="/login" className="font-semibold text-fg underline decoration-dim underline-offset-4 hover:decoration-fg">sign in</Link></>
           )}
         </p>
+        {mode === "login" && (
+          <p className="mt-4 text-center text-[12.5px] leading-relaxed text-dim">
+            Premium Minecraft account? Sign in with Microsoft in the Native launcher, then press the globe (Open website) next to your account.
+          </p>
+        )}
         {mode === "register" && (
           <p className="mt-4 text-center text-[12.5px] leading-relaxed text-dim">
             By creating an account you agree to the <Link href="/terms" className="underline underline-offset-2 hover:text-fg">Terms</Link> and <Link href="/privacy" className="underline underline-offset-2 hover:text-fg">Privacy Policy</Link>.

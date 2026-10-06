@@ -41,7 +41,7 @@ export default function BillingPanel({ names }: { names: Record<string, string> 
     try {
       const r = await redeemCode(code.trim());
       setCode("");
-      setMsg({ t: "ok", s: `${r.item?.name ?? "Your cape"} is in your locker. Reload to wear it.` });
+      setMsg({ t: "ok", s: `${r.item?.name ?? "Your cloak"} is in your locker. Reload to wear it.` });
     } catch (err) {
       setMsg({ t: "err", s: err instanceof Error ? err.message : "That code didn’t work." });
     } finally {
@@ -60,10 +60,10 @@ export default function BillingPanel({ names }: { names: Record<string, string> 
           </div>
           {plus?.active ? (
             <p className="mt-3 flex-1 text-[14.5px] text-mute">
-              Member · {plus.plan === "yearly" ? "yearly" : "monthly"} plan{plus.endsAt ? ` · ends ${fmt(plus.endsAt)}` : plus.renewsAt ? ` · renews ${fmt(plus.renewsAt)}` : ""}. Every paid cape is yours to add.
+              Member · {plus.plan === "yearly" ? "yearly" : "monthly"} plan{plus.endsAt ? ` · ends ${fmt(plus.endsAt)}` : plus.renewsAt ? ` · renews ${fmt(plus.renewsAt)}` : ""}. Every paid cloak is yours to add.
             </p>
           ) : (
-            <p className="mt-3 flex-1 text-[14.5px] text-mute">Every paid cape and the Native+ badge from $2.99 a month.</p>
+            <p className="mt-3 flex-1 text-[14.5px] text-mute">Every paid cloak and the Native+ badge from $2.99 a month.</p>
           )}
           <div className="mt-5 flex flex-wrap gap-2">
             {plus?.active ? (
@@ -85,13 +85,13 @@ export default function BillingPanel({ names }: { names: Record<string, string> 
             <ul className="mt-3 flex-1 divide-y divide-line text-[14px]">
               {purchases.slice(0, 5).map((p) => (
                 <li key={p.transactionId} className="flex items-center justify-between gap-3 py-2">
-                  <span className="truncate font-semibold">{p.kind === "plus" ? `Native+ ${p.plan === "yearly" ? "yearly" : "monthly"}` : names[p.itemId ?? ""] ?? "Cape"}</span>
+                  <span className="truncate font-semibold">{p.kind === "plus" ? `Native+ ${p.plan === "yearly" ? "yearly" : "monthly"}` : names[p.itemId ?? ""] ?? "Cloak"}</span>
                   <span className="shrink-0 text-mute">{money(p.amount)} · {STATUS[p.status] ?? p.status} · {fmt(p.createdAt)}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-3 flex-1 text-[14.5px] text-mute">Nothing yet. Paid capes and Native+ payments show up here.</p>
+            <p className="mt-3 flex-1 text-[14.5px] text-mute">Nothing yet. Paid cloaks and Native+ payments show up here.</p>
           )}
           {purchases.length > 0 && (
             <div className="mt-5">
@@ -107,7 +107,7 @@ export default function BillingPanel({ names }: { names: Record<string, string> 
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-2"><Gift className="h-[18px] w-[18px]" /></span>
             <p className="text-[18px] font-extrabold tracking-tight">Redeem a code</p>
           </div>
-          <p className="mt-3 text-[14.5px] text-mute">Got a code from an event or the Native team? Enter it to add the cape.</p>
+          <p className="mt-3 text-[14.5px] text-mute">Got a code from an event or the Native team? Enter it to add the cloak.</p>
           <div className="mt-5 flex gap-2">
             <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="NATIVE-CODE" aria-label="Redeem code" maxLength={32} className="h-10 min-w-0 flex-1 rounded-full border border-line bg-surface px-4 font-mono text-[14px] tracking-wider outline-none focus:border-fg" />
             <button disabled={busy === "redeem" || !code.trim()} className="inline-flex h-10 items-center gap-2 rounded-full bg-inv px-4 text-[14px] font-semibold text-inv-fg transition hover:opacity-85 disabled:opacity-50">

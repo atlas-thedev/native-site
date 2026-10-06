@@ -63,7 +63,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
   };
   const worn = equipped === item.id;
 
-  // Stay honest if the cape changes in the launcher meanwhile.
+  // Stay honest if the cloak changes in the launcher meanwhile.
   useEffect(() => {
     if (!signedIn) return;
     const sync = () =>
@@ -97,7 +97,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
         s:
           action === "claim" ? `${item.name} is in your locker. Wear it here or from the launcher.`
           : action === "unclaim" ? `${item.name} was removed from your locker.`
-          : off ? "Cape taken off."
+          : off ? "Cloak taken off."
           : `${item.name} is on. Friends see it in the launcher and in game.`,
       });
     } catch (e) {
@@ -156,7 +156,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
             {storeLocked && !item.exclusive ? (
               <div className="w-full rounded-[20px] border border-dashed border-line p-5">
                 <p className="flex items-center gap-2 text-[15px] font-bold"><Lock className="h-4 w-4" /> The store opens at launch</p>
-                <p className="mt-1 text-[14px] text-mute">{isFounder ? "Join before launch and this cape can be your free founder pick." : `On launch day it’s ${money(item.price)}, or free with Native+.`}</p>
+                <p className="mt-1 text-[14px] text-mute">{isFounder ? "Join before launch and this cloak can be your free founder pick." : `On launch day it’s ${money(item.price)}, or free with Native+.`}</p>
                 <Countdown at={launch.at} size="sm" className="mt-4 justify-start!" />
                 <div className="mt-5 flex flex-wrap gap-3">
                   {isFounder && <Link href={signedIn ? "/founder" : "/register?next=/founder"} className={primary}><Plus className="h-4 w-4" /> {signedIn ? "Pick it as your free cape" : "Join early · get it free"}</Link>}
@@ -166,8 +166,8 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
             ) : item.id === "super-beta-tester" && !own ? (
               <Link href="/beta" className={primary}><Sparkles className="h-4 w-4" /> Super Beta Testers only · Apply</Link>
             ) : item.exclusive && !own ? (
-              <span className="inline-flex h-12 items-center gap-2 rounded-full border border-dashed border-line px-5 text-[14px] font-semibold text-mute" title="Not sold. The Native team gives event capes out, or with a redeem code.">
-                <Lock className="h-4 w-4" /> Event cape · given by the Native team or with a code
+              <span className="inline-flex h-12 items-center gap-2 rounded-full border border-dashed border-line px-5 text-[14px] font-semibold text-mute" title="Not sold. The Native team gives event cloaks out, or with a redeem code.">
+                <Lock className="h-4 w-4" /> Event cloak · given by the Native team or with a code
               </span>
             ) : !signedIn && paid ? (
               <>
@@ -244,7 +244,7 @@ export default function CapeDetail({ item, signedIn, owned: initialOwned, equipp
             ))}
           </div>
         )}
-        <p className="text-[13.5px] text-dim">Native capes show on your account everywhere: the launcher, the website and in game with the Native mod. You can only wear Native capes and the classic presets. Custom cape uploads aren’t allowed.</p>
+        <p className="text-[13.5px] text-dim">Native cloaks show on your account everywhere: the launcher, the website and in game with the Native mod. You can only wear Native cloaks and the classic presets. Custom cloak uploads aren’t allowed.</p>
       </div>
     </div>
   );
