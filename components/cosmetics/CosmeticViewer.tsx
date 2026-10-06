@@ -3,7 +3,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import type { CosmeticSlot } from "@/lib/store";
 
-export type CosmeticViewerHandle = { reset: () => void };
+export type CosmeticViewerHandle = { reset: () => void; zoom: (factor: number) => void };
 export type Worn = { id: string; modelUrl: string; textureUrl: string; slot?: string };
 type Built = { model: { flat: { anim: unknown[] }[] }; update: (t: number, walk: number) => void; dispose: () => void };
 type Props = {
@@ -46,7 +46,7 @@ const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function Cosmetic
   const lib = useRef<typeof import("skinview3d") | null>(null);
   const built = useRef<Built[]>([]);
   const walkRef = useRef(walk);
-  const shot = useRef<{ from: [number, number, number]; to: [number, number, number]; at: number; wrap: number } | null>(null);
+  const shot = useRef<{ from: [number, number, number]; to: [number, number, number]; at: number; wrap: number; keep?: boolean } | null>(null);
   const props = useRef({ skin, model, cape, walk, spin });
   props.current = { skin, model, cape, walk, spin };
   walkRef.current = walk;
@@ -80,10 +80,13 @@ const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function Cosmetic
     const t = sv.controls.target;
     return [Math.atan2(c.x - t.x, c.z - t.z), t.y, (sv as unknown as { _zoom: number })._zoom];
   };
-  const flyTo = (to: [number, number, number]) => {
+  const userZoom = useRef(1);
+  const flyTo = (target: [number, number, number], keepZoom = false) => {
     if (!v.current) return;
+    if (!keepZoom) userZoom.current = 1;
+    const to: [number, number, number] = [target[0], target[1], Math.min(2.6, Math.max(0.35, target[2] * userZoom.current))];
     const w = v.current.playerWrapper.rotation.y;
-    shot.current = { from: current(), to, at: performance.now(), wrap: Math.atan2(Math.sin(w), Math.cos(w)) };
+    shot.current = { from: current(), to, at: performance.now(), wrap: Math.atan2(Math.sin(w), Math.cos(w)), keep: keepZoom };
   };
 
   useEffect(() => {
@@ -108,7 +111,7 @@ const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function Cosmetic
         const s = shot.current;
         if (s) {
           // ease the camera to the slot: orbit angle, look-at height and zoom together
-          const k = Math.min(1, (now - s.at) / 900);
+          const k = Math.min(1, (now - s.at) / (s.keep ? 280 : 900));
           const e = 1 - Math.pow(1 - k, 3);
           let da = s.to[0] - s.from[0];
           da = Math.atan2(Math.sin(da), Math.cos(da));
@@ -122,7 +125,7 @@ const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function Cosmetic
           sv.camera.lookAt(sv.controls.target);
           // bring the player back to face forward so the shot lands on the slot
           const w = sv.playerWrapper.rotation;
-          w.y = s.wrap * (1 - e);
+          if (!s.keep) w.y = s.wrap * (1 - e);
           if (k >= 1) shot.current = null;
         }
         const t = (now - start) / 1000;
@@ -204,7 +207,24 @@ const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function Cosmetic
     if (v.current) flyTo(SHOTS[focus ?? "all"]);
   }, [focus]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useImperativeHandle(ref, () => ({ reset: () => flyTo(SHOTS[focus ?? "all"]) }));
+  const zoom = (f: number) => {
+    const sv = v.current;
+    if (!sv) return;
+    const base = SHOTS[focus ?? "all"];
+    userZoom.current = Math.min(2.6 / base[2], Math.max(0.35 / base[2], userZoom.current * f));
+    // keep the current angle, change only the distance
+    const [a, y] = current();
+    flyTo([a, y, base[2]], true);
+  };
+  useImperativeHandle(ref, () => ({ reset: () => flyTo(SHOTS[focus ?? "all"]), zoom }));
+  // wheel / trackpad zoom
+  useEffect(() => {
+    const el = wrap.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => { e.preventDefault(); zoom(Math.exp(-e.deltaY * 0.0016)); };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  });
 
   return (
     <div ref={wrap} className="h-full w-full">

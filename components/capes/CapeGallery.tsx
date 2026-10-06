@@ -2,8 +2,7 @@
 
 import { motion } from "motion/react";
 import { Check, Search, Users, X } from "lucide-react";
-import ItemIcon from "../ItemIcon";
-import { PixelStar } from "../icons";
+import { PixelCape, PixelStar } from "../icons";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import CapeStrip from "../CapeStrip";
@@ -106,7 +105,7 @@ export default function CapeGallery({ items, signedIn, owned, equipped }: Props)
         </ul>
       ) : (
         <div className="card mt-8 flex flex-col items-center px-6 py-16 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-2"><ItemIcon name="capes" className="h-7 w-7" /></span>
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-2"><PixelCape className="h-6 w-6" /></span>
           <p className="mt-5 text-[22px] font-extrabold tracking-tight">{items.length ? "No cloaks match that." : "New cloaks are on the way."}</p>
           <p className="mt-2 max-w-[440px] text-mute">{items.length ? "Try another search or filter." : "The first Native cloaks are being made right now. They’ll show up here and in your locker the moment they drop."}</p>
         </div>

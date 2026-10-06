@@ -1,15 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { Check, Crown, Footprints, Loader2, Lock, Minus, Plus, RefreshCcw, RotateCcw, Search, ShoppingBag, Sparkles, Undo2, Users, X } from "lucide-react";
+import { Check, Crown, Footprints, Loader2, Lock, Minus, Plus, RefreshCcw, RotateCcw, Search, ShoppingBag, Sparkles, Undo2, Users, X, ZoomIn, ZoomOut } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CosmeticViewer, { type CosmeticViewerHandle, type Worn } from "./CosmeticViewer";
 import { ownerLabel, storeAction, type StoreAction } from "../capes/actions";
 import { getBilling, startCheckout, type BillingState } from "../capes/billing";
 import { useLaunch } from "../launch/LaunchContext";
-import ItemIcon from "../ItemIcon";
-import { PixelGrid } from "../icons";
 import { COSMETIC_SLOTS, SLOT_NAMES, isPaid, money, priceNow, type CosmeticSlot, type Owned, type StoreItem, type Wearing } from "@/lib/store";
 
 type Props = {
@@ -26,13 +24,8 @@ type Props = {
 type Tab = "all" | CosmeticSlot;
 type Outfit = Partial<Record<CosmeticSlot, string>>;
 
-const SLOT_ICON: Record<Tab, (p: React.SVGProps<SVGSVGElement>) => React.ReactElement> = {
-  all: (p) => <ItemIcon {...p} name="all" />,
-  hats: (p) => <ItemIcon {...p} name="hats" />,
-  glasses: (p) => <ItemIcon {...p} name="glasses" />,
-  back: (p) => <ItemIcon {...p} name="back" />,
-  shoes: (p) => <ItemIcon {...p} name="shoes" />,
-};
+// Each tab has its own slab colour, like the launcher Locker (same style, different colours).
+const TAB_COLOR: Record<Tab, string> = { all: "#f2f2f4", hats: "#ff8a7a", glasses: "#7fb2ff", back: "#9fe0ff", shoes: "#ffb45c" };
 const SHORT: Record<CosmeticSlot, string> = { hats: "Hat", glasses: "Glasses", back: "Back", shoes: "Shoes" };
 const TAB_LABEL: Record<CosmeticSlot, string> = { hats: "Hats", glasses: "Glasses", back: "Wings", shoes: "Shoes" };
 const toggle = (on: boolean) => `inline-flex h-10 items-center gap-2 rounded-full px-4 text-[13.5px] font-semibold transition ${on ? "bg-inv text-inv-fg" : "text-mute hover:bg-surface-2 hover:text-fg"}`;
@@ -218,9 +211,11 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
             <p className="eyebrow">Fitting room</p>
             <p className="mt-2 text-[22px] font-extrabold tracking-tight sm:text-[26px]">{worn.length ? `${worn.length} piece${worn.length === 1 ? "" : "s"} on` : "Try something on"}</p>
           </div>
-          <button onClick={() => viewer.current?.reset()} aria-label="Reset camera" className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-line bg-bg/70 text-mute backdrop-blur transition hover:text-fg">
-            <RotateCcw className="h-4 w-4" />
-          </button>
+          <div className="flex gap-1.5">
+            <button onClick={() => viewer.current?.zoom(1 / 1.25)} aria-label="Zoom out" title="Zoom out" className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-line bg-bg text-mute transition hover:text-fg"><ZoomOut className="h-4 w-4" /></button>
+            <button onClick={() => viewer.current?.zoom(1.25)} aria-label="Zoom in" title="Zoom in" className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-line bg-bg text-mute transition hover:text-fg"><ZoomIn className="h-4 w-4" /></button>
+            <button onClick={() => viewer.current?.reset()} aria-label="Reset camera" title="Reset camera" className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-line bg-bg text-mute transition hover:text-fg"><RotateCcw className="h-4 w-4" /></button>
+          </div>
         </div>
 
         {/* Equipment column: one inventory slot per body part */}
@@ -257,7 +252,7 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
             <button className={toggle(spin)} onClick={() => setSpin(!spin)} aria-pressed={spin}><RefreshCcw className="h-4 w-4" /> Spin</button>
             {cape && <button className={toggle(showCape)} onClick={() => setShowCape(!showCape)} aria-pressed={showCape}>Cloak</button>}
             <span aria-hidden className="mx-1 h-5 w-px bg-line" />
-            <button className={toggle(false)} onClick={() => { setFocus(null); viewer.current?.reset(); }} aria-label="Whole body view"><PixelGrid className="h-3.5 w-3.5" /> All</button>
+            <button className={toggle(false)} onClick={() => { setFocus(null); viewer.current?.reset(); }} aria-label="Whole body view">Whole body</button>
             {signedIn && lookDiffers && <button className={toggle(false)} onClick={() => setOutfit(wearing)}><Undo2 className="h-4 w-4" /> My look</button>}
             {worn.length > 0 && <button className={toggle(false)} onClick={() => setOutfit({})}><X className="h-4 w-4" /> Clear</button>}
           </div>
@@ -272,21 +267,34 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
 
       {/* Wall */}
       <section aria-labelledby="cos-title" className="flex min-w-0 flex-col gap-5 lg:col-start-2 lg:row-start-2">
-        <div className="grid grid-cols-5 gap-1 rounded-[22px] border border-line bg-surface p-1.5" role="tablist" aria-label="Cosmetic slots">
+        <div className="grid grid-cols-5 gap-1.5 rounded-[16px] border border-line bg-surface p-1.5" role="tablist" aria-label="Cosmetic slots">
           {(["all", ...COSMETIC_SLOTS] as Tab[]).map((t) => {
-            const Icon = SLOT_ICON[t];
             const on = tab === t;
             return (
               <button key={t} role="tab" aria-selected={on} title={t === "all" ? "Everything" : SLOT_NAMES[t]} onClick={() => { setTab(t); if (t !== "all") { setFocus(t); setSpin(false); } }}
-                className={`group relative flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 text-[12.5px] font-semibold transition ${on ? "bg-inv text-inv-fg" : "text-mute hover:bg-surface-2 hover:text-fg"}`}>
-                <Icon className={`h-6 w-6 transition duration-200 ${on ? "scale-110 drop-shadow-[0_2px_0_rgba(0,0,0,0.35)]" : "saturate-[.7] group-hover:saturate-100 group-hover:-rotate-6"}`} />
-                <span className="truncate">{t === "all" ? "All" : TAB_LABEL[t]}</span>
-                <span className={`absolute right-2 top-1.5 text-[10.5px] font-bold ${on ? "opacity-60" : "text-dim"}`}>{counts[t]}</span>
+                className={`slab-tab ${on ? "is-on" : ""}`} style={{ "--slab": TAB_COLOR[t] } as React.CSSProperties}>
+                {on && <motion.span layoutId="slab" className="slab-face" transition={{ type: "spring", stiffness: 520, damping: 30 }} />}
+                <span className="relative truncate">{t === "all" ? "All" : TAB_LABEL[t]}</span>
+                <span className="slab-count relative">{counts[t]}</span>
               </button>
             );
           })}
         </div>
 
+        <AnimatePresence mode="wait">
+          {item && (
+            <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="card p-6">
+              <Detail item={item} own={mine.has(item.id)} isOn={wearing[slotOf(item)] === item.id} owners={ownersOf(item)} signedIn={signedIn} member={member} sellable={sellable} bill={bill} busy={busy} run={run} setMsg={setMsg} storeLocked={launch.lockStore && !mine.has(item.id)} />
+              <AnimatePresence mode="wait">
+                {msg && (
+                  <motion.p key={msg.s} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role={msg.t === "err" ? "alert" : "status"} className={`mt-4 text-[14px] ${msg.t === "err" ? "font-semibold text-fg" : "text-mute"}`}>
+                    {msg.s}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {items.length > 0 && (
           <label className="flex h-11 items-center gap-2.5 rounded-full border border-line bg-surface px-4 text-mute focus-within:border-fg">
             <Search className="h-4 w-4 shrink-0" />
@@ -331,11 +339,8 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
           </ul>
         ) : (
           <div className="card flex flex-col items-center px-6 py-14 text-center">
-            <div className="flex gap-2.5 text-dim">
-              {COSMETIC_SLOTS.map((s) => {
-                const Icon = SLOT_ICON[s];
-                return <span key={s} className="flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed border-line"><Icon className="h-6 w-6" /></span>;
-              })}
+            <div className="flex flex-wrap justify-center gap-2">
+              {COSMETIC_SLOTS.map((s) => <span key={s} className="rounded-[8px] border border-dashed border-line px-3 py-1.5 text-[13px] font-semibold text-dim">{TAB_LABEL[s]}</span>)}
             </div>
             <p className="mt-6 text-[22px] font-extrabold tracking-tight">{items.length ? "Nothing matches that." : "The first cosmetics are on the way."}</p>
             <p className="mt-2 max-w-[420px] text-mute">{items.length ? "Try another slot or search." : "Native hats, glasses, wings and shoes are being made right now. They’ll drop here, in the launcher store and in your locker."}</p>
@@ -343,20 +348,6 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
           </div>
         )}
 
-        <AnimatePresence mode="wait">
-          {item && (
-            <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="card p-6">
-              <Detail item={item} own={mine.has(item.id)} isOn={wearing[slotOf(item)] === item.id} owners={ownersOf(item)} signedIn={signedIn} member={member} sellable={sellable} bill={bill} busy={busy} run={run} setMsg={setMsg} storeLocked={launch.lockStore && !mine.has(item.id)} />
-              <AnimatePresence mode="wait">
-                {msg && (
-                  <motion.p key={msg.s} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role={msg.t === "err" ? "alert" : "status"} className={`mt-4 text-[14px] ${msg.t === "err" ? "font-semibold text-fg" : "text-mute"}`}>
-                    {msg.s}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
         <p className="text-[13px] text-dim">Native cosmetics show on your account everywhere: the launcher, the website and in game with the Native mod. You can wear one per slot.</p>
       </section>
     </div>
