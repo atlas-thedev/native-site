@@ -4,7 +4,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import type { CosmeticSlot } from "@/lib/store";
 
 export type CosmeticViewerHandle = { reset: () => void };
-export type Worn = { id: string; modelUrl: string; textureUrl: string };
+export type Worn = { id: string; modelUrl: string; textureUrl: string; slot?: string };
 type Built = { model: { flat: { anim: unknown[] }[] }; update: (t: number, walk: number) => void; dispose: () => void };
 type Props = {
   skin: string;
@@ -29,7 +29,7 @@ const SHOTS: Record<CosmeticSlot | "all", [number, number, number]> = {
 };
 
 const models = new Map<string, Promise<unknown>>();
-const fetchModel = (url: string) => {
+export const fetchModel = (url: string) => {
   if (!models.has(url)) models.set(url, fetch(url).then((r) => (r.ok ? r.json() : Promise.reject(new Error("model failed")))));
   const p = models.get(url)!;
   p.catch(() => models.delete(url));
@@ -37,7 +37,9 @@ const fetchModel = (url: string) => {
 };
 
 /** skinview3d player wearing Native 3D cosmetics (NCM v1), with a camera that flies to each slot. */
-const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function CosmeticViewer({ skin, model, cape, worn, walk, spin, focus, onError }, ref) {
+const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function CosmeticViewer({ skin, model, cape: capeIn, worn, walk, spin, focus, onError }, ref) {
+  // a back item (wings, jetpack, backpack) takes the cape's place, like in game
+  const cape = worn.some((w) => w.slot === "back") ? null : capeIn;
   const wrap = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const v = useRef<import("skinview3d").SkinViewer | null>(null);

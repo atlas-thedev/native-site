@@ -857,3 +857,20 @@ select optgroup {
     animation: none !important;
   }
 }
+
+/* Inventory slot: inset well like a Minecraft item slot. */
+.slot-well {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--fg) 5%, var(--bg));
+  box-shadow: inset 2px 2px 0 rgb(0 0 0 / 0.45), inset -2px -2px 0 color-mix(in srgb, var(--fg) 9%, transparent);
+}
+/* Flat ground under the 3D player: a floor plane with a pixel grid, no glow. */
+.stage-floor {
+  border-top: 1px solid var(--line);
+  background-color: color-mix(in srgb, var(--fg) 2.5%, transparent);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--fg) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--fg) 5%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: center top;
+}
