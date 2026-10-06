@@ -354,7 +354,8 @@ function placement(ir, slot, variant, opts) {
   const d = ir.display.head || {};
   const Rd = ir.mode === 'java' ? rotXYZ(...vec3(d.rotation)) : I3;
   const s = ir.mode === 'java' ? vec3(d.scale, [1, 1, 1]) : [1, 1, 1];
-  const base = slot === 'balloon' ? 0.5 : 1;
+  // Java back items are authored for HMCCosmetics' small armor stand: head slot scale 0.625, halved
+  const base = slot === 'balloon' ? 0.5 : ir.mode === 'java' ? 0.3125 : 1;
   const sigma = base * ((s[0] + s[1] + s[2]) / 3) * user;
   const Q = mul(FLIP, Rd);
   const side = variant === 'left' ? 1 : -1;
