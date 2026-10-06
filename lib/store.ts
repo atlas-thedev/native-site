@@ -40,9 +40,11 @@ export type StoreItem = {
   textureUrl?: string | null;
 };
 
-export const COSMETIC_SLOTS = ["hats", "glasses", "back", "shoes"] as const;
+export const COSMETIC_SLOTS = ["hats", "glasses", "back", "shoes", "hand", "balloon"] as const;
 export type CosmeticSlot = (typeof COSMETIC_SLOTS)[number];
-export const SLOT_NAMES: Record<CosmeticSlot, string> = { hats: "Hats", glasses: "Glasses", back: "Wings & Backpacks", shoes: "Shoes" };
+export const SLOT_NAMES: Record<CosmeticSlot, string> = { hats: "Hats", glasses: "Glasses", back: "Wings & Backpacks", shoes: "Shoes", hand: "Hand Items", balloon: "Balloons" };
+export const SIDED_SLOTS: readonly string[] = ["hand", "balloon"];
+export type Side = "left" | "right";
 export const isCosmetic = (it: Pick<StoreItem, "kind" | "slot">) => it.kind === "cosmetic" && !!it.slot && (COSMETIC_SLOTS as readonly string[]).includes(it.slot);
 /** What a profile wears in each cosmetic slot. */
 export type Wearing = Partial<Record<CosmeticSlot, string>>;

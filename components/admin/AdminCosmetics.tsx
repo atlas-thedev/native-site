@@ -6,6 +6,7 @@ import type { Shared } from "./AdminApp";
 import { Row } from "./AdminCapes";
 import type { AdminItem } from "./types";
 import { Btn, Empty, Field, Panel, Toggle, adm, fileToBase64, input, textarea, useAction } from "./ui";
+import AdminImportPack from "./AdminImportPack";
 import { COSMETIC_SLOTS, SLOT_NAMES, isCosmetic, type CosmeticSlot } from "@/lib/store";
 
 const blank = { name: "", description: "", tags: "", price: "0", slot: "hats" as CosmeticSlot, featured: false, hidden: false, exclusive: false };
@@ -45,6 +46,7 @@ export default function AdminCosmetics({ items: all, setItems }: Shared) {
 
   return (
     <div className="flex flex-col gap-6">
+      <AdminImportPack setItems={setItems} />
       <Panel title="Add a cosmetic" sub="An NCM v1 model (the same .json the Native mod renders), its texture and a transparent thumbnail. One per slot can be worn." actions={<Btn busy={busy === "create"} disabled={f.name.trim().length < 2} onClick={create}><Plus className="h-4 w-4" /> Add cosmetic</Btn>}>
         <div className="grid gap-5 md:grid-cols-2">
           <Field label="Name"><input className={input} maxLength={40} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>

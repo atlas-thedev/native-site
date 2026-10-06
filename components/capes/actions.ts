@@ -11,18 +11,18 @@ export async function storeActionRaw(body: Record<string, unknown>): Promise<{ o
   if (d.expired) { window.location.href = "/login"; return { ok: false, error: "Your session expired." }; }
   return { ok: !!d.ok, error: d.error, wishlist: d.wishlist };
 }
-export type ActionResult = { equipped: string | null; wearing: Wearing; owned?: Owned[] };
+export type ActionResult = { equipped: string | null; wearing: Wearing; owned?: Owned[]; sides?: Record<string, string> };
 
 /** Calls the site's store proxy. Sends the user to /login if the session expired. */
-export async function storeAction(action: StoreAction, itemId: string | null, slot?: CosmeticSlot): Promise<ActionResult> {
-  const r = await fetch("/api/store", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, itemId, ...(slot ? { slot } : {}) }) });
-  const d = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string; expired?: boolean; equipped?: string | null; wearing?: Wearing; owned?: Owned[] };
+export async function storeAction(action: StoreAction, itemId: string | null, slot?: CosmeticSlot, side?: "left" | "right"): Promise<ActionResult> {
+  const r = await fetch("/api/store", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, itemId, ...(slot ? { slot } : {}), ...(side ? { side } : {}) }) });
+  const d = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string; expired?: boolean; equipped?: string | null; wearing?: Wearing; owned?: Owned[]; sides?: Record<string, string> };
   if (d.expired) {
     window.location.href = "/login";
     throw new Error("Your session expired.");
   }
   if (!d.ok) throw new Error(d.error || "Something went wrong. Try again.");
-  return { equipped: d.equipped ?? null, wearing: d.wearing ?? {}, owned: d.owned };
+  return { equipped: d.equipped ?? null, wearing: d.wearing ?? {}, owned: d.owned, sides: d.sides };
 }
 
 export const ownerLabel = (n = 0) => `${n.toLocaleString()} ${n === 1 ? "player" : "players"}`;
