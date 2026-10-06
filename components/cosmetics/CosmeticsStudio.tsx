@@ -176,7 +176,7 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
         if (r.owned) setOwned(r.owned);
         on++;
       }
-      setMsg({ t: "ok", s: on ? `Look saved${skipped ? `. ${skipped} paid or event piece${skipped === 1 ? " wasn’t" : "s weren’t"} added` : ""}. Friends see it in the launcher and in game.` : skipped ? "Those pieces need buying or Native+ first." : "You’re already wearing this look." });
+      setMsg({ t: !on && skipped ? "err" : "ok", s: on ? `Look saved${skipped ? `. ${skipped} paid or event piece${skipped === 1 ? " wasn’t" : "s weren’t"} added` : ""}. Friends see it in the launcher and in game.` : skipped ? "Those pieces need buying or Native+ first." : "You’re already wearing this look." });
     } catch (e) {
       setMsg({ t: "err", s: e instanceof Error ? e.message : "Something went wrong." });
     } finally {
@@ -244,25 +244,24 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
         {/* Dock: view toggles on the left, the big "start" button next to them on the right */}
         <div className="relative mt-auto p-4 sm:p-5">
           <p className="pointer-events-none mb-3 text-center text-[12px] font-medium text-dim">Drag to turn · pick a slot to zoom in</p>
-          <div className={`flex items-end gap-3 max-sm:flex-col max-sm:items-stretch ${showWear ? "justify-between" : "justify-center"}`}>
-            <div className={`flex min-w-0 flex-wrap items-center gap-2 ${showWear ? "flex-1" : "justify-center"}`}>
-              <PxButton variant="ghost" size="sm" on={walk} onClick={() => setWalk(!walk)} aria-pressed={walk}><Footprints /> Walk</PxButton>
-              <PxButton variant="ghost" size="sm" on={spin} onClick={() => setSpin(!spin)} aria-pressed={spin}><RefreshCcw /> Spin</PxButton>
-              {cape && <PxButton variant="ghost" size="sm" on={showCape} onClick={() => setShowCape(!showCape)} aria-pressed={showCape}>Cloak</PxButton>}
-              <PxButton variant="ghost" size="sm" onClick={() => { setFocus(null); viewer.current?.reset(); }} aria-label="Whole body view">Whole body</PxButton>
-              {signedIn && lookDiffers && <PxButton variant="ghost" size="sm" onClick={() => setOutfit(wearing)}><Undo2 /> My look</PxButton>}
-              {worn.length > 0 && <PxButton variant="ghost" size="sm" onClick={() => setOutfit({})}><X /> Clear</PxButton>}
-            </div>
-            <AnimatePresence>
-              {showWear && (
-                <motion.div initial={{ opacity: 0, scale: 0.8, x: 20 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ type: "spring", stiffness: 420, damping: 22 }} className="max-sm:w-full">
-                  <PxButton variant="gold" size="xl" onClick={wearLook} disabled={!!busy} className="max-sm:w-full">
-                    {busy === "look" ? <Loader2 className="animate-spin" /> : <Sparkles />} Wear look
-                  </PxButton>
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className={`flex flex-wrap items-center gap-2 ${showWear ? "justify-start sm:pr-[230px]" : "justify-center"}`}>
+            <PxButton variant="ghost" size="sm" on={walk} onClick={() => setWalk(!walk)} aria-pressed={walk}><Footprints /> Walk</PxButton>
+            <PxButton variant="ghost" size="sm" on={spin} onClick={() => setSpin(!spin)} aria-pressed={spin}><RefreshCcw /> Spin</PxButton>
+            {cape && <PxButton variant="ghost" size="sm" on={showCape} onClick={() => setShowCape(!showCape)} aria-pressed={showCape}>Cloak</PxButton>}
+            <PxButton variant="ghost" size="sm" onClick={() => { setFocus(null); viewer.current?.reset(); }} aria-label="Whole body view">Whole body</PxButton>
+            {signedIn && lookDiffers && <PxButton variant="ghost" size="sm" onClick={() => setOutfit(wearing)}><Undo2 /> My look</PxButton>}
+            {worn.length > 0 && <PxButton variant="ghost" size="sm" onClick={() => setOutfit({})}><X /> Clear</PxButton>}
           </div>
+          <AnimatePresence>
+            {showWear && (
+              <motion.div initial={{ opacity: 0, scale: 0.8, x: 24 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.85, x: 12 }} transition={{ type: "spring", stiffness: 420, damping: 22 }}
+                className="mt-3 sm:absolute sm:bottom-5 sm:right-5 sm:mt-0">
+                <PxButton variant="gold" size="xl" onClick={wearLook} disabled={!!busy} className="max-sm:w-full">
+                  {busy === "look" ? <Loader2 className="animate-spin" /> : <Sparkles />} Wear look
+                </PxButton>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
       </div>
@@ -411,42 +410,38 @@ function Detail({ item, own, isOn, owners, signedIn, member, sellable, bill, bus
     <PxButton variant="danger" icon onClick={() => run("unclaim", item)} disabled={!!busy} aria-label={`Remove ${item.name} from your locker`} title="Remove from locker">{busyIcon("unclaim", <Minus />)}</PxButton>
   );
 
+  const meta = [
+    item.exclusive ? "Event only" : paid ? `${money(price)}${member ? " · Plus" : ""}` : "Free",
+    ownerLabel(owners),
+    `by ${item.author || "Native"}`,
+  ];
+
   return (
-    <div style={tint}>
-      {/* Showcase: the item on a tinted pixel plinth, with its tags */}
-      <div className="cos-hero relative flex items-center gap-5 p-5 sm:p-6">
-        <div className="cos-plinth relative flex h-[104px] w-[104px] shrink-0 items-center justify-center sm:h-[120px] sm:w-[120px]">
-          <img src={item.stillUrl} alt="" className="relative h-[78%] w-[78%] object-contain [image-rendering:pixelated] drop-shadow-[0_6px_0_rgb(0_0_0/0.25)]" />
-        </div>
-        <div className="relative min-w-0 flex-1">
-          <div className="flex flex-wrap gap-1.5">
-            <span className="cos-tag is-tint">{SLOT_NAMES[slotOf(item)]}</span>
-            {item.motion && <span className="cos-tag">Moves</span>}
-            {item.exclusive && <span className="cos-tag is-gold">Exclusive</span>}
-            {isOn ? <span className="cos-tag is-on">Wearing</span> : own && <span className="cos-tag">In your locker</span>}
-          </div>
-          <h2 className="mt-2.5 truncate text-[28px] font-extrabold leading-[1.05] tracking-[-0.03em]">{item.name}</h2>
-          {item.description && <p className="mt-1.5 line-clamp-2 text-[14.5px] text-mute">{item.description}</p>}
-        </div>
+    <div style={tint} className="flex gap-4 p-4 sm:gap-5 sm:p-5">
+      <div className="cos-plinth relative flex w-[112px] shrink-0 items-center justify-center self-stretch sm:w-[148px]">
+        <span className="cos-tag is-tint absolute left-2 top-2">{SHORT[slotOf(item)]}</span>
+        <img src={item.stillUrl} alt="" className="relative my-6 h-[76px] w-[76px] object-contain [image-rendering:pixelated] drop-shadow-[0_8px_0_rgb(0_0_0/0.22)] sm:h-[104px] sm:w-[104px]" />
       </div>
-
-      <div className="grid grid-cols-3 gap-2 px-5 pt-4 sm:px-6">
-        {[
-          ["Price", item.exclusive ? "Event only" : paid ? `${money(price)}${member ? " · Plus" : ""}` : "Free"],
-          ["In lockers", <span key="o" className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{ownerLabel(owners)}</span>],
-          ["Made by", item.author || "Native"],
-        ].map(([k, v]) => (
-          <div key={String(k)} className="slot-well min-w-0 px-3.5 py-2.5">
-            <p className="text-[10.5px] font-bold uppercase tracking-wider text-dim">{k}</p>
-            <p className="mt-0.5 truncate text-[14px] font-bold">{v}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap items-center justify-end gap-2.5 p-5 sm:px-6">
-        {remove}
-        {side}
-        <div className="max-sm:flex-1 [&>*]:max-sm:w-full">{main}</div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {isOn ? <span className="cos-tag is-on">Wearing</span> : own && <span className="cos-tag">In your locker</span>}
+          {item.exclusive && <span className="cos-tag is-gold">Exclusive</span>}
+          {item.motion && <span className="cos-tag">Moves</span>}
+        </div>
+        <h2 className={`truncate text-[26px] font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-[30px] ${isOn || own || item.exclusive || item.motion ? "mt-2" : ""}`}>{item.name}</h2>
+        {item.description && <p className="mt-1 line-clamp-2 text-[14px] text-mute">{item.description}</p>}
+        <p className="mt-2.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] font-semibold text-dim">
+          <span className="text-fg">{meta[0]}</span>
+          <span aria-hidden>·</span>
+          <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{meta[1]}</span>
+          <span aria-hidden>·</span>
+          <span>{meta[2]}</span>
+        </p>
+        <div className="mt-auto flex flex-wrap items-center justify-end gap-2 pt-4">
+          {remove}
+          {side}
+          <div className="max-sm:flex-1 [&>*]:max-sm:w-full">{main}</div>
+        </div>
       </div>
     </div>
   );

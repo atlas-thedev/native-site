@@ -221,13 +221,13 @@ const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function Cosmetic
   useEffect(() => {
     const el = wrap.current;
     if (!el) return;
-    const onWheel = (e: WheelEvent) => { e.preventDefault(); zoom(Math.exp(-e.deltaY * 0.0016)); };
+    const onWheel = (e: WheelEvent) => { e.preventDefault(); e.stopPropagation(); zoom(Math.exp(-e.deltaY * 0.0016)); };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
   });
 
   return (
-    <div ref={wrap} className="h-full w-full">
+    <div ref={wrap} data-lenis-prevent className="h-full w-full overscroll-contain">
       <canvas ref={canvas} className="block h-full w-full cursor-grab active:cursor-grabbing" aria-label="3D preview of your character wearing the cosmetics" />
     </div>
   );
