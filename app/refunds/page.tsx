@@ -35,7 +35,7 @@ const sections: Section[] = [
     h: "What happens after a refund",
     body: [
       "A refunded cape leaves your Native locker. If you were wearing it, it’s taken off.",
-      "A refunded Native+ payment ends the membership: capes you got through Native+ leave your locker and the Native+ badge is removed.",
+      "A refunded Native+ payment ends the membership: capes and cosmetics you got through Native+ leave your locker and the Native+ badge is removed.",
     ],
   },
   {

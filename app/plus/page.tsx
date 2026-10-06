@@ -7,12 +7,14 @@ import {
   Minus,
   RefreshCw,
   Shirt,
+  Sparkles,
 } from "lucide-react";
 import NativeGlyph from "@/components/NativeGlyph";
 import JsonLd from "@/components/JsonLd";
 import PlusPlans from "@/components/PlusPlans";
 import PlusMark from "@/components/plus/PlusMark";
 import PlusCapes from "@/components/plus/PlusCapes";
+import WornShot from "@/components/cosmetics/WornShot";
 import Sky from "@/components/plus/Sky";
 import CapeStrip from "@/components/CapeStrip";
 import { getCatalog } from "@/lib/server/store";
@@ -23,7 +25,7 @@ export const revalidate = 60;
 export const metadata = pageMeta({
   title: "Native+",
   description:
-    "Native+ unlocks every paid Native cape, a gold N+ in the launcher and the Native+ crown in Relay. $2.99 a month or $24.99 a year, and you can cancel anytime.",
+    "Native+ unlocks every paid Native cape and every 3D cosmetic, a gold N+ in the launcher and the Native+ crown in Relay. $2.99 a month or $24.99 a year, and you can cancel anytime.",
   path: "/plus",
 });
 
@@ -34,9 +36,14 @@ const perks = [
     body: "Every paid Native cape sits in your locker while you’re a member. Wear any of them in the launcher and in game.",
   },
   {
+    icon: Sparkles,
+    title: "Every cosmetic, free",
+    body: "All the 3D hats, glasses, wings, backpacks and shoes are yours to wear while you’re a member. Nothing to buy, nothing to claim.",
+  },
+  {
     icon: NativeGlyph,
-    title: "New capes, automatically",
-    body: "When a new paid cape drops, it lands in your locker the same day. Nothing to buy, nothing to claim.",
+    title: "New drops, automatically",
+    body: "When a new paid cape or cosmetic drops, it lands in your locker the same day. Nothing to buy, nothing to claim.",
   },
   {
     icon: Crown,
@@ -65,7 +72,8 @@ const compare: [string, boolean | string, boolean | string][] = [
   ["Free Native capes", true, true],
   ["Relay chat, friends & groups", true, true],
   ["Every paid cape", "Buy one by one", true],
-  ["New paid capes as they launch", false, true],
+  ["Every 3D cosmetic (hats, glasses, wings, shoes)", "Buy one by one", true],
+  ["New capes and cosmetics as they launch", false, true],
   ["Gold N+ launcher logo & icon", false, true],
   ["Native+ crown in Relay", false, true],
 ];
@@ -73,11 +81,11 @@ const compare: [string, boolean | string, boolean | string][] = [
 const faq = [
   [
     "What happens if I cancel?",
-    "You keep Native+ until the end of the period you paid for. After that, capes you got through Native+ leave your locker and the badge is removed. Capes you bought on their own are yours to keep.",
+    "You keep Native+ until the end of the period you paid for. After that, capes and cosmetics you got through Native+ leave your locker and the badge is removed. Anything you bought on its own is yours to keep.",
   ],
   [
     "Are event capes included?",
-    "No. Event capes, like the Beta Tester or CrabbyMC capes, are never sold. The Native team gives them out at events or with redeem codes.",
+    "No. Event items, like the Beta Tester or CrabbyMC capes, are never sold. The Native team gives them out at events or with redeem codes.",
   ],
   [
     "Does it work with my premium Minecraft account?",
@@ -105,6 +113,7 @@ const Cell = ({ v }: { v: boolean | string }) =>
 export default async function PlusPage() {
   const catalog = await getCatalog();
   const visible = sortItems((catalog?.items ?? []).filter((i) => !i.hidden));
+  const cosmetics = (catalog?.cosmetics ?? []).filter((i) => !i.exclusive);
   const paid = visible.filter((i) => isPaid(i) || i.paid);
   const showcase = paid.length ? paid : visible.filter((i) => !i.exclusive);
   const heroCapes = showcase.filter((i) => i.animated).slice(0, 3);
@@ -123,7 +132,7 @@ export default async function PlusPage() {
               Native<span className="text-gold">+</span>
             </h1>
             <p className="mt-6 max-w-[440px] text-[19px] leading-relaxed text-mute">
-              Every paid cape, the gold N+ and the Native+ crown in Relay.
+              Every paid cape and every cosmetic, the gold N+ and the Native+ crown in Relay.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <a
@@ -192,6 +201,30 @@ export default async function PlusPage() {
             </Link>
           </div>
           <PlusCapes items={showcase} />
+        </section>
+      )}
+
+      {/* Cosmetics */}
+      {cosmetics.length > 0 && (
+        <section className="mx-auto mt-16 max-w-[1280px] px-5">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4 px-1">
+            <div>
+              <h2 className="text-[clamp(1.7rem,3vw,2.3rem)] font-extrabold tracking-tight">Every cosmetic, free</h2>
+              <p className="mt-1.5 text-mute">Hats, glasses, wings, backpacks and shoes. All of them while you’re a member, and every new one we make.</p>
+            </div>
+            <Link href="/cosmetics" className="text-[14.5px] font-semibold underline underline-offset-4 hover:opacity-70">All cosmetics</Link>
+          </div>
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+            {cosmetics.slice(0, 12).map((it) => (
+              <li key={it.id}>
+                <Link href={`/cosmetics/${it.id}`} className="st-card flex flex-col items-center p-3 text-center">
+                  <WornShot item={it} skin={null} model="default" className="cutout-sm h-[120px] w-[120px] object-contain" />
+                  <span className="mt-2 block w-full truncate text-[13.5px] font-bold">{it.name}</span>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-gold">Included</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

@@ -81,7 +81,7 @@ export default function CosmeticGallery({ items, signedIn, owned, wearing, banne
     <div>
       <StoreHero
         title="Native Cosmetics"
-        blurb={<>Hats, glasses, wings, backpacks and shoes in real 3D.<br />Preview any piece on your own skin and wear it in the launcher and in game.</>}
+        blurb={<>Hats, glasses, wings, backpacks and shoes in real 3D.<br />Preview any piece on your own skin and wear it in the launcher and in game.<br />Native+ members get every cosmetic free.</>}
         cta={{ text: "Looking for a cloak?", label: "Go to Cloaks", href: "/cloaks" }}
         aside={
           items.length > 0 && (
