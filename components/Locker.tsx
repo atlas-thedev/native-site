@@ -1,16 +1,26 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Check, Download, Loader2, LogOut, RotateCcw, Trash2, Upload } from "lucide-react";
+import { ArrowRight, Check, Download, Loader2, LogOut, Plus, RotateCcw, Trash2, Upload, X } from "lucide-react";
 import Link from "next/link";
-import type { CapeAnim, StoreItem } from "@/lib/store";
+import { COSMETIC_SLOTS, type CapeAnim, type CosmeticSlot, type StoreItem, type Wearing } from "@/lib/store";
 import CapeStrip from "./CapeStrip";
 import { storeAction } from "./capes/actions";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LockerViewer, { type ViewerHandle } from "./LockerViewer";
 
 type Model = "default" | "slim";
-type Initial = { name: string; email: string; premium?: boolean; skin: string | null; cape: string | null; model: Model; capeAnim?: CapeAnim | null; capeStore?: string | null; nativeCapes?: StoreItem[]; capeId?: string };
+type Initial = { name: string; email: string; premium?: boolean; skin: string | null; cape: string | null; model: Model; capeAnim?: CapeAnim | null; capeStore?: string | null; nativeCapes?: StoreItem[]; capeId?: string; cosmetics?: StoreItem[]; ownedIds?: string[]; wearing?: Wearing };
+
+const COS_TABS = [
+  { id: "cloaks", label: "Cloaks", noun: "cloaks" },
+  { id: "hats", label: "Hats", noun: "hats" },
+  { id: "glasses", label: "Glasses", noun: "glasses" },
+  { id: "back", label: "Wings", noun: "wings or backpacks" },
+  { id: "shoes", label: "Shoes", noun: "shoes" },
+] as const;
+type CosTab = (typeof COS_TABS)[number]["id"];
+const priceOf = (it: StoreItem) => (it.exclusive ? "Event" : it.paid ? `$${Number(it.price).toFixed(2)}` : "Free");
 
 const PRESET_SKINS = [
   { id: "steve", name: "Steve", src: "/skins/steve.png", model: "default" as Model },
@@ -162,6 +172,60 @@ export default function Locker({ initial }: { initial: Initial }) {
 
   // Native cloaks are worn straight away (they live on the server, not in the unsaved draft).
   const [wearing, setWearing] = useState<string | null>(initial.capeStore ?? null);
+
+  // Locker sections, like the launcher: Skin, or Cosmetics with a tab per kind.
+  const [section, setSection] = useState<"skin" | "cosmetics">("skin");
+  const [cosTab, setCosTab] = useState<CosTab>("cloaks");
+  const [dir, setDir] = useState(1);
+  const goSection = (next: "skin" | "cosmetics") => { if (next === section) return; setDir(next === "cosmetics" ? 1 : -1); setSection(next); setTryOn(null); };
+  const goCosTab = (next: CosTab) => {
+    if (next === cosTab) return;
+    setDir(COS_TABS.findIndex((t) => t.id === next) > COS_TABS.findIndex((t) => t.id === cosTab) ? 1 : -1);
+    setCosTab(next);
+    setTryOn(null);
+  };
+  const allCos = useMemo(() => initial.cosmetics ?? [], [initial.cosmetics]);
+  const cosById = useMemo(() => new Map(allCos.map((it) => [it.id, it])), [allCos]);
+  const [owned, setOwned] = useState<Set<string>>(() => new Set(initial.ownedIds ?? []));
+  const [outfit, setOutfit] = useState<Wearing>(initial.wearing ?? {});
+  const [tryOn, setTryOn] = useState<StoreItem | null>(null);
+  const [cosBusy, setCosBusy] = useState<string | null>(null);
+  const worn = useMemo(() => {
+    const slots: Wearing = { ...outfit };
+    if (tryOn?.slot) slots[tryOn.slot as CosmeticSlot] = tryOn.id;
+    return COSMETIC_SLOTS.map((s) => (slots[s] ? cosById.get(slots[s]!) : undefined))
+      .filter((it): it is StoreItem => !!it && !!it.modelUrl && !!it.textureUrl)
+      .map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, slot: it.slot }));
+  }, [outfit, tryOn, cosById]);
+  const wearCos = async (slot: CosmeticSlot, id: string | null) => {
+    if (cosBusy) return;
+    setCosBusy(id ?? `off:${slot}`);
+    try {
+      const r = await storeAction("equip", id, slot);
+      setOutfit(r.wearing);
+    } catch (e) {
+      setMsg({ t: "err", s: e instanceof Error ? e.message : "Couldn’t change that." });
+    } finally {
+      setCosBusy(null);
+    }
+  };
+  const addTryOn = async () => {
+    const it = tryOn;
+    if (!it?.slot || cosBusy) return;
+    setCosBusy(`add:${it.id}`);
+    try {
+      const c = await storeAction("claim", it.id);
+      setOwned((o) => new Set([...o, ...(c.owned ?? []).map((x) => x.id), it.id]));
+      const r = await storeAction("equip", it.id, it.slot as CosmeticSlot);
+      setOutfit(r.wearing);
+      setTryOn(null);
+      setMsg({ t: "ok", s: `${it.name} is in your locker and you’re wearing it, in the launcher and in game.` });
+    } catch (e) {
+      setMsg({ t: "err", s: e instanceof Error ? e.message : "Couldn’t add that." });
+    } finally {
+      setCosBusy(null);
+    }
+  };
   const [wearBusy, setWearBusy] = useState<string | null>(null);
   const wearNative = async (id: string | null) => {
     setWearBusy(id ?? wearing ?? "off");
@@ -236,6 +300,56 @@ export default function Locker({ initial }: { initial: Initial }) {
     window.location.assign("/");
   };
 
+  const tile = (on: boolean) => `group relative flex flex-col items-center gap-2 rounded-[10px] border p-2.5 text-center transition hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97] disabled:opacity-60 ${on ? "border-fg bg-surface-2" : "border-line hover:border-fg/40"}`;
+  const renderSlot = (slot: CosmeticSlot) => {
+    const tab = COS_TABS.find((t) => t.id === slot)!;
+    const mine = allCos.filter((it) => it.slot === slot && owned.has(it.id));
+    const more = allCos.filter((it) => it.slot === slot && !owned.has(it.id));
+    const pop = (i: number) => ({ initial: { opacity: 0, y: 14, scale: 0.9 }, animate: { opacity: 1, y: 0, scale: 1 }, transition: { type: "spring" as const, stiffness: 460, damping: 24, delay: 0.05 + i * 0.035 } });
+    return (
+      <div>
+        <p className="eyebrow">Yours</p>
+        <div className="mt-3 grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+          <motion.button {...pop(0)} onClick={() => wearCos(slot, null)} disabled={!!cosBusy} aria-pressed={!outfit[slot]} className={tile(!outfit[slot])}>
+            <span className="slot-well flex h-16 w-16 items-center justify-center text-dim">{cosBusy === `off:${slot}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-5 w-5" />}</span>
+            <span className="text-[13px] font-semibold">Nothing</span>
+          </motion.button>
+          {mine.map((it, i) => {
+            const on = outfit[slot] === it.id;
+            return (
+              <motion.button key={it.id} {...pop(i + 1)} onClick={() => wearCos(slot, on ? null : it.id)} disabled={!!cosBusy} aria-pressed={on} title={on ? `Take off ${it.name}` : `Wear ${it.name}`} className={tile(on)}>
+                <span className="slot-well flex h-16 w-16 items-center justify-center"><img src={it.stillUrl} alt="" className="h-14 w-14 object-contain transition group-hover:scale-110" /></span>
+                <span className="w-full truncate text-[13px] font-semibold">{it.name}</span>
+                {cosBusy === it.id ? <Loader2 className="absolute right-2 top-2 h-3.5 w-3.5 animate-spin" /> : on && <Check className="absolute right-2 top-2 h-3.5 w-3.5" strokeWidth={3} />}
+              </motion.button>
+            );
+          })}
+        </div>
+        {!mine.length && <p className="mt-3 text-[14px] text-dim">No {tab.noun} yet.{more.length ? " Pick one below to try it on." : ""}</p>}
+        {more.length > 0 && (
+          <>
+            <div className="mt-8 flex items-center justify-between gap-3">
+              <p className="eyebrow">More in the Native Store</p>
+              <Link href="/cosmetics" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-mute transition hover:text-fg">Fitting room <ArrowRight className="h-3.5 w-3.5" /></Link>
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+              {more.map((it, i) => {
+                const on = tryOn?.id === it.id;
+                return (
+                  <motion.button key={it.id} {...pop(mine.length + i + 1)} onClick={() => setTryOn(on ? null : it)} aria-pressed={on} title={on ? "Stop trying on" : `Try on ${it.name}`} className={`${tile(on)} ${on ? "" : "border-dashed"}`}>
+                    <span className="slot-well flex h-16 w-16 items-center justify-center"><img src={it.stillUrl} alt="" className={`h-14 w-14 object-contain transition group-hover:scale-110 ${on ? "" : "opacity-80"}`} /></span>
+                    <span className="w-full truncate text-[13px] font-semibold">{it.name}</span>
+                    <span className={`absolute right-1.5 top-1.5 rounded-[4px] px-1.5 py-0.5 font-mono text-[10px] font-bold ${it.exclusive ? "bg-surface-2 text-mute" : it.paid ? "bg-inv text-inv-fg" : "border border-line text-mute"}`}>{priceOf(it)}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="mx-auto max-w-[1280px] px-5 pb-12 pt-12 sm:pt-16">
       <header className="mb-10 flex flex-wrap items-center gap-5">
@@ -254,10 +368,31 @@ export default function Locker({ initial }: { initial: Initial }) {
         <div className="lg:sticky lg:top-24 lg:self-start">
           <div className="card">
             <div className="dots relative h-[420px] sm:h-[520px]">
-              <LockerViewer ref={viewer} skin={skin} cape={capeUrl} capeAnim={capeId === base.current.capeId && (capeId === "current" || capeId === "store") ? base.current.capeAnim : null} model={model} walk={walk} spin={spin} showCape={showCape} layers={layers} elytra={elytra} onError={() => setMsg({ t: "err", s: "That skin couldn’t be displayed." })} />
+              <LockerViewer ref={viewer} worn={worn} skin={skin} cape={capeUrl} capeAnim={capeId === base.current.capeId && (capeId === "current" || capeId === "store") ? base.current.capeAnim : null} model={model} walk={walk} spin={spin} showCape={showCape} layers={layers} elytra={elytra} onError={() => setMsg({ t: "err", s: "That skin couldn’t be displayed." })} />
               <button onClick={() => viewer.current?.reset()} aria-label="Reset camera" className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-bg/70 text-mute backdrop-blur transition hover:text-fg">
                 <RotateCcw className="h-4 w-4" />
               </button>
+              <AnimatePresence>
+                {tryOn && (
+                  <motion.div key={tryOn.id} initial={{ opacity: 0, y: 16, scale: 0.94 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10 }} transition={{ type: "spring", stiffness: 460, damping: 26 }}
+                    className="absolute inset-x-4 bottom-4 flex items-center gap-3 rounded-[10px] border border-line bg-bg p-2 pl-4" role="status">
+                    <span className="min-w-0 flex-1 leading-tight">
+                      <span className="block font-mono text-[10px] uppercase tracking-[0.14em] text-dim">Trying on</span>
+                      <span className="block truncate text-[14px] font-semibold">{tryOn.name}</span>
+                    </span>
+                    {tryOn.exclusive ? (
+                      <span className="rounded-full border border-line px-3.5 py-2 text-[13px] font-semibold text-dim">Event only</span>
+                    ) : tryOn.paid ? (
+                      <Link href="/cosmetics" className="rounded-full bg-inv px-4 py-2 text-[13px] font-semibold text-inv-fg">Get it · {priceOf(tryOn)}</Link>
+                    ) : (
+                      <button onClick={addTryOn} disabled={!!cosBusy} className="inline-flex items-center gap-1.5 rounded-full bg-inv px-4 py-2 text-[13px] font-semibold text-inv-fg transition hover:opacity-85 disabled:opacity-60">
+                        {cosBusy === `add:${tryOn.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" strokeWidth={3} />} Add &amp; wear
+                      </button>
+                    )}
+                    <button onClick={() => setTryOn(null)} aria-label="Stop trying on" className="flex h-8 w-8 items-center justify-center rounded-full text-mute transition hover:bg-surface-2 hover:text-fg"><X className="h-4 w-4" /></button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             <div className="flex flex-wrap gap-2 border-t border-line p-4">
               <button className={chip(walk)} onClick={() => setWalk(!walk)} aria-pressed={walk}>Walk</button>
@@ -269,7 +404,19 @@ export default function Locker({ initial }: { initial: Initial }) {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-5">
+          <div role="tablist" aria-label="Locker sections" className="grid grid-cols-2 gap-1 rounded-[14px] border border-line bg-surface p-1">
+            {(["skin", "cosmetics"] as const).map((id) => (
+              <button key={id} role="tab" aria-selected={section === id} onClick={() => goSection(id)} className={`relative rounded-[10px] px-4 py-2.5 text-[15px] font-bold transition ${section === id ? "text-inv-fg" : "text-mute hover:text-fg"}`}>
+                {section === id && <motion.span layoutId="locker-slab" className="absolute inset-0 rounded-[10px] bg-inv" transition={{ type: "spring", stiffness: 520, damping: 30 }} />}
+                <span className="relative">{id === "skin" ? "Skin" : "Cosmetics"}</span>
+                {id === "cosmetics" && <span className={`relative ml-2 text-[12px] ${section === id ? "opacity-60" : "text-dim"}`}>{(initial.nativeCapes?.length ?? 0) + allCos.filter((it) => owned.has(it.id)).length}</span>}
+              </button>
+            ))}
+          </div>
+          <AnimatePresence mode="wait" initial={false} custom={dir}>
+            <motion.div key={section} custom={dir} initial={{ opacity: 0, x: dir * 36, rotate: dir * 0.6 }} animate={{ opacity: 1, x: 0, rotate: 0 }} exit={{ opacity: 0, x: -dir * 36 }} transition={{ type: "spring", stiffness: 380, damping: 30 }}>
+              {section === "skin" ? (
           <section className="card p-6 sm:p-8" aria-labelledby="sk">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 id="sk" className="text-[22px] font-extrabold tracking-tight">Skin</h2>
@@ -329,9 +476,24 @@ export default function Locker({ initial }: { initial: Initial }) {
             )}
             </>)}
           </section>
-
-          <section className="card p-6 sm:p-8" aria-labelledby="cp">
-            <h2 id="cp" className="text-[22px] font-extrabold tracking-tight">Cloak</h2>
+              ) : (
+                <section className="card p-6 sm:p-8" aria-label="Cosmetics">
+                  <div role="tablist" aria-label="Cosmetic types" className="flex gap-1 overflow-x-auto rounded-[12px] border border-line p-1">
+                    {COS_TABS.map((t) => {
+                      const n = t.id === "cloaks" ? initial.nativeCapes?.length ?? 0 : allCos.filter((it) => it.slot === t.id && owned.has(it.id)).length;
+                      const on = cosTab === t.id;
+                      return (
+                        <button key={t.id} role="tab" aria-selected={on} onClick={() => goCosTab(t.id)} className={`relative flex-1 whitespace-nowrap rounded-[8px] px-3 py-2 text-[13.5px] font-semibold transition ${on ? "text-fg" : "text-mute hover:text-fg"}`}>
+                          {on && <motion.span layoutId="cos-slab" className="absolute inset-0 rounded-[8px] bg-surface-2 ring-1 ring-line" transition={{ type: "spring", stiffness: 520, damping: 32 }} />}
+                          <span className="relative">{t.label}</span>{n > 0 && <span className="relative ml-1.5 text-[11.5px] text-dim">{n}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <AnimatePresence mode="wait" initial={false} custom={dir}>
+                    <motion.div key={cosTab} custom={dir} initial={{ opacity: 0, x: dir * 28 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -dir * 28 }} transition={{ type: "spring", stiffness: 420, damping: 32 }} className="mt-6">
+                      {cosTab === "cloaks" ? (
+<div>
             <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
               <p className="text-[14px] text-dim">{initial.premium ? "Wear a Native cloak over your Minecraft cape, or go without. Your Minecraft capes are in the launcher's Locker." : "Pick a Native cloak or a classic cape, or go without."}</p>
               <Link href="/cloaks" className="inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-[13px] font-semibold transition hover:bg-surface-2">Browse Native cloaks <ArrowRight className="h-3.5 w-3.5" /></Link>
@@ -366,7 +528,15 @@ export default function Locker({ initial }: { initial: Initial }) {
                 );
               })}
             </div>}
-          </section>
+          {outfit.back && <p className="mt-5 rounded-xl border border-line px-4 py-3 text-[13.5px] text-mute">Your {cosById.get(outfit.back)?.name ?? "back item"} takes the cloak&apos;s place, in game too. <button className="font-semibold text-fg underline underline-offset-2" onClick={() => wearCos("back", null)}>Take it off</button> to show your cloak.</p>}
+</div>
+                      ) : renderSlot(cosTab)}
+                    </motion.div>
+                  </AnimatePresence>
+                </section>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 

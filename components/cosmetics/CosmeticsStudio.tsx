@@ -109,7 +109,7 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
 
   const worn: Worn[] = COSMETIC_SLOTS.map((s) => outfit[s] && byId.get(outfit[s]!))
     .filter((it): it is StoreItem => !!it && !!it.modelUrl && !!it.textureUrl)
-    .map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl! }));
+    .map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, slot: it.slot }));
 
   const pick = (it: StoreItem) => {
     const slot = slotOf(it);
@@ -207,9 +207,7 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
       {/* Stage */}
       <div className="lg:sticky lg:top-24 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:self-start">
       <section aria-label="Fitting room" className="nx-panel flex h-[560px] flex-col sm:h-[680px] lg:h-[calc(100vh-120px)] lg:max-h-[760px] lg:min-h-[600px]">
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_55%_at_50%_42%,color-mix(in_srgb,var(--fg)_9%,transparent),transparent_72%)]" />
-        <div aria-hidden className="dots pointer-events-none absolute inset-0 opacity-60 [mask-image:radial-gradient(80%_70%_at_50%_45%,#000,transparent)]" />
-        <div aria-hidden className="pointer-events-none absolute bottom-[13%] left-1/2 h-10 w-[46%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,color-mix(in_srgb,var(--fg)_20%,transparent),transparent)] blur-[2px]" />
+        <div aria-hidden className="stage-floor pointer-events-none absolute inset-x-0 bottom-0 h-[24%]" />
 
         <div className="absolute inset-0">
           <CosmeticViewer ref={viewer} skin={skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")} model={model} cape={showCape ? cape : null} worn={worn} walk={walk} spin={spin} focus={focus} />
@@ -225,22 +223,24 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
           </button>
         </div>
 
-        {/* Outfit rail: one tile per slot */}
-        <ul className="absolute left-4 top-1/2 flex -translate-y-1/2 flex-col gap-2.5 sm:left-6" aria-label="Your outfit">
+        {/* Equipment column: one inventory slot per body part */}
+        <ul className="absolute right-3 top-1/2 flex -translate-y-1/2 flex-col gap-2.5 sm:right-5" aria-label="Your outfit">
           {COSMETIC_SLOTS.map((s) => {
             const it = outfit[s] ? byId.get(outfit[s]!) : undefined;
-            const Icon = SLOT_ICON[s];
             const active = focus === s;
+            const on = !!it && wearing[s] === it.id;
             return (
               <li key={s} className="group relative">
-                <button onClick={() => focusSlot(s)} aria-label={it ? `${SLOT_NAMES[s]}: ${it.name}` : `${SLOT_NAMES[s]}: empty`} aria-pressed={active}
-                  className={`relative flex h-[60px] w-[60px] items-center justify-center overflow-hidden rounded-2xl border bg-bg/70 backdrop-blur transition sm:h-[68px] sm:w-[68px] ${active ? "border-fg shadow-[0_0_0_3px_color-mix(in_srgb,var(--fg)_14%,transparent)]" : it ? "border-line hover:border-fg/50" : "border-dashed border-line text-dim hover:border-fg/40 hover:text-mute"}`}>
-                  {it ? <img src={it.stillUrl} alt="" className="h-[78%] w-[78%] object-contain [image-rendering:pixelated]" /> : <Icon className="h-6 w-6 opacity-60 saturate-50" />}
-                  <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg/90 to-transparent pb-0.5 pt-2 text-center text-[9.5px] font-bold uppercase tracking-wider text-mute">{SHORT[s]}</span>
-                  {it && wearing[s] === it.id && <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-inv text-inv-fg"><Check className="h-2.5 w-2.5" strokeWidth={4} /></span>}
+                <button onClick={() => focusSlot(s)} title={it ? `${SLOT_NAMES[s]}: ${it.name}` : `${SLOT_NAMES[s]}: empty`} aria-label={it ? `${SLOT_NAMES[s]}: ${it.name}` : `${SLOT_NAMES[s]}: empty`} aria-pressed={active}
+                  className="flex flex-col items-center gap-1">
+                  <span className={`slot-well relative flex h-12 w-12 items-center justify-center outline outline-2 outline-offset-2 transition sm:h-14 sm:w-14 ${active ? "outline-fg" : "outline-transparent hover:outline-line"}`}>
+                    {it && <img src={it.stillUrl} alt="" className="h-[80%] w-[80%] object-contain [image-rendering:pixelated]" />}
+                    {on && <span className="absolute bottom-1 right-1 h-1.5 w-1.5 bg-fg" aria-hidden />}
+                  </span>
+                  <span className={`font-mono text-[9.5px] uppercase tracking-[0.12em] ${active ? "text-fg" : "text-dim"}`}>{SHORT[s]}</span>
                 </button>
                 {it && (
-                  <button onClick={() => takeOffTry(s)} aria-label={`Take ${it.name} off the preview`} className="absolute -right-2 -top-2 hidden h-6 w-6 items-center justify-center rounded-full border border-line bg-bg text-mute shadow transition hover:text-fg group-hover:flex group-focus-within:flex">
+                  <button onClick={() => takeOffTry(s)} aria-label={`Take ${it.name} off the preview`} className="absolute -left-2.5 -top-2 hidden h-6 w-6 items-center justify-center rounded-full border border-line bg-bg text-mute transition hover:text-fg group-hover:flex group-focus-within:flex">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 )}
@@ -252,7 +252,7 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
         {/* Dock */}
         <div className="relative mt-auto flex flex-col items-center gap-3 p-4 sm:p-6">
           <p className="pointer-events-none text-[12px] font-medium text-dim">Drag to turn · pick a slot to zoom in</p>
-          <div className="flex max-w-full flex-wrap items-center justify-center gap-1 rounded-full border border-line bg-bg/75 p-1.5 backdrop-blur-xl">
+          <div className="flex max-w-full flex-wrap items-center justify-center gap-1 rounded-full border border-line bg-bg p-1.5">
             <button className={toggle(walk)} onClick={() => setWalk(!walk)} aria-pressed={walk}><Footprints className="h-4 w-4" /> Walk</button>
             <button className={toggle(spin)} onClick={() => setSpin(!spin)} aria-pressed={spin}><RefreshCcw className="h-4 w-4" /> Spin</button>
             {cape && <button className={toggle(showCape)} onClick={() => setShowCape(!showCape)} aria-pressed={showCape}>Cloak</button>}

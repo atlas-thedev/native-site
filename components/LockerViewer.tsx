@@ -3,6 +3,9 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import type { CapeAnim } from "@/lib/store";
 import { loadStrip, reducedMotion, stripFrame } from "./capeAnim";
+import { fetchModel, type Worn } from "./cosmetics/CosmeticViewer";
+
+type Built = { update: (t: number, walk: number) => void; dispose: () => void };
 
 export type ViewerHandle = { reset: () => void };
 type Props = {
@@ -16,11 +19,17 @@ type Props = {
   elytra?: boolean;
   /** Animated cape strip; `cape` stays as the still fallback. */
   capeAnim?: CapeAnim | null;
+  /** Native 3D cosmetics to wear (a back item hides the cape, like in game). */
+  worn?: Worn[];
   onError?: () => void;
 };
 
 /** Responsive, transparent skinview3d canvas used by the account locker. */
-const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ skin, cape, model, walk, spin, showCape, layers, elytra, capeAnim, onError }, ref) {
+const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ skin, cape, model, walk, spin, showCape: showCapeIn, layers, elytra, capeAnim, worn = [], onError }, ref) {
+  const showCape = showCapeIn && !worn.some((w) => w.slot === "back");
+  const built = useRef<Built[]>([]);
+  const walkRef = useRef(walk);
+  walkRef.current = walk;
   const wrap = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const v = useRef<import("skinview3d").SkinViewer | null>(null);
@@ -54,13 +63,21 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
       lib.current = l;
       const r = wrap.current.getBoundingClientRect();
       const sv = new l.SkinViewer({ canvas: canvas.current, width: Math.max(200, r.width), height: Math.max(260, r.height) });
-      sv.zoom = 0.82;
+      sv.zoom = 0.7;
       sv.fov = 38;
       sv.controls.enableZoom = false;
       sv.controls.enablePan = false;
       sv.camera.rotation.x = -0.2;
+      const start = performance.now();
+      const base = sv.render.bind(sv);
+      sv.render = () => {
+        const t = (performance.now() - start) / 1000;
+        for (const b of built.current) b.update(t, walkRef.current ? 1 : 0);
+        base();
+      };
       v.current = sv;
       const p = props.current;
+      loadCosmetics();
       sv.loadSkin(p.skin, { model: p.model }).catch(() => onError?.());
       if (p.cape && !p.capeAnim) sv.loadCape(p.cape, { backEquipment: p.elytra ? "elytra" : "cape" }).catch(() => {});
       apply();
@@ -74,6 +91,8 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
     return () => {
       dead = true;
       ro?.disconnect();
+      built.current.forEach((b) => b.dispose());
+      built.current = [];
       v.current?.dispose();
       v.current = null;
     };
@@ -135,6 +154,42 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cape, elytra, animKey]);
   useEffect(apply, [walk, spin, showCape, layers, cape, elytra]);
+
+  // Native 3D cosmetics (NCM v1)
+  const wornKey = worn.map((w) => `${w.id}|${w.modelUrl}|${w.textureUrl}`).join(",");
+  const wornRef = useRef(worn);
+  wornRef.current = worn;
+  const gen = useRef(0);
+  const loadCosmetics = () => {
+    if (!v.current) return;
+    const mine = ++gen.current;
+    const list = wornRef.current;
+    Promise.all([import("three"), import("@/lib/ncm")]).then(async ([THREE, ncm]) => {
+      const next: Built[] = [];
+      for (const w of list) {
+        try {
+          const [json, image] = await Promise.all([fetchModel(w.modelUrl), ncm.loadImage(w.textureUrl)]);
+          if (mine !== gen.current || !v.current) break;
+          const b = ncm.buildCosmetic(THREE, json, image) as Built & { roots: { object: import("three").Object3D }[] };
+          for (const r of b.roots)
+            r.object.traverse((o) => {
+              const g = (o as import("three").Mesh).geometry;
+              if (g && !g.attributes.normal) g.computeVertexNormals();
+            });
+          next.push(ncm.attachToPlayer(b, v.current.playerObject.skin));
+        } catch {
+          /* a broken cosmetic is skipped */
+        }
+      }
+      if (mine !== gen.current) {
+        next.forEach((b) => b.dispose());
+        return;
+      }
+      built.current.forEach((b) => b.dispose());
+      built.current = next;
+    }).catch(() => {});
+  };
+  useEffect(loadCosmetics, [wornKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useImperativeHandle(ref, () => ({
     reset: () => {

@@ -22,7 +22,7 @@ const PRESET_CAPE_IDS: Record<string, string> = {
   f9a76537647989f9a0b6d001e320dac591c359e9e61a31f4ce11c88f207f0ad4: "vanilla",
 };
 
-const https = (u: unknown) => (typeof u === "string" && u ? u.replace(/^http:\/\//, "https://") : null);
+const https = (u: unknown) => (typeof u === "string" && u ? (/^http:\/\/(localhost|127\.0\.0\.1)[:/]/.test(u) ? u : u.replace(/^http:\/\//, "https://")) : null);
 
 export default async function AccountPage() {
   const s = await readSession();
@@ -91,7 +91,7 @@ export default async function AccountPage() {
   const capeId = !cape ? "none" : wornStore ? "store" : (capeHash && PRESET_CAPE_IDS[capeHash]) || "current";
   if (premium && !wornStore && mojangCape) cape = mojangCape;
 
-  const names = Object.fromEntries((catalog?.items ?? []).map((i) => [i.id, i.name]));
+  const names = Object.fromEntries([...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])].map((i) => [i.id, i.name]));
   return (
     <>
       {founder?.eligible && !founder.picked && (
@@ -105,7 +105,7 @@ export default async function AccountPage() {
           </Link>
         </div>
       )}
-      <Locker initial={{ name: s.account.name, email: s.account.email, premium, skin, cape, model, capeAnim, capeStore: wornStore, nativeCapes, capeId }} />
+      <Locker initial={{ name: s.account.name, email: s.account.email, premium, skin, cape, model, capeAnim, capeStore: wornStore, nativeCapes, capeId, cosmetics: catalog?.cosmetics ?? [], ownedIds: (mine?.owned ?? []).map((o) => o.id), wearing: mine?.wearing ?? {} }} />
       <BillingPanel names={names} />
     </>
   );
