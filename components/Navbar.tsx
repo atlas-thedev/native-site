@@ -1,25 +1,24 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, Gift, Menu, Shield, X } from "lucide-react";
+import { ChevronDown, Gift, Menu, Shield, User, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import "../app/redesign.css";
 import { useAccount } from "./useAccount";
 import { useLaunch } from "./launch/LaunchContext";
 import { site } from "@/lib/site";
-import { Apple, Discord, Linux, Windows, YouTube } from "./icons";
+import { Apple, Discord, Linux, Windows } from "./icons";
 import ThemeToggle from "./ThemeToggle";
 import SkinHead from "./SkinHead";
 
 const nav = [
-  { href: "/#launcher", label: "The launcher" },
+  { href: "/", label: "Home" },
   { href: "/#features", label: "Features" },
   { href: "/capes", label: "Capes" },
   { href: "/beta", label: "Beta" },
   { href: "/changes", label: "Changes" },
   { href: "/support", label: "Support" },
-  { href: "/plus", label: "Native+" },
 ];
 
 const getLinks = [
@@ -29,7 +28,11 @@ const getLinks = [
   { label: "Linux", sub: "AppImage · .deb", href: "/api/download/linux", Icon: Linux },
 ];
 
-function GetMenu() {
+/** Square-ish bordered control, used for every boxed item in the bar. */
+const box =
+  "nx-box inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-line bg-surface text-[13px] font-extrabold uppercase tracking-[0.04em] transition hover:bg-surface-2";
+
+function DownloadMenu() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -47,25 +50,25 @@ function GetMenu() {
   }, [open]);
 
   return (
-    <div ref={ref} className="relative hidden sm:block">
+    <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="nx-pill nx-pill-ghost h-10 pl-4 pr-3 text-[14.5px]"
+        className={`${box} px-6`}
       >
-        Get Native
-        <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+        Download
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       <AnimatePresence>
         {open && (
           <motion.div
             role="menu"
-            initial={{ opacity: 0, y: -6, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.98 }}
-            transition={{ duration: 0.16 }}
-            className="nx-menu absolute right-0 top-[calc(100%+10px)] w-[260px] p-2"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15 }}
+            className="nx-menu absolute right-0 top-[calc(100%+10px)] w-[260px] !rounded-[12px] p-2"
           >
             {getLinks.map(({ label, sub, href, Icon }) => (
               <a
@@ -74,11 +77,11 @@ function GetMenu() {
                 href={href}
                 download=""
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition hover:bg-surface-2"
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition hover:bg-surface-2"
               >
                 <Icon className="h-5 w-5 shrink-0" />
                 <span className="flex flex-col leading-tight">
-                  <span className="text-[14.5px] font-semibold">{label}</span>
+                  <span className="text-[14px] font-bold">{label}</span>
                   <span className="text-[12.5px] text-dim">{sub}</span>
                 </span>
               </a>
@@ -86,7 +89,7 @@ function GetMenu() {
             <Link
               href="/download"
               onClick={() => setOpen(false)}
-              className="mt-1 block rounded-xl border-t border-line px-3 pb-2 pt-3 text-[13px] text-mute transition hover:text-fg"
+              className="mt-1 block rounded-lg border-t border-line px-3 pb-2 pt-3 text-[13px] text-mute transition hover:text-fg"
             >
               All downloads and release notes →
             </Link>
@@ -109,103 +112,83 @@ export default function Navbar() {
     label: name ? "Claim free cape" : "Join early",
   };
 
-  const account = name ? (
+  const account = (
     <Link
-      href="/account"
-      data-claim-target
-      title="Your account"
-      className="group hidden h-10 items-center gap-2 rounded-full border border-line bg-surface py-1 pl-1 pr-3.5 text-[14px] font-semibold transition hover:border-fg/30 hover:bg-surface-2 sm:inline-flex"
+      href={name ? "/account" : "/login"}
+      data-claim-target={name ? true : undefined}
+      title={name ? "Your account" : "Sign in"}
+      className={`nx-box hidden h-11 min-w-[190px] items-center gap-3 rounded-[10px] border border-line bg-surface px-3.5 text-left transition hover:bg-surface-2 sm:flex ${name === undefined ? "opacity-0" : ""}`}
     >
-      <SkinHead skin={me?.skin ?? null} name={name} size={30} className="!rounded-full ring-1 ring-line" />
-      <span className="max-w-[7.5rem] truncate">{name}</span>
-    </Link>
-  ) : (
-    <Link
-      href="/login"
-      className={`nx-pill nx-pill-accent hidden h-10 px-5 text-[14.5px] sm:inline-flex ${name === undefined ? "opacity-0" : ""}`}
-    >
-      Sign in
+      {name ? (
+        <SkinHead skin={me?.skin ?? null} name={name} size={24} className="!rounded-md ring-1 ring-line" />
+      ) : (
+        <User className="h-[17px] w-[17px]" />
+      )}
+      <span className="flex min-w-0 flex-1 flex-col leading-[1.2]">
+        <span className="truncate text-[13px] font-bold">{name ?? "Login"}</span>
+        <span className="truncate text-[12px] text-dim">{name ? "Your locker and account" : "Account and orders"}</span>
+      </span>
+      <ChevronDown className="h-3.5 w-3.5 shrink-0 text-dim" />
     </Link>
   );
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-bg/80 backdrop-blur-xl">
-      <nav aria-label="Main" className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-4 px-5">
-        <div className="flex min-w-0 items-center gap-7">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${site.name} home`}>
-            <img src="/brand/icon.png" alt="" width={28} height={28} className="logo-img h-7 w-7" aria-hidden />
-            <span className="text-[19px] font-extrabold tracking-tight">native</span>
-          </Link>
-          <ul className="hidden items-center gap-0.5 lg:flex">
-            {nav.map((l) => {
-              const plus = l.href === "/plus";
-              return (
-                <li key={l.href}>
-                  <Link
-                    href={l.href}
-                    className={
-                      plus
-                        ? "ml-1 inline-flex items-center rounded-full border border-line bg-surface px-3.5 py-1.5 text-[14px] font-semibold text-gold transition hover:bg-surface-2"
-                        : "rounded-full px-3 py-2 text-[14.5px] font-medium text-mute transition-colors hover:bg-surface-2 hover:text-fg"
-                    }
-                  >
-                    {l.label}
-                  </Link>
-                </li>
-              );
-            })}
+    <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-xl">
+      <nav aria-label="Main" className="mx-auto flex h-[76px] max-w-[1280px] items-center justify-between gap-6 px-5">
+        <Link href="/" className="flex shrink-0 items-center gap-3" aria-label={`${site.name} home`}>
+          <img src="/brand/icon.png" alt="" width={32} height={32} className="logo-img h-8 w-8" aria-hidden />
+          <span className="text-[20px] font-extrabold uppercase tracking-tight">native</span>
+        </Link>
+
+        <div className="flex items-center gap-2">
+          <ul className="mr-2 hidden items-center gap-1 xl:flex">
+            {nav.map((l) => (
+              <li key={l.href}>
+                <Link
+                  href={l.href}
+                  className="rounded-[10px] px-3.5 py-3 text-[13px] font-extrabold uppercase tracking-[0.04em] transition-colors hover:text-mute"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link href="/plus" className={`${box} px-5 text-gold`}>
+                Native+
+              </Link>
+            </li>
           </ul>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <a
-            href={site.discord}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Discord"
-            className="hidden h-10 w-10 items-center justify-center rounded-full text-mute transition hover:bg-surface-2 hover:text-fg xl:flex"
-          >
-            <Discord className="h-[18px] w-[18px]" />
-          </a>
-          <a
-            href={site.youtube}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="YouTube"
-            className="hidden h-10 w-10 items-center justify-center rounded-full text-mute transition hover:bg-surface-2 hover:text-fg xl:flex"
-          >
-            <YouTube className="h-[20px] w-[20px]" />
-          </a>
-          <ThemeToggle />
+
+          <div className="hidden xl:block">
+            {gift ? (
+              <Link href={giftCta.href} className={`${box} btn-shine gap-2.5 px-5`}>
+                <Gift className="h-4 w-4" /> {giftCta.label}
+              </Link>
+            ) : (
+              <DownloadMenu />
+            )}
+          </div>
+
+          <div className="hidden xl:block">
+            <div className={`${box} w-11`}>
+              <ThemeToggle />
+            </div>
+          </div>
           {me?.isAdmin && (
-            <Link
-              href="/admin"
-              aria-label="Admin dashboard"
-              title="Admin dashboard"
-              className="hidden h-10 w-10 items-center justify-center rounded-full text-mute transition hover:bg-surface-2 hover:text-fg sm:flex"
-            >
-              <Shield className="h-[18px] w-[18px]" />
+            <Link href="/admin" aria-label="Admin dashboard" title="Admin dashboard" className={`${box} hidden w-11 sm:inline-flex`}>
+              <Shield className="h-[17px] w-[17px]" />
             </Link>
           )}
-          {gift ? (
-            <Link
-              href={giftCta.href}
-              className="group btn-shine nx-pill nx-pill-ghost h-10 pl-1.5 pr-4 text-[14.5px]"
-            >
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-surface-2">
-                <Gift className="h-[15px] w-[15px] transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />
-              </span>
-              {giftCta.label}
-            </Link>
-          ) : (
-            <GetMenu />
-          )}
+          <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className={`${box} hidden w-11 2xl:inline-flex`}>
+            <Discord className="h-[17px] w-[17px]" />
+          </a>
           {account}
           <button
             data-claim-target
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-fg transition hover:bg-surface-2 lg:hidden"
+            className={`${box} w-11 xl:hidden`}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -218,11 +201,12 @@ export default function Navbar() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden border-t border-line lg:hidden"
+            className="overflow-hidden border-t border-line xl:hidden"
           >
             <ul className="mx-auto max-w-[1280px] space-y-1 px-5 py-4">
               {[
                 ...nav,
+                { href: "/plus", label: "Native+" },
                 { href: gift ? giftCta.href : "/download", label: gift ? giftCta.label : "Download" },
                 ...(me?.isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
                 name ? { href: "/account", label: "Account" } : { href: "/login", label: "Sign in" },
@@ -231,7 +215,7 @@ export default function Navbar() {
                   <Link
                     href={l.href}
                     onClick={() => setOpen(false)}
-                    className="block rounded-2xl px-4 py-3 text-[17px] font-semibold hover:bg-surface-2"
+                    className="block rounded-[10px] px-4 py-3 text-[15px] font-extrabold uppercase tracking-[0.04em] hover:bg-surface-2"
                   >
                     {l.label}
                   </Link>

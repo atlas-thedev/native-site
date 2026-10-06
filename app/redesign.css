@@ -151,3 +151,12 @@ html {
   backdrop-filter: blur(20px);
   box-shadow: 0 24px 60px -24px var(--shadow);
 }
+
+/* boxed nav controls: let a nested toggle fill its square */
+.nx-box > button {
+  width: 100%;
+  height: 100%;
+  border-radius: 9px;
+  background: transparent;
+  border: 0;
+}
