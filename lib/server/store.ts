@@ -49,3 +49,47 @@ export async function getLook(name: string, fallback: string | undefined): Promi
   } catch {}
   return { skin, model };
 }
+
+const mojangSkins = new Map<string, { at: number; skin: string | null }>();
+
+/** A Minecraft account's current skin from Mojang (cached for 10 minutes). Never throws. */
+export async function getMojangSkin(uuid: string): Promise<string | null> {
+  const id = uuid.replace(/-/g, "").toLowerCase();
+  const hit = mojangSkins.get(id);
+  if (hit && Date.now() - hit.at < 600_000) return hit.skin;
+  let skin: string | null = null;
+  try {
+    const r = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${id}`, { cache: "no-store", signal: AbortSignal.timeout(4000) });
+    if (r.ok) {
+      const p = (await r.json()) as { properties?: { name: string; value: string }[] };
+      const v = (p.properties ?? []).find((x) => x.name === "textures")?.value;
+      const t = v ? (JSON.parse(Buffer.from(v, "base64").toString("utf8")).textures ?? {}) : {};
+      skin = toHttps(t.SKIN?.url);
+    }
+  } catch {
+    return hit?.skin ?? null;
+  }
+  mojangSkins.set(id, { at: Date.now(), skin });
+  if (mojangSkins.size > 500) mojangSkins.delete(mojangSkins.keys().next().value as string);
+  return skin;
+}
+
+/** The skin for the navbar head: the real Minecraft skin for Microsoft accounts, else the Native skin. Never throws. */
+export async function getAccountSkin(token: string, name: string, uuid?: string): Promise<string | null> {
+  const native = getLook(name, undefined).then((l) => l.skin).catch(() => null);
+  let premium = false;
+  let mcUuid = uuid ?? null;
+  try {
+    const r = await fetch(`${API_URL}/v1/account/minecraft`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: AbortSignal.timeout(4000) });
+    if (r.ok) {
+      const j = (await r.json()) as { account?: { type?: string }; profile?: { uuid?: string } };
+      premium = j?.account?.type === "premium" || j?.account?.type === "merged";
+      if (typeof j?.profile?.uuid === "string") mcUuid = j.profile.uuid;
+    }
+  } catch {}
+  if (premium && mcUuid) {
+    const skin = await getMojangSkin(mcUuid);
+    if (skin) return skin;
+  }
+  return native;
+}

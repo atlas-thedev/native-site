@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, Gift, Menu, Shield, User, X } from "lucide-react";
+import { ChevronDown, Crown, Gift, Menu, Shield, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import "../app/redesign.css";
@@ -31,6 +31,9 @@ const getLinks = [
 /** Square-ish bordered control, used for every boxed item in the bar. */
 const box =
   "nx-box inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-line bg-surface text-[13px] font-extrabold uppercase tracking-[0.04em] transition hover:bg-surface-2";
+/** The one filled call to action in the bar (Download, or Claim free cape before launch). */
+const primary =
+  "nx-cta group inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-inv text-[13px] font-extrabold uppercase tracking-[0.04em] text-inv-fg transition hover:opacity-90 active:scale-[0.98]";
 
 function DownloadMenu() {
   const [open, setOpen] = useState(false);
@@ -55,7 +58,7 @@ function DownloadMenu() {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`${box} px-6`}
+        className={`${primary} px-5`}
       >
         Download
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
@@ -112,36 +115,35 @@ export default function Navbar() {
     label: name ? "Claim free cape" : "Join early",
   };
 
-  const account = (
+  const account = name ? (
     <Link
-      href={name ? "/account" : "/login"}
-      data-claim-target={name ? true : undefined}
-      title={name ? "Your account" : "Sign in"}
-      className={`nx-box hidden h-11 min-w-[190px] items-center gap-3 rounded-[10px] border border-line bg-surface px-3.5 text-left transition hover:bg-surface-2 sm:flex ${name === undefined ? "opacity-0" : ""}`}
+      href="/account"
+      data-claim-target
+      title="Your account"
+      className="group hidden h-11 items-center gap-2.5 rounded-full border border-line bg-surface py-1 pl-1 pr-4 text-[14px] font-semibold transition hover:border-fg/30 hover:bg-surface-2 sm:inline-flex"
     >
-      {name ? (
-        <SkinHead skin={me?.skin ?? null} name={name} size={24} className="!rounded-md ring-1 ring-line" />
-      ) : (
-        <User className="h-[17px] w-[17px]" />
-      )}
-      <span className="flex min-w-0 flex-1 flex-col leading-[1.2]">
-        <span className="truncate text-[13px] font-bold">{name ?? "Login"}</span>
-        <span className="truncate text-[12px] text-dim">{name ? "Your locker and account" : "Account and orders"}</span>
-      </span>
-      <ChevronDown className="h-3.5 w-3.5 shrink-0 text-dim" />
+      <SkinHead skin={me?.skin ?? null} name={name} size={34} className="!rounded-full ring-1 ring-line" />
+      <span className="max-w-[8rem] truncate">{name}</span>
+    </Link>
+  ) : (
+    <Link
+      href="/login"
+      className={`hidden h-11 items-center rounded-full px-4 text-[14.5px] font-semibold text-mute transition hover:bg-surface-2 hover:text-fg sm:inline-flex ${name === undefined ? "opacity-0" : ""}`}
+    >
+      Sign in
     </Link>
   );
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-xl">
-      <nav aria-label="Main" className="mx-auto flex h-[76px] max-w-[1280px] items-center justify-between gap-6 px-5">
+      <nav aria-label="Main" className="flex h-[72px] w-full items-center gap-6 px-5 lg:px-8">
         <Link href="/" className="flex shrink-0 items-center gap-3" aria-label={`${site.name} home`}>
           <img src="/brand/icon.png" alt="" width={32} height={32} className="logo-img h-8 w-8" aria-hidden />
           <span className="text-[20px] font-extrabold uppercase tracking-tight">native</span>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <ul className="mr-2 hidden items-center gap-1 xl:flex">
+        <div className="ml-auto flex items-center gap-2">
+          <ul className="mr-1 hidden items-center gap-0.5 xl:flex">
             {nav.map((l) => (
               <li key={l.href}>
                 <Link
@@ -153,7 +155,8 @@ export default function Navbar() {
               </li>
             ))}
             <li>
-              <Link href="/plus" className={`${box} px-5 text-gold`}>
+              <Link href="/plus" className="nx-plus ml-2 inline-flex h-11 items-center gap-2 rounded-[10px] px-4 text-[13px] font-extrabold uppercase tracking-[0.04em]">
+                <Crown className="nx-plus-icon h-4 w-4" />
                 Native+
               </Link>
             </li>
@@ -161,8 +164,11 @@ export default function Navbar() {
 
           <div className="hidden xl:block">
             {gift ? (
-              <Link href={giftCta.href} className={`${box} btn-shine gap-2.5 px-5`}>
-                <Gift className="h-4 w-4" /> {giftCta.label}
+              <Link href={giftCta.href} className={`${primary} btn-shine gap-2.5 pl-1.5 pr-4`}>
+                <span className="grid h-8 w-8 place-items-center rounded-[7px] bg-inv-fg/10">
+                  <Gift className="h-4 w-4 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />
+                </span>
+                <span className="whitespace-nowrap">{giftCta.label}</span>
               </Link>
             ) : (
               <DownloadMenu />
@@ -203,7 +209,7 @@ export default function Navbar() {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden border-t border-line xl:hidden"
           >
-            <ul className="mx-auto max-w-[1280px] space-y-1 px-5 py-4">
+            <ul className="space-y-1 px-5 py-4 lg:px-8">
               {[
                 ...nav,
                 { href: "/plus", label: "Native+" },
