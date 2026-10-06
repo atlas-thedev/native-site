@@ -8,7 +8,8 @@ import CosmeticViewer, { type CosmeticViewerHandle, type Worn } from "./Cosmetic
 import { ownerLabel, storeAction, type StoreAction } from "../capes/actions";
 import { getBilling, startCheckout, type BillingState } from "../capes/billing";
 import { useLaunch } from "../launch/LaunchContext";
-import { PixelGlasses, PixelGrid, PixelHat, PixelShoe, PixelWings } from "../icons";
+import ItemIcon from "../ItemIcon";
+import { PixelGrid } from "../icons";
 import { COSMETIC_SLOTS, SLOT_NAMES, isPaid, money, priceNow, type CosmeticSlot, type Owned, type StoreItem, type Wearing } from "@/lib/store";
 
 type Props = {
@@ -25,7 +26,13 @@ type Props = {
 type Tab = "all" | CosmeticSlot;
 type Outfit = Partial<Record<CosmeticSlot, string>>;
 
-const SLOT_ICON: Record<Tab, (p: React.SVGProps<SVGSVGElement>) => React.ReactElement> = { all: PixelGrid, hats: PixelHat, glasses: PixelGlasses, back: PixelWings, shoes: PixelShoe };
+const SLOT_ICON: Record<Tab, (p: React.SVGProps<SVGSVGElement>) => React.ReactElement> = {
+  all: (p) => <ItemIcon {...p} name="all" />,
+  hats: (p) => <ItemIcon {...p} name="hats" />,
+  glasses: (p) => <ItemIcon {...p} name="glasses" />,
+  back: (p) => <ItemIcon {...p} name="back" />,
+  shoes: (p) => <ItemIcon {...p} name="shoes" />,
+};
 const SHORT: Record<CosmeticSlot, string> = { hats: "Hat", glasses: "Glasses", back: "Back", shoes: "Shoes" };
 const TAB_LABEL: Record<CosmeticSlot, string> = { hats: "Hats", glasses: "Glasses", back: "Wings", shoes: "Shoes" };
 const toggle = (on: boolean) => `inline-flex h-10 items-center gap-2 rounded-full px-4 text-[13.5px] font-semibold transition ${on ? "bg-inv text-inv-fg" : "text-mute hover:bg-surface-2 hover:text-fg"}`;
@@ -228,7 +235,7 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
               <li key={s} className="group relative">
                 <button onClick={() => focusSlot(s)} aria-label={it ? `${SLOT_NAMES[s]}: ${it.name}` : `${SLOT_NAMES[s]}: empty`} aria-pressed={active}
                   className={`relative flex h-[60px] w-[60px] items-center justify-center overflow-hidden rounded-2xl border bg-bg/70 backdrop-blur transition sm:h-[68px] sm:w-[68px] ${active ? "border-fg shadow-[0_0_0_3px_color-mix(in_srgb,var(--fg)_14%,transparent)]" : it ? "border-line hover:border-fg/50" : "border-dashed border-line text-dim hover:border-fg/40 hover:text-mute"}`}>
-                  {it ? <img src={it.stillUrl} alt="" className="h-[78%] w-[78%] object-contain [image-rendering:pixelated]" /> : <Icon className="h-5 w-6" />}
+                  {it ? <img src={it.stillUrl} alt="" className="h-[78%] w-[78%] object-contain [image-rendering:pixelated]" /> : <Icon className="h-6 w-6 opacity-60 saturate-50" />}
                   <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg/90 to-transparent pb-0.5 pt-2 text-center text-[9.5px] font-bold uppercase tracking-wider text-mute">{SHORT[s]}</span>
                   {it && wearing[s] === it.id && <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-inv text-inv-fg"><Check className="h-2.5 w-2.5" strokeWidth={4} /></span>}
                 </button>
@@ -271,8 +278,8 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
             const on = tab === t;
             return (
               <button key={t} role="tab" aria-selected={on} title={t === "all" ? "Everything" : SLOT_NAMES[t]} onClick={() => { setTab(t); if (t !== "all") { setFocus(t); setSpin(false); } }}
-                className={`relative flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 text-[12.5px] font-semibold transition ${on ? "bg-inv text-inv-fg" : "text-mute hover:bg-surface-2 hover:text-fg"}`}>
-                <Icon className="h-4 w-5" />
+                className={`group relative flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 text-[12.5px] font-semibold transition ${on ? "bg-inv text-inv-fg" : "text-mute hover:bg-surface-2 hover:text-fg"}`}>
+                <Icon className={`h-6 w-6 transition duration-200 ${on ? "scale-110 drop-shadow-[0_2px_0_rgba(0,0,0,0.35)]" : "saturate-[.7] group-hover:saturate-100 group-hover:-rotate-6"}`} />
                 <span className="truncate">{t === "all" ? "All" : TAB_LABEL[t]}</span>
                 <span className={`absolute right-2 top-1.5 text-[10.5px] font-bold ${on ? "opacity-60" : "text-dim"}`}>{counts[t]}</span>
               </button>
@@ -327,7 +334,7 @@ export default function CosmeticsStudio({ items, signedIn, owned: initialOwned, 
             <div className="flex gap-2.5 text-dim">
               {COSMETIC_SLOTS.map((s) => {
                 const Icon = SLOT_ICON[s];
-                return <span key={s} className="flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed border-line"><Icon className="h-5 w-6" /></span>;
+                return <span key={s} className="flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed border-line"><Icon className="h-6 w-6" /></span>;
               })}
             </div>
             <p className="mt-6 text-[22px] font-extrabold tracking-tight">{items.length ? "Nothing matches that." : "The first cosmetics are on the way."}</p>
