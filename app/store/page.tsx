@@ -6,7 +6,7 @@ import { getCatalog, getLook, getMine } from "@/lib/server/store";
 import { breadcrumb, pageMeta } from "@/lib/seo";
 import { COSMETIC_SLOTS } from "@/lib/store";
 
-const CATS: string[] = ["capes", ...COSMETIC_SLOTS];
+const CATS: string[] = ["capes", ...COSMETIC_SLOTS, "bundles"];
 
 export const dynamic = "force-dynamic";
 export const metadata = pageMeta({
@@ -35,6 +35,8 @@ export default async function StorePage({ searchParams }: { searchParams: Promis
         skin={look?.skin ?? null}
         model={look?.model ?? (s?.account.model === "slim" ? "slim" : "default")}
         initialCat={initialCat}
+        bundles={catalog?.bundles ?? []}
+        bundleMine={mine?.bundles ?? {}}
         banner={<StoreLockBanner key="lock" signedIn={!!s} />}
       />
     </div>

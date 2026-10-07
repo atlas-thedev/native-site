@@ -21,7 +21,7 @@ export async function GET(req: Request) {
 const ACTIONS = { checkout: "/v1/billing/checkout", portal: "/v1/billing/portal", redeem: "/v1/store/redeem" } as const;
 
 /**
- * { action: "checkout", kind: "cape", itemId } | { action: "checkout", kind: "bundle", itemIds } | { action: "checkout", kind: "plus", plan: "monthly" | "yearly" }
+ * { action: "checkout", kind: "cape", itemId } | { action: "checkout", kind: "bundle", bundleId } | { action: "checkout", kind: "bundle", itemIds } | { action: "checkout", kind: "plus", plan: "monthly" | "yearly" }
  * { action: "portal" } opens Paddle's customer portal. { action: "redeem", code } redeems a code.
  */
 export async function POST(req: Request) {
@@ -38,7 +38,9 @@ export async function POST(req: Request) {
   const body =
     action === "checkout"
       ? b.kind === "bundle"
-        ? { kind: "bundle", itemIds: (Array.isArray(b.itemIds) ? b.itemIds : []).slice(0, 10).map((x: unknown) => String(x ?? "").slice(0, 80)) }
+        ? typeof b.bundleId === "string" && b.bundleId
+          ? { kind: "bundle", bundleId: b.bundleId.slice(0, 80) }
+          : { kind: "bundle", itemIds: (Array.isArray(b.itemIds) ? b.itemIds : []).slice(0, 12).map((x: unknown) => String(x ?? "").slice(0, 80)) }
         : { kind: b.kind === "plus" ? "plus" : "cape", itemId: String(b.itemId ?? "").slice(0, 80), plan: b.plan === "yearly" ? "yearly" : "monthly" }
     : action === "redeem" ? { code: String(b.code ?? "").slice(0, 40) }
     : {};
