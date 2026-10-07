@@ -1,18 +1,19 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Check, ChevronRight, CircleDot, Crown, Feather, Film, Footprints, Gift, Glasses, Hand, Heart, LayoutGrid, Loader2, Lock, Pause, Play, RotateCcw, RotateCw, Search, Shirt, ShoppingBag, Sparkles, Star, Tag, X } from "lucide-react";
+import { ArrowRight, Check, ChevronRight, CircleDot, Crown, Feather, Film, Footprints, Gift, Glasses, Hand, Heart, LayoutGrid, Loader2, Lock, Minus, Pause, Play, Plus, RotateCcw, RotateCw, Search, Shirt, ShoppingBag, Sparkles, Star, Tag, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import "./store.css";
 import CapeStrip from "../CapeStrip";
-import LockerViewer from "../LockerViewer";
+import LockerViewer, { type ViewerHandle } from "../LockerViewer";
 import WornShot from "../cosmetics/WornShot";
 import WishHeart from "./WishHeart";
 import SortMenu from "../capes/SortMenu";
 import { PixelCape } from "../icons";
 import { PxButton, PxLink, Toast, type ToastMsg } from "../ui/Px";
 import { storeAction } from "../capes/actions";
+import { startCheckout } from "../capes/billing";
 import { useWishlist } from "./wishlist";
 import { useLaunch } from "../launch/LaunchContext";
 import type { Worn } from "../cosmetics/CosmeticViewer";
@@ -82,11 +83,12 @@ function Art({ it, skin, model, size }: { it: StoreItem; skin: string | null; mo
 
 /** A worn shot; until it is drawn, a shimmer instead of the raw texture atlas (which is what most imports use as a thumbnail). */
 function ShotOrSkeleton({ it, skin, model, size }: { it: StoreItem; skin: string | null; model: "default" | "slim"; size: number }) {
-  const flat = !it.stillUrl || it.stillUrl === it.textureUrl;
+  const [ready, setReady] = useState(false);
+  const flat = (!it.stillUrl || it.stillUrl === it.textureUrl) && !ready;
   return (
     <span className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       {flat && <span className="sx-skel absolute" aria-hidden />}
-      <WornShot item={it} skin={skin} model={model} className="relative h-full w-full object-contain" hideFallback={flat} alt={`${it.name}`} />
+      <WornShot item={it} skin={skin} model={model} className="relative h-full w-full object-contain" hideFallback={!it.stillUrl || it.stillUrl === it.textureUrl} onReady={() => setReady(true)} alt={`${it.name}`} />
     </span>
   );
 }
@@ -102,6 +104,10 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
   const [equipped, setEquipped] = useState<string | null>(equippedIn);
   const [wearing, setWearing] = useState<Wearing>(wearingIn);
   const [tryOn, setTryOn] = useState<TryOn>({});
+  // keep the look you're building across a checkout (you come back to /store after paying)
+  const FIT_KEY = "native.store.fit.v1";
+  useEffect(() => { try { const v = sessionStorage.getItem(FIT_KEY); if (v) setTryOn(JSON.parse(v)); } catch { /* blocked storage */ } }, []);
+  useEffect(() => { try { if (Object.keys(tryOn).length) sessionStorage.setItem(FIT_KEY, JSON.stringify(tryOn)); else sessionStorage.removeItem(FIT_KEY); } catch { /* blocked storage */ } }, [tryOn]);
   const [focus, setFocus] = useState<string | null>(null);
   const [sheet, setSheet] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -213,6 +219,16 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
     return "Outfit saved. You’re wearing it in the launcher and in game.";
   });
 
+  /** Paid pieces of the look that aren't in your locker yet: buy one, or all of them in one checkout. */
+  const missing = CATS.map((c) => { const id = outfitOf(c); return id ? byId.get(id) : undefined; })
+    .filter((it): it is StoreItem => !!it && !owned.has(it.id) && isPaid(it) && !it.exclusive);
+  const missingTotal = missing.reduce((n, it) => n + priceNow(it), 0);
+  const buy = (ids: string[]) => run(`buy:${ids.join(",")}`, async () => {
+    if (storeLocked) throw new Error("The store opens at launch.");
+    await (ids.length === 1 ? startCheckout({ kind: "cape", itemId: ids[0] }) : startCheckout({ kind: "bundle", itemIds: ids }));
+    return "Opening the checkout…";
+  });
+
   const actionFor = (it: StoreItem) => {
     const c = catOf(it);
     const isOn = realOf(c) === it.id;
@@ -221,7 +237,7 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
     if (isOn) return <PxButton variant="ghost" className="w-full" disabled={!!busy} onClick={() => run(`off:${c}`, async () => { await takeOff(c); return `${it.name} taken off.`; })}>{busy === `off:${c}` ? spin : <X />} Take off</PxButton>;
     if (owned.has(it.id)) return <PxButton variant="light" className="w-full" disabled={!!busy} onClick={() => run(`wear:${it.id}`, async () => { await wearIt(it); return `You’re wearing ${it.name}.`; })}>{busy === `wear:${it.id}` ? spin : <Shirt />} Wear</PxButton>;
     if (it.exclusive) return <PxButton variant="locked" className="w-full" disabled><Star /> Events & codes only</PxButton>;
-    if (isPaid(it)) return <PxLink href={hrefOf(it)} variant="gold" className="w-full"><ShoppingBag /> Get it · {money(priceNow(it))}</PxLink>;
+    if (isPaid(it)) return <PxButton variant="gold" className="w-full" disabled={!!busy || storeLocked} onClick={() => buy([it.id])}>{busy === `buy:${it.id}` ? spin : <ShoppingBag />} {storeLocked ? "Opens at launch" : `Buy · ${money(priceNow(it))}`}</PxButton>;
     if (storeLocked) return <PxButton variant="locked" className="w-full" disabled><Lock /> Opens at launch</PxButton>;
     return <PxButton variant="green" className="w-full" disabled={!!busy} onClick={() => run(`wear:${it.id}`, async () => { await wearIt(it); return `${it.name} is in your locker and you’re wearing it.`; })}>{busy === `wear:${it.id}` ? spin : <Gift />} Get free & wear</PxButton>;
   };
@@ -313,8 +329,27 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
           const on = CATS.filter((c) => outfitOf(c)).length;
           return on > 0 && <p className="mt-4 border-t-2 border-line pt-3 text-[12.5px] text-mute">{on} {on === 1 ? "piece" : "pieces"} on{trying.length ? ` · ${trying.length} trying on` : ""}. Click a slot to see it, × to take it off.</p>;
         })()}
+        {signedIn && missing.length > 0 && (
+          <div className="sx-missing mt-4">
+            <p className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-dim">Not in your locker yet</p>
+            <ul className="mt-2">
+              {missing.map((it) => (
+                <li key={it.id} className="sx-missing-row">
+                  <button onClick={() => setFocus(it.id)} className="min-w-0 flex-1 truncate text-left text-[13.5px] font-semibold hover:underline">{it.name}</button>
+                  <Price it={it} />
+                  <button className="sx-buy" disabled={!!busy || storeLocked} onClick={() => buy([it.id])}>{busy === `buy:${it.id}` ? <Loader2 className="animate-spin" /> : "Buy"}</button>
+                </li>
+              ))}
+            </ul>
+            {missing.length > 1 && (
+              <PxButton variant="gold" className="mt-3 w-full" disabled={!!busy || storeLocked} onClick={() => buy(missing.map((it) => it.id))}>
+                {busy?.startsWith("buy:") && busy.includes(",") ? <Loader2 className="animate-spin" /> : <ShoppingBag />} {storeLocked ? "Opens at launch" : `Buy the whole look · ${money(missingTotal)}`}
+              </PxButton>
+            )}
+          </div>
+        )}
         {trying.length > 0 && signedIn && (
-          <PxButton variant={outfitReady ? "light" : "locked"} className="mt-3 w-full" disabled={!outfitReady || !!busy} onClick={wearOutfit} title={outfitReady ? undefined : "Some pieces are paid: get them on their item page first."}>
+          <PxButton variant={outfitReady ? "light" : "locked"} className="mt-3 w-full" disabled={!outfitReady || !!busy} onClick={wearOutfit} title={outfitReady ? undefined : "Buy the missing pieces first."}>
             {busy === "outfit" ? <Loader2 className="animate-spin" /> : <Shirt />} Wear this outfit
           </PxButton>
         )}
@@ -444,10 +479,12 @@ function SlotArt({ it, skin, model }: { it: StoreItem; skin: string | null; mode
 function Room({ skin, model, cape, worn, children }: { skin: string | null; model: "default" | "slim"; cape: StoreItem | null; worn: Worn[]; children?: ReactNode }) {
   const [walk, setWalk] = useState(true);
   const [spin, setSpin] = useState(false);
+  const viewer = useRef<ViewerHandle>(null);
   const skinUrl = skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png");
   return (
     <div className="sx-room-stage">
       <LockerViewer
+        ref={viewer}
         skin={skinUrl}
         model={model}
         cape={cape?.stillUrl ?? null}
@@ -461,6 +498,10 @@ function Room({ skin, model, cape, worn, children }: { skin: string | null; mode
       <div className="absolute bottom-2.5 left-2.5 flex gap-1 rounded-[10px] border-2 border-line bg-[color-mix(in_srgb,var(--bg)_80%,transparent)] p-1 backdrop-blur">
         <button onClick={() => setWalk((w) => !w)} className={`sx-iconbtn ${walk ? "is-on" : ""}`} aria-pressed={walk} title={walk ? "Stand still" : "Walk"} aria-label="Walk">{walk ? <Pause /> : <Play />}</button>
         <button onClick={() => setSpin((s) => !s)} className={`sx-iconbtn ${spin ? "is-on" : ""}`} aria-pressed={spin} title="Spin" aria-label="Spin"><RotateCw /></button>
+        <span className="mx-0.5 w-px self-stretch bg-line" aria-hidden />
+        <button onClick={() => viewer.current?.zoom(1 / 1.18)} className="sx-iconbtn" title="Zoom out" aria-label="Zoom out"><Minus /></button>
+        <button onClick={() => viewer.current?.zoom(1.18)} className="sx-iconbtn" title="Zoom in" aria-label="Zoom in"><Plus /></button>
+        <button onClick={() => viewer.current?.reset()} className="sx-iconbtn" title="Reset view" aria-label="Reset view"><RotateCcw /></button>
       </div>
       {children}
       <span className="pointer-events-none absolute bottom-4 right-3 text-[11.5px] font-semibold text-dim">Drag to turn</span>

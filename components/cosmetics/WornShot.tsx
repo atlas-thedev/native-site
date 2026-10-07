@@ -5,10 +5,10 @@ import { fetchModel } from "./CosmeticViewer";
 import { peekWornShot, shotKey, wornShot } from "@/lib/wornShot";
 import type { StoreItem } from "@/lib/store";
 
-type Props = { item: StoreItem; skin: string | null; model: "default" | "slim"; className?: string; alt?: string; /** keep the image invisible until the worn shot is drawn (for flat atlas thumbnails) */ hideFallback?: boolean };
+type Props = { item: StoreItem; skin: string | null; model: "default" | "slim"; className?: string; alt?: string; /** keep the image invisible until the worn shot is drawn (for flat atlas thumbnails) */ hideFallback?: boolean; onReady?: () => void };
 
 /** The cosmetic worn on your skin (drawn once, then cached); the flat thumbnail shows until it is ready. */
-export default function WornShot({ item, skin, model, className = "", alt = "", hideFallback = false }: Props) {
+export default function WornShot({ item, skin, model, className = "", alt = "", hideFallback = false, onReady }: Props) {
   const skinUrl = skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png");
   const ref = useRef<HTMLImageElement>(null);
   const [url, setUrl] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export default function WornShot({ item, skin, model, className = "", alt = "", 
       const asset = { model: json, texture: item.textureUrl! };
       const hit = peekWornShot(shotKey(item, asset, skinUrl, model));
       const value = hit ?? (await wornShot({ item, asset, skinUrl, model }));
-      if (live && value) setUrl(value);
+      if (live && value) { setUrl(value); onReady?.(); }
     })().catch(() => {});
     return () => { live = false; };
   }, [seen, item.id, item.modelUrl, item.textureUrl, skinUrl, model]); // eslint-disable-line react-hooks/exhaustive-deps

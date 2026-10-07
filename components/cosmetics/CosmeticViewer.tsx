@@ -220,14 +220,6 @@ const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function Cosmetic
     flyTo([a, y, base[2]], true);
   };
   useImperativeHandle(ref, () => ({ reset: () => flyTo(SHOTS[focus ?? "all"]), zoom }));
-  // wheel / trackpad zoom
-  useEffect(() => {
-    const el = wrap.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => { e.preventDefault(); e.stopPropagation(); zoom(Math.exp(-e.deltaY * 0.0016)); };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  });
 
   return (
     <div ref={wrap} data-lenis-prevent className="h-full w-full overscroll-contain">

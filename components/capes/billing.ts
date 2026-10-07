@@ -23,7 +23,7 @@ async function post(body: Record<string, unknown>) {
 }
 
 /** Creates a Paddle transaction and sends the browser to /checkout to pay for it. */
-export async function startCheckout(what: { kind: "cape"; itemId: string } | { kind: "plus"; plan: "monthly" | "yearly" }) {
+export async function startCheckout(what: { kind: "cape"; itemId: string } | { kind: "bundle"; itemIds: string[] } | { kind: "plus"; plan: "monthly" | "yearly" }) {
   const d = await post({ action: "checkout", ...what });
   const back = window.location.pathname;
   window.location.href = `/checkout?_ptxn=${encodeURIComponent(d.transactionId)}&return=${encodeURIComponent(back)}`;

@@ -184,7 +184,7 @@ export default function CosmeticDetail({ item, all, signedIn, account, owned: in
               <PxButton key={sd} variant="ghost" size="sm" on={(mySide ?? "") === sd} onClick={() => pickSide(sd)} aria-pressed={(mySide ?? "") === sd}>{slot === "hand" ? (sd === "left" ? "Left hand" : "Right hand") : sd === "left" ? "Left side" : "Right side"}</PxButton>
             ))}
             {cape && <PxButton variant="ghost" size="sm" on={withCape} onClick={() => setWithCape(!withCape)} aria-pressed={withCape}>Cloak</PxButton>}
-            <span className="ml-auto text-[12px] text-dim max-sm:hidden">Drag to turn · scroll to zoom</span>
+            <span className="ml-auto text-[12px] text-dim max-sm:hidden">Drag to turn</span>
           </div>
         </div>
 
