@@ -8,6 +8,7 @@ import CapeStrip from "./CapeStrip";
 import { storeAction } from "./capes/actions";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LockerViewer, { type ViewerHandle } from "./LockerViewer";
+import WornShot from "./cosmetics/WornShot";
 
 type Model = "default" | "slim";
 type Initial = { name: string; email: string; premium?: boolean; skin: string | null; cape: string | null; model: Model; capeAnim?: CapeAnim | null; capeStore?: string | null; nativeCapes?: StoreItem[]; capeId?: string; cosmetics?: StoreItem[]; ownedIds?: string[]; wearing?: Wearing; sides?: Sides };
@@ -324,7 +325,7 @@ export default function Locker({ initial }: { initial: Initial }) {
             const on = outfit[slot] === it.id;
             return (
               <motion.button key={it.id} {...pop(i + 1)} onClick={() => wearCos(slot, on ? null : it.id)} disabled={!!cosBusy} aria-pressed={on} title={on ? `Take off ${it.name}` : `Wear ${it.name}`} className={tile(on)}>
-                <span className="slot-well flex h-16 w-16 items-center justify-center"><img src={it.stillUrl} alt="" className="h-14 w-14 object-contain transition group-hover:scale-110" /></span>
+                <span className="slot-well flex h-16 w-16 items-center justify-center"><CosThumb it={it} skin={skin} model={model} className="h-14 w-14 object-contain transition group-hover:scale-110" /></span>
                 <span className="w-full truncate text-[13px] font-semibold">{it.name}</span>
                 {cosBusy === it.id ? <Loader2 className="absolute right-2 top-2 h-3.5 w-3.5 animate-spin" /> : on && <Check className="absolute right-2 top-2 h-3.5 w-3.5" strokeWidth={3} />}
               </motion.button>
@@ -343,7 +344,7 @@ export default function Locker({ initial }: { initial: Initial }) {
                 const on = tryOn?.id === it.id;
                 return (
                   <motion.button key={it.id} {...pop(mine.length + i + 1)} onClick={() => setTryOn(on ? null : it)} aria-pressed={on} title={on ? "Stop trying on" : `Try on ${it.name}`} className={`${tile(on)} ${on ? "" : "border-dashed"}`}>
-                    <span className="slot-well flex h-16 w-16 items-center justify-center"><img src={it.stillUrl} alt="" className={`h-14 w-14 object-contain transition group-hover:scale-110 ${on ? "" : "opacity-80"}`} /></span>
+                    <span className={`slot-well flex h-16 w-16 items-center justify-center ${on ? "" : "opacity-80"}`}><CosThumb it={it} skin={skin} model={model} className="h-14 w-14 object-contain transition group-hover:scale-110" /></span>
                     <span className="w-full truncate text-[13px] font-semibold">{it.name}</span>
                     <span className={`absolute right-1.5 top-1.5 rounded-[4px] px-1.5 py-0.5 font-mono text-[10px] font-bold ${it.exclusive ? "bg-surface-2 text-mute" : it.paid ? "bg-inv text-inv-fg" : "border border-line text-mute"}`}>{priceOf(it)}</span>
                   </motion.button>
@@ -561,4 +562,10 @@ export default function Locker({ initial }: { initial: Initial }) {
       </div>
     </div>
   );
+}
+
+/** A cosmetic worn on your skin. Items without their own thumbnail only have a texture sheet (a thin stripe), so that is never shown. */
+function CosThumb({ it, skin, model, className }: { it: StoreItem; skin: string; model: Model; className: string }) {
+  if (!it.modelUrl || !it.textureUrl) return it.stillUrl ? <img src={it.stillUrl} alt="" className={className} /> : null; // eslint-disable-line @next/next/no-img-element
+  return <WornShot item={it} skin={skin} model={model} className={className} hideFallback={!it.stillUrl || it.stillUrl === it.textureUrl} />;
 }
