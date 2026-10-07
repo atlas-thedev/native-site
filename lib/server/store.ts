@@ -1,5 +1,5 @@
 import { API_URL } from "./config";
-import { bundlesOf, isCosmetic, sidesOf, sortItems, toHttps, type BundleMine, type Catalog, type Sides, type Owned, type PlayerHit, type PlayerProfile, type StoreItem, type Wearing } from "../store";
+import { dyesOf, isCosmetic, sidesOf, sortItems, toHttps, type Catalog, type Dyes, type Sides, type Owned, type PlayerHit, type PlayerProfile, type StoreItem, type Wearing } from "../store";
 
 /** Public store catalog from the Native API. Never throws. */
 export async function getCatalog(): Promise<Catalog | null> {
@@ -17,6 +17,7 @@ export async function getCatalog(): Promise<Catalog | null> {
         createdAt: Number(it.createdAt) || 0,
         modelUrl: toHttps(it.modelUrl),
         textureUrl: toHttps(it.textureUrl),
+        dyeUrl: it.dyeable ? toHttps(it.dyeUrl) : null,
       }))
       .filter((it: StoreItem) => it.id && it.stillUrl && !it.hidden);
     const cosmetics = items.filter((it) => isCosmetic(it) && it.modelUrl && it.textureUrl);
@@ -25,7 +26,6 @@ export async function getCatalog(): Promise<Catalog | null> {
       sections: Array.isArray(d.sections) ? d.sections : [],
       items: sortItems(items.filter((it) => it.kind !== "cosmetic")),
       cosmetics: sortItems(cosmetics),
-      bundles: bundlesOf((d as { bundles?: unknown }).bundles),
     };
   } catch {
     return null;
@@ -33,18 +33,18 @@ export async function getCatalog(): Promise<Catalog | null> {
 }
 
 /** The signed-in account's Native capes and cosmetics and what it wears. Never throws. */
-export async function getMine(token: string): Promise<{ owned: Owned[]; equipped: string | null; wearing: Wearing; sides: Sides; wishlist: string[]; bundles: Record<string, BundleMine> } | null> {
+export async function getMine(token: string): Promise<{ owned: Owned[]; equipped: string | null; wearing: Wearing; sides: Sides; wishlist: string[]; dyes: Dyes } | null> {
   try {
     const r = await fetch(`${API_URL}/v1/store/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: AbortSignal.timeout(6000) });
     if (!r.ok) return null;
-    const d = (await r.json()) as { owned?: Owned[]; equipped?: string | null; wearing?: Wearing; sides?: unknown; wishlist?: { id: string }[]; bundles?: Record<string, BundleMine> };
+    const d = (await r.json()) as { owned?: Owned[]; equipped?: string | null; wearing?: Wearing; sides?: unknown; wishlist?: { id: string }[]; dyes?: unknown };
     return {
       owned: Array.isArray(d.owned) ? d.owned : [],
       equipped: d.equipped ?? null,
       wearing: d.wearing && typeof d.wearing === "object" ? d.wearing : {},
       sides: sidesOf(d.sides),
       wishlist: Array.isArray(d.wishlist) ? d.wishlist.map((w) => w.id) : [],
-      bundles: d.bundles && typeof d.bundles === "object" ? d.bundles : {},
+      dyes: dyesOf(d.dyes),
     };
   } catch {
     return null;

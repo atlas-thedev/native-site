@@ -1,17 +1,17 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Check, Download, Loader2, LogOut, Plus, RotateCcw, Trash2, Upload, X } from "lucide-react";
+import { ArrowRight, Check, Download, Loader2, LogOut, Palette, Plus, RotateCcw, Trash2, Upload, X } from "lucide-react";
 import Link from "next/link";
-import { COSMETIC_SLOTS, SIDED_SLOTS, type CapeAnim, type CosmeticSlot, type Sides, type StoreItem, type Wearing } from "@/lib/store";
+import { COSMETIC_SLOTS, DYE_SWATCHES, SIDED_SLOTS, dyedTextureUrl, type CapeAnim, type Dyes, type CosmeticSlot, type Sides, type StoreItem, type Wearing } from "@/lib/store";
 import CapeStrip from "./CapeStrip";
-import { storeAction } from "./capes/actions";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { storeAction, storeDye } from "./capes/actions";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import LockerViewer, { type ViewerHandle } from "./LockerViewer";
 import WornShot from "./cosmetics/WornShot";
 
 type Model = "default" | "slim";
-type Initial = { name: string; email: string; premium?: boolean; skin: string | null; cape: string | null; model: Model; capeAnim?: CapeAnim | null; capeStore?: string | null; nativeCapes?: StoreItem[]; capeId?: string; cosmetics?: StoreItem[]; ownedIds?: string[]; wearing?: Wearing; sides?: Sides };
+type Initial = { name: string; email: string; premium?: boolean; skin: string | null; cape: string | null; model: Model; capeAnim?: CapeAnim | null; capeStore?: string | null; nativeCapes?: StoreItem[]; capeId?: string; cosmetics?: StoreItem[]; ownedIds?: string[]; wearing?: Wearing; sides?: Sides; dyes?: Dyes };
 
 const COS_TABS = [
   { id: "cloaks", label: "Cloaks", noun: "cloaks" },
@@ -20,7 +20,6 @@ const COS_TABS = [
   { id: "back", label: "Wings", noun: "wings or backpacks" },
   { id: "shoes", label: "Shoes", noun: "shoes" },
   { id: "hand", label: "Hand", noun: "hand items" },
-  { id: "balloon", label: "Balloons", noun: "balloons" },
 ] as const;
 type CosTab = (typeof COS_TABS)[number]["id"];
 const priceOf = (it: StoreItem) => (it.exclusive ? "Event" : it.paid ? `$${Number(it.price).toFixed(2)}` : "Free");
@@ -111,6 +110,29 @@ function CapeThumb({ src }: { src: string }) {
 
 const chip = (on: boolean) => `rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition ${on ? "border-transparent bg-inv text-inv-fg" : "border-line text-mute hover:bg-surface-2 hover:text-fg"}`;
 
+/** Colour picker for a worn dyeable cosmetic: its own colour, quick picks, any colour, reset. */
+function DyePicker({ it, color, picked, onPick, onDraft }: { it: StoreItem; color: string | null; picked: boolean; onPick: (c: string | null) => void; onDraft: (c: string) => void }) {
+  const own = it.dyeDefault ?? null;
+  const current = color ?? own ?? "#ffffff";
+  const picks = [...(own ? [own] : []), ...DYE_SWATCHES.filter((c) => c !== own)];
+  return (
+    <div className="dye-panel mb-6" role="group" aria-label={`Dye ${it.name}`}>
+      <span className="dye-label"><Palette className="h-3.5 w-3.5" />Dye <b>{it.name}</b></span>
+      <div className="dye-swatches">
+        {picks.map((c) => (
+          <button key={c} type="button" onClick={() => onPick(c)} aria-pressed={current === c} aria-label={c === own ? "Original colour" : `Colour ${c}`} title={c === own ? `Original (${c})` : c} className={`dye-swatch ${current === c ? "is-on" : ""} ${c === own ? "is-own" : ""}`} style={{ "--dye": c } as CSSProperties} />
+        ))}
+        <label className={`dye-swatch dye-custom ${picks.includes(current) ? "" : "is-on"}`} style={{ "--dye": current } as CSSProperties} title="Any colour">
+          <Plus className="h-3 w-3" strokeWidth={3} />
+          <input type="color" value={current} aria-label="Pick any colour" onInput={(e) => onDraft((e.target as HTMLInputElement).value.toLowerCase())} onChange={(e) => onPick(e.target.value.toLowerCase())} />
+        </label>
+      </div>
+      <span className="dye-hex">{current}</span>
+      {picked && <button type="button" onClick={() => onPick(null)} className="dye-reset" title="Back to its own colour"><RotateCcw className="h-3 w-3" />Reset</button>}
+    </div>
+  );
+}
+
 export default function Locker({ initial }: { initial: Initial }) {
   const baseSkin = initial.skin ?? PRESET_SKINS[0].src;
   const [skin, setSkin] = useState(baseSkin);
@@ -194,14 +216,36 @@ export default function Locker({ initial }: { initial: Initial }) {
   // the side each worn hand item / balloon sits on, so the preview matches the game
   const [outfitSides, setOutfitSides] = useState<Sides>(initial.sides ?? {});
   const [tryOn, setTryOn] = useState<StoreItem | null>(null);
+  // dyeable cosmetics: the colours picked per item, and the one being dragged in the colour picker
+  const [dyes, setDyes] = useState<Dyes>(initial.dyes ?? {});
+  const [dyeDraft, setDyeDraft] = useState<{ id: string; color: string } | null>(null);
+  const dyeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const colorOf = useCallback((id: string) => (dyeDraft?.id === id ? dyeDraft.color : dyes[id]) ?? null, [dyeDraft, dyes]);
   const [cosBusy, setCosBusy] = useState<string | null>(null);
   const worn = useMemo(() => {
     const slots: Wearing = { ...outfit };
     if (tryOn?.slot) slots[tryOn.slot as CosmeticSlot] = tryOn.id;
     return COSMETIC_SLOTS.map((s) => (slots[s] ? cosById.get(slots[s]!) : undefined))
       .filter((it): it is StoreItem => !!it && !!it.modelUrl && !!it.textureUrl)
-      .map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, slot: it.slot, side: it.slot && SIDED_SLOTS.includes(it.slot) && tryOn?.id !== it.id ? outfitSides[it.slot] ?? null : null }));
-  }, [outfit, outfitSides, tryOn, cosById]);
+      .map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: dyedTextureUrl(it, colorOf(it.id)) ?? it.textureUrl!, slot: it.slot, side: it.slot && SIDED_SLOTS.includes(it.slot) && tryOn?.id !== it.id ? outfitSides[it.slot] ?? null : null }));
+  }, [outfit, outfitSides, tryOn, cosById, colorOf]);
+  const saveDye = async (it: StoreItem, color: string | null) => {
+    const before = dyes;
+    const next = { ...dyes };
+    if (!color || color === it.dyeDefault) delete next[it.id]; else next[it.id] = color;
+    setDyes(next);
+    setDyeDraft(null);
+    try {
+      setDyes(await storeDye(it.id, color));
+    } catch (e) {
+      setDyes(before);
+      setMsg({ t: "err", s: e instanceof Error ? e.message : "Couldn’t dye that." });
+    }
+  };
+  const draftDye = (it: StoreItem, color: string) => {
+    if (dyeTimer.current) clearTimeout(dyeTimer.current);
+    dyeTimer.current = setTimeout(() => setDyeDraft({ id: it.id, color }), 110);
+  };
   const wearCos = async (slot: CosmeticSlot, id: string | null) => {
     if (cosBusy) return;
     setCosBusy(id ?? `off:${slot}`);
@@ -323,8 +367,10 @@ export default function Locker({ initial }: { initial: Initial }) {
     const mine = allCos.filter((it) => it.slot === slot && owned.has(it.id));
     const more = allCos.filter((it) => it.slot === slot && !owned.has(it.id));
     const pop = (i: number) => ({ initial: { opacity: 0, y: 14, scale: 0.9 }, animate: { opacity: 1, y: 0, scale: 1 }, transition: { type: "spring" as const, stiffness: 460, damping: 24, delay: 0.05 + i * 0.035 } });
+    const dyeIt = outfit[slot] ? cosById.get(outfit[slot]!) : undefined;
     return (
       <div>
+        {dyeIt?.dyeable && <DyePicker it={dyeIt} color={colorOf(dyeIt.id)} picked={!!dyes[dyeIt.id]} onPick={(c) => saveDye(dyeIt, c)} onDraft={(c) => draftDye(dyeIt, c)} />}
         <p className="eyebrow">Yours</p>
         <div className="mt-3 grid grid-cols-3 gap-2.5 sm:grid-cols-4">
           <motion.button {...pop(0)} onClick={() => wearCos(slot, null)} disabled={!!cosBusy} aria-pressed={!outfit[slot]} className={tile(!outfit[slot])}>

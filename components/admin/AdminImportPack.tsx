@@ -8,8 +8,8 @@ import type { AdminItem } from "./types";
 import { Btn, Field, Panel, Toggle, adm, input, useAction } from "./ui";
 import { COSMETIC_SLOTS, SIDED_SLOTS, SLOT_NAMES, type CosmeticSlot, type Side } from "@/lib/store";
 
-type Opt = { on: boolean; name: string; slot: CosmeticSlot; side: Side; scale: string; ox: string; oy: string; oz: string };
-type Found = { id: string; name: string; slot: CosmeticSlot; side: Side | null; kind: string };
+type Opt = { on: boolean; name: string; slot: CosmeticSlot; side: Side; scale: string; ox: string; oy: string; oz: string; dye: string };
+type Found = { id: string; name: string; slot: CosmeticSlot; side: Side | null; kind: string; color?: string | null };
 type Lib = typeof import("@/lib/ncmImport");
 
 const toB64 = (u8: Uint8Array) => {
@@ -26,7 +26,7 @@ export default function AdminImportPack({ setItems }: { setItems: (items: AdminI
   const [opts, setOpts] = useState<Record<string, Opt>>({});
   const [notes, setNotes] = useState<string[]>([]);
   const [sel, setSel] = useState<string | null>(null);
-  const [preview, setPreview] = useState<{ modelUrl: string; textureUrl: string; info: string } | null>(null);
+  const [preview, setPreview] = useState<{ modelUrl: string; textureUrl: string; info: string; dyeable: boolean } | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [publish, setPublish] = useState(false);
   const { busy, run } = useAction();
@@ -38,7 +38,7 @@ export default function AdminImportPack({ setItems }: { setItems: (items: AdminI
     files.current = await lib.current.readZip(await f.arrayBuffer());
     const d = lib.current.discover(files.current) as unknown as { entries: Found[]; notes: string[] };
     setFound(d.entries); setNotes(d.notes);
-    setOpts(Object.fromEntries(d.entries.map((e) => [e.id, { on: true, name: e.name, slot: e.slot, side: (e.side ?? "right") as Side, scale: "1", ox: "0", oy: "0", oz: "0" }])));
+    setOpts(Object.fromEntries(d.entries.map((e) => [e.id, { on: true, name: e.name, slot: e.slot, side: (e.side ?? "right") as Side, scale: "1", ox: "0", oy: "0", oz: "0", dye: e.color || "#ffffff" }])));
     if (!d.entries.length) throw new Error("No cosmetics found in that pack.");
     setSel(d.entries[0].id);
   }, "Pack read.");
@@ -51,7 +51,7 @@ export default function AdminImportPack({ setItems }: { setItems: (items: AdminI
 
   // live preview of the picked entry, re-baked when its settings change
   const o = sel ? opts[sel] : null;
-  const key = sel && o ? `${sel}|${o.slot}|${o.side}|${o.scale}|${o.ox}|${o.oy}|${o.oz}` : "";
+  const key = sel && o ? `${sel}|${o.slot}|${o.side}|${o.scale}|${o.ox}|${o.oy}|${o.oz}|${o.dye}` : "";
   useEffect(() => {
     if (!sel || !files.current || !lib.current) return;
     let dead = false;
@@ -60,9 +60,12 @@ export default function AdminImportPack({ setItems }: { setItems: (items: AdminI
         const r = await convert(sel);
         if (dead) return;
         const modelUrl = URL.createObjectURL(new Blob([JSON.stringify(r.model)], { type: "application/json" }));
-        const textureUrl = URL.createObjectURL(new Blob([r.png as BlobPart], { type: "image/png" }));
+        // dyeable pieces preview in the colour they'll ship in
+        const shown = r.mask ? await lib.current!.bakeDye(r.png, r.mask, opts[sel]?.dye || "#ffffff") : r.png;
+        if (dead) return;
+        const textureUrl = URL.createObjectURL(new Blob([shown as BlobPart], { type: "image/png" }));
         setErr(null);
-        setPreview({ modelUrl, textureUrl, info: `${r.info.parts} parts · ${r.info.cubes} cubes · ${r.info.size[0]}×${r.info.size[1]} texture` });
+        setPreview({ modelUrl, textureUrl, dyeable: !!r.mask, info: `${r.info.parts} parts · ${r.info.cubes} cubes · ${r.info.size[0]}×${r.info.size[1]} texture${r.mask ? " · dyeable" : ""}` });
       } catch (e) { if (!dead) { setPreview(null); setErr(e instanceof Error ? e.message : String(e)); } }
     }, 250);
     return () => { dead = true; clearTimeout(t); };
@@ -77,11 +80,15 @@ export default function AdminImportPack({ setItems }: { setItems: (items: AdminI
     let last: AdminItem[] | null = null;
     for (const e of chosen) {
       const r = await convert(e.id);
+      // tinted faces (tintindex) make it dyeable: the undyed texture is the base, the server bakes the default colour in
+      const dyeHex = opts[e.id].dye || "#ffffff";
+      const shown = r.mask ? await lib.current!.bakeDye(r.png, r.mask, dyeHex) : r.png;
       // without a thumbnail the store would show the raw texture atlas
-      const thumb = await thumbFor(e.id, r.model, r.png);
+      const thumb = await thumbFor(e.id, r.model, shown);
       const d = await adm<{ items: AdminItem[] }>("POST", "store/items", {
         kind: "cosmetic", slot: opts[e.id].slot, name: opts[e.id].name.trim() || e.name, description: "", tags: "",
         featured: false, hidden: !publish, exclusive: false, model: JSON.stringify(r.model), texture: toB64(r.png), ...(thumb ? { thumb } : {}),
+        ...(r.mask ? { dyeable: true, dyeMask: toB64(r.mask), dyeDefault: dyeHex } : {}),
       });
       last = d.items;
     }
@@ -125,6 +132,11 @@ export default function AdminImportPack({ setItems }: { setItems: (items: AdminI
                 <Field label="Offset X"><input className={input} type="number" step={0.5} value={o.ox} onChange={(e) => set(sel, { ox: e.target.value })} /></Field>
                 <Field label="Offset Y"><input className={input} type="number" step={0.5} value={o.oy} onChange={(e) => set(sel, { oy: e.target.value })} /></Field>
                 <Field label="Offset Z"><input className={input} type="number" step={0.5} value={o.oz} onChange={(e) => set(sel, { oz: e.target.value })} /></Field>
+                {preview?.dyeable && (
+                  <Field label="Dye colour (players can change it)">
+                    <input className={`${input} cursor-pointer`} type="color" value={o.dye} onChange={(e) => set(sel, { dye: e.target.value })} />
+                  </Field>
+                )}
                 {SIDED_SLOTS.includes(o.slot) && (
                   <Field label="Default side">
                     <select className={input} value={o.side} onChange={(e) => set(sel, { side: e.target.value as Side })}>

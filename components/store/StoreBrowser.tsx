@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Check, ChevronRight, CircleDot, Crown, Package, Feather, Film, Footprints, Gift, Glasses, Hand, Heart, LayoutGrid, Loader2, Lock, Minus, Pause, Play, Plus, RotateCcw, RotateCw, Search, Shirt, ShoppingBag, Sparkles, Star, Tag, X } from "lucide-react";
+import { ArrowRight, Check, ChevronRight, Crown, Feather, Film, Footprints, Gift, Glasses, Hand, Heart, LayoutGrid, Loader2, Lock, Minus, Pause, Play, Plus, RotateCcw, RotateCw, Search, Shirt, ShoppingBag, Sparkles, Star, Tag, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import "./store.css";
@@ -11,17 +11,17 @@ import WornShot from "../cosmetics/WornShot";
 import WishHeart from "./WishHeart";
 import SortMenu from "../capes/SortMenu";
 import { PixelCape } from "../icons";
-import { PxButton, PxLink, Toast, type ToastMsg } from "../ui/Px";
-import { claimBundle, storeAction } from "../capes/actions";
+import { PxButton, PxLink, PxTabs, Toast, type ToastMsg } from "../ui/Px";
+import { storeAction } from "../capes/actions";
 import { startCheckout } from "../capes/billing";
 import { useWishlist } from "./wishlist";
 import { useLaunch } from "../launch/LaunchContext";
 import type { Worn } from "../cosmetics/CosmeticViewer";
-import { COSMETIC_SLOTS, SIDED_SLOTS, isCosmetic, isPaid, money, priceNow, sortBy, sortItems, type Bundle, type BundleMine, type CosmeticSlot, type Owned, type Sides, type SortKey, type StoreItem, type Wearing } from "@/lib/store";
+import { COSMETIC_SLOTS, SIDED_SLOTS, isCosmetic, isPaid, money, priceNow, sortBy, sortItems, type CosmeticSlot, type Owned, type Sides, type SortKey, type StoreItem, type Wearing } from "@/lib/store";
 
 /** A store category: cloaks or one cosmetic slot. */
 export type Cat = "capes" | CosmeticSlot;
-export type CatOrAll = "all" | "bundles" | Cat;
+export type CatOrAll = "all" | Cat;
 export const CATS: Cat[] = ["capes", ...COSMETIC_SLOTS];
 export const CAT: Record<Cat, { label: string; one: string; tint: string; icon: ReactNode; blurb: string }> = {
   capes: { label: "Cloaks", one: "Cloak", tint: "#b48cff", icon: <PixelCape />, blurb: "Animated and classic cloaks" },
@@ -30,7 +30,6 @@ export const CAT: Record<Cat, { label: string; one: string; tint: string; icon: 
   back: { label: "Wings & Backpacks", one: "Back item", tint: "#9fe0ff", icon: <Feather />, blurb: "Wings, jetpacks and packs" },
   shoes: { label: "Shoes", one: "Shoes", tint: "#ffb45c", icon: <Footprints />, blurb: "Sneakers and rocket boots" },
   hand: { label: "In hand", one: "Hand item", tint: "#d7a6ff", icon: <Hand />, blurb: "Swords, lanterns and gadgets" },
-  balloon: { label: "Balloons", one: "Balloon", tint: "#ff9ec7", icon: <CircleDot />, blurb: "Floating companions" },
 };
 export const catOf = (it: StoreItem): Cat => (isCosmetic(it) ? (it.slot as CosmeticSlot) : "capes");
 export const hrefOf = (it: StoreItem) => `/${isCosmetic(it) ? "cosmetics" : "cloaks"}/${it.id}`;
@@ -50,8 +49,6 @@ type Props = {
   model: "default" | "slim";
   initialCat?: CatOrAll;
   banner?: ReactNode;
-  bundles?: Bundle[];
-  bundleMine?: Record<string, BundleMine>;
 };
 
 /** What a slot shows in the fitting room: an item id, or null for nothing. `undefined` = keep what the account wears. */
@@ -95,7 +92,7 @@ function ShotOrSkeleton({ it, skin, model, size }: { it: StoreItem; skin: string
   );
 }
 
-export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped: equippedIn, wearing: wearingIn, sides, skin, model, initialCat = "all", banner, bundles: bundlesIn = [], bundleMine: bundleMineIn = {} }: Props) {
+export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped: equippedIn, wearing: wearingIn, sides, skin, model, initialCat = "all", banner }: Props) {
   const wide = useWide();
   const { launch } = useLaunch();
   const [cat, setCat] = useState<CatOrAll>(initialCat);
@@ -116,9 +113,6 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
   const [msg, setMsg] = useState<ToastMsg>(null);
   const wish = useWishlist(signedIn);
   const byId = useMemo(() => new Map(items.map((it) => [it.id, it])), [items]);
-  const [bundleMine, setBundleMine] = useState<Record<string, BundleMine>>(bundleMineIn);
-  /** Bundles with at least two items this page knows about. */
-  const bundles = useMemo(() => bundlesIn.filter((b) => b.itemIds.filter((id) => byId.has(id)).length >= 2), [bundlesIn, byId]);
 
   // keep ?c= in the address bar so a category can be linked to
   useEffect(() => {
@@ -128,10 +122,10 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
   }, [cat]);
 
   const counts = useMemo(() => {
-    const c = { all: items.length, bundles: bundles.length } as Record<CatOrAll, number>;
+    const c = { all: items.length } as Record<CatOrAll, number>;
     for (const k of CATS) c[k] = items.filter((it) => catOf(it) === k).length;
     return c;
-  }, [items, bundles]);
+  }, [items]);
   // when (almost) everything is new the badge is noise: only show it when it means something
   const newMeans = useMemo(() => items.filter((it) => it.isNew).length <= items.length * 0.4, [items]);
   const movesMeans = useMemo(() => items.filter(moves).length <= items.length * 0.4, [items]);
@@ -234,79 +228,6 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
     return "Opening the checkout…";
   });
 
-  // ---------- bundles ----------
-  const bundleItems = (b: Bundle) => b.itemIds.map((id) => byId.get(id)).filter((it): it is StoreItem => !!it);
-  const bundleState = (b: Bundle): BundleMine => {
-    const mine = bundleMine[b.id];
-    if (mine) return mine;
-    const pieces = bundleItems(b);
-    const have = pieces.filter((it) => owned.has(it.id)).length;
-    return { owned: have, total: pieces.length, complete: have === pieces.length, due: have ? Math.max(0, b.price) : b.price, dueFull: b.fullPrice, toBuy: [] };
-  };
-  /** Puts every piece of a bundle in the fitting room. */
-  const tryBundle = (b: Bundle) => {
-    const next: TryOn = {};
-    for (const it of bundleItems(b)) next[catOf(it)] = it.id;
-    setTryOn(next);
-    setFocus(null);
-    if (!wide) setSheet(true);
-  };
-  const buyBundle = (b: Bundle) => run(`bundle:${b.id}`, async () => {
-    if (storeLocked) throw new Error("The store opens at launch.");
-    await startCheckout({ kind: "bundle", bundleId: b.id });
-    return "Opening the checkout…";
-  });
-  const getBundle = (b: Bundle) => run(`bundle:${b.id}`, async () => {
-    const r = await claimBundle(b.id);
-    setOwned(new Set(r.owned.map((o) => o.id)));
-    setBundleMine((m) => ({ ...m, ...(r.bundles as Record<string, BundleMine>) }));
-    return `Everything in ${b.name} is in your locker.`;
-  });
-  const bundleAction = (b: Bundle) => {
-    const st = bundleState(b);
-    const spin = <Loader2 className="animate-spin" />;
-    if (!signedIn) return <PxLink href="/login?next=/store" variant="light" className="w-full"><Lock /> Sign in to get it</PxLink>;
-    if (st.complete) return <PxButton variant="ghost" className="w-full" disabled><Check /> All yours</PxButton>;
-    if (storeLocked) return <PxButton variant="locked" className="w-full" disabled><Lock /> Opens at launch</PxButton>;
-    if (!(st.due > 0)) return <PxButton variant="green" className="w-full" disabled={!!busy} onClick={() => getBundle(b)}>{busy === `bundle:${b.id}` ? spin : <Gift />} Get all free</PxButton>;
-    return <PxButton variant="gold" className="w-full" disabled={!!busy} onClick={() => buyBundle(b)}>{busy === `bundle:${b.id}` ? spin : <ShoppingBag />} {st.owned ? "Complete the set" : "Buy bundle"} · {money(st.due)}</PxButton>;
-  };
-  const bundleCard = (b: Bundle, i: number) => {
-    const pieces = bundleItems(b);
-    const st = signedIn ? bundleState(b) : null;
-    const tiles = pieces.slice(0, 4);
-    return (
-      <motion.li key={`bundle:${b.id}`} layout="position" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: Math.min(i, 10) * 0.03, ease: [0.16, 1, 0.3, 1] }}>
-        <div className={`sx-bundle ${st?.complete ? "is-owned" : ""}`}>
-          <button type="button" className={`sx-bundle-art tiles-${tiles.length}`} onClick={() => tryBundle(b)} aria-label={`Try on the ${b.name} bundle`}>
-            {tiles.map((it) => <span key={it.id} className="sx-bundle-tile"><Art it={it} skin={skin} model={model} size={96} /></span>)}
-            <span className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
-              <span className="sx-badge is-bundle"><Package className="h-3 w-3" /> Bundle</span>
-              {b.savePercent > 0 && <span className="sx-badge is-sale">−{b.savePercent}%</span>}
-              {b.isNew && <span className="sx-badge is-new">New</span>}
-            </span>
-            <span className="sx-try"><Shirt /> Try the whole bundle</span>
-          </button>
-          <div className="sx-bundle-body">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="min-w-0 truncate text-[17px] font-extrabold tracking-tight">{b.name}</h3>
-              <span className="sx-price !text-[16px]">{b.paid ? money(b.price) : "Free"}{b.paid && b.fullPrice > b.price && <s>{money(b.fullPrice)}</s>}</span>
-            </div>
-            {b.description && <p className="mt-1 line-clamp-2 text-[13px] text-mute">{b.description}</p>}
-            <ul className="sx-bundle-items">
-              {pieces.map((it) => (
-                <li key={it.id}><Link href={hrefOf(it)} className={`sx-bundle-chip ${owned.has(it.id) ? "is-own" : ""}`} title={owned.has(it.id) ? `${it.name} · in your locker` : it.name}>{owned.has(it.id) && <Check className="h-3 w-3" />}{it.name}</Link></li>
-              ))}
-            </ul>
-            {st && !st.complete && st.owned > 0 && <p className="mt-2 text-[12px] text-dim">You have {st.owned} of {st.total}. You only pay for the rest.</p>}
-            <div className="mt-3">{bundleAction(b)}</div>
-          </div>
-        </div>
-      </motion.li>
-    );
-  };
-  const bundleGrid = (rows: Bundle[]) => <ul className="grid gap-3.5 sm:grid-cols-2 2xl:grid-cols-3">{rows.map(bundleCard)}</ul>;
-
   const actionFor = (it: StoreItem) => {
     const c = catOf(it);
     const isOn = realOf(c) === it.id;
@@ -334,6 +255,7 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
               {onSale(it) && <span className="sx-badge is-sale">−{Math.round((1 - priceNow(it) / it.price) * 100)}%</span>}
               {it.isNew && newMeans && <span className="sx-badge is-new">New</span>}
               {it.exclusive && <span className="sx-badge is-gold">Event</span>}
+              {it.dyeable && <span className="sx-badge is-dye" title="Pick its colour in your locker">Dyeable</span>}
             </span>
             <span className="absolute bottom-2.5 left-2.5 flex gap-1.5 group-hover:opacity-0">
               {owned.has(it.id) ? <span className="sx-badge is-own">{isWorn ? "Wearing" : "Owned"}</span> : moves(it) && movesMeans ? <span className="sx-badge">Animated</span> : null}
@@ -358,7 +280,7 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
   const room = (
     <div className="sx-room">
       <Room skin={skin} model={model} cape={capeItem} worn={worn}>
-        {([["hats", "glasses", "back", "shoes"], ["capes", "hand", "balloon"]] as Cat[][]).map((col, side) => (
+        {([["hats", "glasses", "back", "shoes"], ["capes", "hand"]] as Cat[][]).map((col, side) => (
           <div key={side} className={`sx-slots ${side ? "is-right" : "is-left"}`}>
             {col.filter((c) => c === "capes" || counts[c] > 0).map((c) => {
               const id = outfitOf(c);
@@ -450,30 +372,22 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
         </label>
       </header>
       {banner}
-      <div className="sx-bar mt-6">
-        <div className="sx-cats" role="tablist" aria-label="Store categories">
-          <button role="tab" aria-selected={cat === "all"} onClick={() => pickCat("all")} className={`sx-cat ${cat === "all" ? "is-on" : ""}`}>
-            <LayoutGrid />All
-          </button>
-          <span className="sx-sep" aria-hidden />
-          {CATS.filter((c) => counts[c] > 0).map((c) => (
-            <button key={c} role="tab" aria-selected={cat === c} onClick={() => pickCat(c)} className={`sx-cat ${cat === c ? "is-on" : ""}`}>
-              {CAT[c].icon}{CAT[c].label}
-            </button>
-          ))}
-          {bundles.length > 0 && (
-            <button role="tab" aria-selected={cat === "bundles"} onClick={() => pickCat("bundles")} className={`sx-cat ${cat === "bundles" ? "is-on" : ""}`}>
-              <Package />Bundles
-            </button>
-          )}
-        </div>
+      <div className="sx-bar is-tabs mt-6">
+        <PxTabs
+          size="sm"
+          fill
+          label="Store categories"
+          value={cat}
+          onChange={(id) => pickCat(id as CatOrAll)}
+          items={[{ id: "all", label: "All", count: counts.all }, ...CATS.filter((c) => counts[c] > 0).map((c) => ({ id: c, label: CAT[c].label, count: counts[c] }))]}
+        />
       </div>
 
       <div className="mt-4 grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
           <div className="flex items-center justify-between gap-3">
             <div className="sx-cats -mx-1 min-w-0 flex-1 px-1 sm:flex-wrap" role="group" aria-label="Filters">
-              {cat !== "bundles" && filters.filter((f) => f.show).map((f) => (
+              {filters.filter((f) => f.show).map((f) => (
                 <button key={f.id} onClick={() => setFilter(f.id)} aria-pressed={filter === f.id} className={`sx-chip ${filter === f.id ? "is-on" : ""}`}>
                   {f.icon}{f.label}{f.id !== "all" && <span className="n">{inCat.filter((it) => pass(it, f.id)).length}</span>}
                 </button>
@@ -482,27 +396,10 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
             <SortMenu value={sort} onChange={setSort} />
           </div>
 
-          {cat === "bundles" ? (
-            <section className="mt-5" aria-label="Bundles">
-              <p className="mb-3.5 text-[13.5px] text-mute">Sets of cloaks and cosmetics for less than buying them one by one. Already own a piece? You only pay for the rest.</p>
-              {(() => {
-                const rows = bundles.filter((b) => !needle || [b.name, b.description, ...bundleItems(b).map((it) => it.name)].some((v) => v.toLowerCase().includes(needle)));
-                return rows.length ? bundleGrid(rows) : <Empty title="No bundles match that." text="Try another search." />;
-              })()}
-            </section>
-          ) : !items.length ? (
+          {!items.length ? (
             <Empty title="The store is getting stocked." text="Cloaks and 3D cosmetics show up here, in the launcher and in your locker the moment they drop." />
           ) : shelves ? (
             <>
-            {bundles.length > 0 && (
-              <section className="mt-12" aria-label="Bundles">
-                <div className="mb-3.5 flex items-center justify-between gap-3">
-                  <h2 className="text-[24px] font-extrabold tracking-tight">Bundles</h2>
-                  {bundles.length > 3 && <button onClick={() => { pickCat("bundles"); document.querySelector(".sx-bar")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="sx-more">View all <ArrowRight /></button>}
-                </div>
-                {bundleGrid(bundles.slice(0, wide ? 3 : 2))}
-              </section>
-            )}
             {CATS.filter((c) => counts[c] > 0).map((c) => {
               const rows = sortItems(items.filter((it) => catOf(it) === c));
               return (

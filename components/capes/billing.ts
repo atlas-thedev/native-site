@@ -1,7 +1,7 @@
 "use client";
 
 export type PlusState = { active: boolean; status: string | null; plan: string | null; renewsAt: number | null; endsAt: number | null };
-export type Purchase = { transactionId: string; kind: string; itemId: string | null; plan: string | null; bundleId?: string | null; bundleName?: string | null; amount: number; currency: string; status: string; createdAt: number };
+export type Purchase = { transactionId: string; kind: string; itemId: string | null; plan: string | null; amount: number; currency: string; status: string; createdAt: number };
 export type BillingConfig = { enabled?: boolean; environment?: string; clientToken?: string | null; plus?: { monthly: { amount: number; available: boolean }; yearly: { amount: number; available: boolean } } };
 export type BillingState = { signedIn: boolean; config: BillingConfig; plus: PlusState | null; purchases: Purchase[] };
 
@@ -23,7 +23,7 @@ async function post(body: Record<string, unknown>) {
 }
 
 /** Creates a Paddle transaction and sends the browser to /checkout to pay for it. */
-export async function startCheckout(what: { kind: "cape"; itemId: string } | { kind: "bundle"; itemIds: string[] } | { kind: "bundle"; bundleId: string } | { kind: "plus"; plan: "monthly" | "yearly" }) {
+export async function startCheckout(what: { kind: "cape"; itemId: string } | { kind: "bundle"; itemIds: string[] } | { kind: "plus"; plan: "monthly" | "yearly" }) {
   const d = await post({ action: "checkout", ...what });
   const back = window.location.pathname;
   window.location.href = `/checkout?_ptxn=${encodeURIComponent(d.transactionId)}&return=${encodeURIComponent(back)}`;

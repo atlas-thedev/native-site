@@ -28,9 +28,9 @@ export type StoreItem = {
   /** null for static capes */
   stripUrl: string | null;
   stillUrl: string;
-  /** "cosmetic" for 3D hats, glasses, back items, shoes, hand items and balloons; capes otherwise */
+  /** "cosmetic" for 3D hats, glasses, back items, shoes, and hand items; capes otherwise */
   kind?: "cape" | "cosmetic";
-  /** cosmetic slot: hats | glasses | back | shoes | hand | balloon */
+  /** cosmetic slot: hats | glasses | back | shoes | hand */
   slot?: CosmeticSlot;
   /** the cosmetic model has moving parts */
   motion?: boolean;
@@ -38,12 +38,18 @@ export type StoreItem = {
   modelUrl?: string | null;
   /** model texture PNG (cosmetics only) */
   textureUrl?: string | null;
+  /** players can pick its colour */
+  dyeable?: boolean;
+  /** the colour it comes in ('#rrggbb') */
+  dyeDefault?: string | null;
+  /** append 'rrggbb' for the texture in that colour */
+  dyeUrl?: string | null;
 };
 
-export const COSMETIC_SLOTS = ["hats", "glasses", "back", "shoes", "hand", "balloon"] as const;
+export const COSMETIC_SLOTS = ["hats", "glasses", "back", "shoes", "hand"] as const;
 export type CosmeticSlot = (typeof COSMETIC_SLOTS)[number];
-export const SLOT_NAMES: Record<CosmeticSlot, string> = { hats: "Hats", glasses: "Glasses", back: "Wings & Backpacks", shoes: "Shoes", hand: "Hand Items", balloon: "Balloons" };
-export const SIDED_SLOTS: readonly string[] = ["hand", "balloon"];
+export const SLOT_NAMES: Record<CosmeticSlot, string> = { hats: "Hats", glasses: "Glasses", back: "Wings & Backpacks", shoes: "Shoes", hand: "Hand Items" };
+export const SIDED_SLOTS: readonly string[] = ["hand"];
 export type Side = "left" | "right";
 export const isCosmetic = (it: Pick<StoreItem, "kind" | "slot">) => it.kind === "cosmetic" && !!it.slot && (COSMETIC_SLOTS as readonly string[]).includes(it.slot);
 /** What a profile wears in each cosmetic slot. */
@@ -59,45 +65,21 @@ export const sidesOf = (v: unknown): Sides => {
 
 export type Owned = { id: string; acquiredAt: number; source?: string };
 
-/** A store bundle: several items sold together at a discount (prices in USD, worked out by the server). */
-export type Bundle = {
-  id: string;
-  name: string;
-  description: string;
-  itemIds: string[];
-  featured: boolean;
-  isNew?: boolean;
-  /** something in it costs money */
-  paid: boolean;
-  /** what the paid pieces cost one by one */
-  fullPrice: number;
-  /** the bundle price */
-  price: number;
-  savePercent: number;
-  createdAt?: number;
+/** Colours players picked for dyeable items: { itemId: '#rrggbb' }. */
+export type Dyes = Record<string, string>;
+export const dyesOf = (v: unknown): Dyes => {
+  const out: Dyes = {};
+  if (v && typeof v === "object") for (const [k, c] of Object.entries(v as Record<string, unknown>)) if (typeof c === "string" && /^#[0-9a-f]{6}$/.test(c)) out[k] = c;
+  return out;
 };
-/** The signed-in player's view of a bundle: what they already own and what's left to pay. */
-export type BundleMine = { owned: number; total: number; complete: boolean; due: number; dueFull: number; toBuy: string[] };
+/** Quick picks for dyeable cosmetics (same list as the server and the launcher). */
+export const DYE_SWATCHES = ["#f2f2f2", "#9a9aa2", "#2b2b30", "#e5484d", "#ff8a3d", "#ffd23f", "#7ed957", "#2fbf71", "#3ec7e0", "#3d7bff", "#8a5cff", "#ff6fb5", "#8b5a2b", "#d4af37"];
+/** The texture of a dyeable item in `color` (its own texture for its own colour). */
+export const dyedTextureUrl = (it: Pick<StoreItem, "dyeable" | "dyeDefault" | "dyeUrl" | "textureUrl">, color: string | null | undefined) =>
+  it.dyeable && it.dyeUrl && color && /^#[0-9a-f]{6}$/.test(color) && color !== it.dyeDefault ? `${it.dyeUrl}${color.slice(1)}` : it.textureUrl ?? null;
 
 /** `items` are the cloaks; `cosmetics` the 3D hats, glasses, back items, shoes, hand items and balloons. */
-export type Catalog = { rev: number; sections: { id: string; name: string; blurb: string }[]; items: StoreItem[]; cosmetics: StoreItem[]; bundles: Bundle[] };
-
-/** Normalises the bundles of a catalogue response. */
-export const bundlesOf = (v: unknown): Bundle[] => (Array.isArray(v) ? v : [])
-  .filter((b): b is Record<string, unknown> => !!b && typeof b === "object" && typeof (b as { id?: unknown }).id === "string")
-  .map((b) => ({
-    id: String(b.id),
-    name: String(b.name ?? b.id),
-    description: String(b.description ?? ""),
-    itemIds: Array.isArray(b.itemIds) ? b.itemIds.map(String) : [],
-    featured: !!b.featured,
-    isNew: !!b.isNew,
-    paid: !!b.paid,
-    fullPrice: Number(b.fullPrice) || 0,
-    price: Number(b.price) || 0,
-    savePercent: Number(b.savePercent) || 0,
-    createdAt: Number(b.createdAt) || 0,
-  }));
+export type Catalog = { rev: number; sections: { id: string; name: string; blurb: string }[]; items: StoreItem[]; cosmetics: StoreItem[] };
 
 export const toHttps = (u: unknown) => (typeof u === "string" && u ? u.replace(/^http:\/\/(?!localhost[:/]|127\.0\.0\.1[:/])/, "https://") : null);
 

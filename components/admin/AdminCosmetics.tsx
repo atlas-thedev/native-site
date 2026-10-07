@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Sparkles, Upload } from "lucide-react";
+import { Palette, Plus, Sparkles, Upload } from "lucide-react";
 import { useState } from "react";
 import type { Shared } from "./AdminApp";
 import { Row } from "./AdminCapes";
@@ -11,7 +11,7 @@ import { nameFromFile, thumbFor } from "@/lib/autoThumb";
 import { fetchModel } from "../cosmetics/CosmeticViewer";
 import { COSMETIC_SLOTS, SLOT_NAMES, isCosmetic, type CosmeticSlot } from "@/lib/store";
 
-const blank = { name: "", description: "", tags: "", price: "", slot: "auto" as CosmeticSlot | "auto", featured: false, hidden: false, exclusive: false };
+const blank = { name: "", description: "", tags: "", price: "", slot: "auto" as CosmeticSlot | "auto", featured: false, hidden: false, exclusive: false, dyeable: false, dyeDefault: "#ffffff" };
 
 function Pick({ file, label, accept, onPick }: { file: File | null; label: string; accept: string; onPick: (f: File | null) => void }) {
   return (
@@ -22,13 +22,41 @@ function Pick({ file, label, accept, onPick }: { file: File | null; label: strin
   );
 }
 
-/** 3D cosmetics (hats, glasses, back items, shoes, hand items, balloons): NCM v1 model + texture + thumbnail. */
+/** Dye settings of one cosmetic: on/off, default colour and mask. Saving re-bakes its texture. */
+function DyeEdit({ it, onSaved }: { it: AdminItem; onSaved: (items: AdminItem[]) => void }) {
+  const [on, setOn] = useState(!!it.dyeable);
+  const [color, setColor] = useState(it.dyeDefault ?? "#ffffff");
+  const [mask, setMask] = useState<File | null>(null);
+  const [dropMask, setDropMask] = useState(false);
+  const { busy, run } = useAction();
+  const changed = on !== !!it.dyeable || (on && (color !== (it.dyeDefault ?? "#ffffff") || !!mask || dropMask));
+  const save = () => run("dye", async () => {
+    const body = on ? { dyeable: true, dyeDefault: color, ...(mask ? { dyeMask: await fileToBase64(mask) } : dropMask ? { dyeMask: "" } : {}) } : { dyeable: false };
+    const d = await adm<{ items: AdminItem[] }>("PATCH", `store/items/${it.id}`, body);
+    onSaved(d.items);
+  }, on ? "Dye settings saved: the texture was re-baked." : "Dyes switched off.");
+  return (
+    <div className="ml-4 flex flex-wrap items-center gap-3 rounded-xl border border-line px-3 py-2 text-[13px]">
+      <Palette className="h-4 w-4 text-dim" />
+      <Toggle on={on} onChange={setOn} label="Dyeable" />
+      {on && <>
+        <label className="flex items-center gap-2 font-semibold"><input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-8 w-10 cursor-pointer rounded-md border border-line bg-transparent" /> Default <span className="font-mono text-[12px] text-dim">{color}</span></label>
+        <label className="cursor-pointer rounded-lg border border-dashed border-line px-2.5 py-1.5 font-semibold hover:border-fg">{mask ? mask.name : "Mask PNG…"}<input type="file" accept="image/png" className="sr-only" onChange={(e) => { setMask(e.target.files?.[0] ?? null); setDropMask(false); }} /></label>
+        {it.dyeable && !mask && <label className="flex items-center gap-1.5 text-mute"><input type="checkbox" checked={dropMask} onChange={(e) => setDropMask(e.target.checked)} /> No mask (dye everything)</label>}
+      </>}
+      {changed && <Btn busy={busy === "dye"} onClick={save}>Save</Btn>}
+    </div>
+  );
+}
+
+/** 3D cosmetics (hats, glasses, back items, shoes, hand items): NCM v1 model + texture + thumbnail. */
 export default function AdminCosmetics({ items: all, setItems }: Shared) {
   const items = all.filter(isCosmetic);
   const [f, setF] = useState(blank);
   const [model, setModel] = useState<File | null>(null);
   const [texture, setTexture] = useState<File | null>(null);
   const [thumb, setThumb] = useState<File | null>(null);
+  const [mask, setMask] = useState<File | null>(null);
   const [slot, setSlot] = useState<"all" | CosmeticSlot>("all");
   const { busy, run } = useAction();
   const create = () => run("create", async () => {
@@ -45,10 +73,11 @@ export default function AdminCosmetics({ items: all, setItems }: Shared) {
       kind: "cosmetic", slot: f.slot, name, description: f.description, tags: f.tags,
       ...(f.price.trim() ? { price: Number(f.price) } : {}), // empty = the automatic price
       hidden: f.hidden, exclusive: f.exclusive,
+      ...(f.dyeable ? { dyeable: true, dyeDefault: f.dyeDefault, ...(mask ? { dyeMask: await fileToBase64(mask) } : {}) } : {}),
       model: text, texture: await fileToBase64(texture), ...(thumb ? { thumb: await fileToBase64(thumb) } : auto ? { thumb: auto } : {}),
     };
     const d = await adm<{ items: AdminItem[] }>("POST", "store/items", body);
-    setItems(d.items); setF(blank); setModel(null); setTexture(null); setThumb(null);
+    setItems(d.items); setF(blank); setModel(null); setTexture(null); setThumb(null); setMask(null);
   }, "Cosmetic added: slot, price and preview were set automatically.");
   /** Draws a fresh preview for every cosmetic still showing its flat texture sheet (or all of them). */
   const [fixed, setFixed] = useState<string>("");
@@ -96,6 +125,14 @@ export default function AdminCosmetics({ items: all, setItems }: Shared) {
           <div className="flex flex-col gap-2.5">
             <Toggle on={f.hidden} onChange={(v) => setF({ ...f, hidden: v })} label="Hidden (draft)" />
             <Toggle on={f.exclusive} onChange={(v) => setF({ ...f, exclusive: v })} label="Event-only (given by admins, never sold)" />
+            <Toggle on={f.dyeable} onChange={(v) => setF({ ...f, dyeable: v })} label="Dyeable (players pick its colour)" />
+            {f.dyeable && (
+              <div className="flex flex-col gap-2.5 rounded-2xl border border-line p-3">
+                <p className="text-[13px] text-mute">Upload the texture <b>undyed</b> (white/grey where the colour goes). The colour is multiplied in, keeping the shading.</p>
+                <label className="flex items-center gap-3 text-[14px] font-semibold"><input type="color" value={f.dyeDefault} onChange={(e) => setF({ ...f, dyeDefault: e.target.value })} className="h-9 w-12 cursor-pointer rounded-md border border-line bg-transparent" /> Default colour <span className="font-mono text-[12px] text-dim">{f.dyeDefault}</span></label>
+                <Pick file={mask} label="Dye mask PNG (optional: opaque = takes the colour; none = the whole texture)" accept="image/png" onPick={setMask} />
+              </div>
+            )}
           </div>
         </div>
       </Panel>
@@ -108,7 +145,7 @@ export default function AdminCosmetics({ items: all, setItems }: Shared) {
           ))}
         </div>
       }>
-        {shown.length ? <ul className="flex flex-col gap-3">{shown.map((it) => <Row key={`${it.id}-${it.price}-${it.hidden}-${it.featured}-${it.exclusive}`} it={it} onSaved={setItems} />)}</ul> : <Empty>No cosmetics yet. Add the first one above.</Empty>}
+        {shown.length ? <ul className="flex flex-col gap-3">{shown.map((it) => <div key={`${it.id}-${it.price}-${it.hidden}-${it.featured}-${it.exclusive}`} className="flex flex-col gap-2"><Row it={it} onSaved={setItems} /><DyeEdit key={`dye-${it.id}-${it.dyeable}-${it.dyeDefault}`} it={it} onSaved={setItems} /></div>)}</ul> : <Empty>No cosmetics yet. Add the first one above.</Empty>}
       </Panel>
     </div>
   );
