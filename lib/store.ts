@@ -59,8 +59,45 @@ export const sidesOf = (v: unknown): Sides => {
 
 export type Owned = { id: string; acquiredAt: number; source?: string };
 
+/** A store bundle: several items sold together at a discount (prices in USD, worked out by the server). */
+export type Bundle = {
+  id: string;
+  name: string;
+  description: string;
+  itemIds: string[];
+  featured: boolean;
+  isNew?: boolean;
+  /** something in it costs money */
+  paid: boolean;
+  /** what the paid pieces cost one by one */
+  fullPrice: number;
+  /** the bundle price */
+  price: number;
+  savePercent: number;
+  createdAt?: number;
+};
+/** The signed-in player's view of a bundle: what they already own and what's left to pay. */
+export type BundleMine = { owned: number; total: number; complete: boolean; due: number; dueFull: number; toBuy: string[] };
+
 /** `items` are the cloaks; `cosmetics` the 3D hats, glasses, back items, shoes, hand items and balloons. */
-export type Catalog = { rev: number; sections: { id: string; name: string; blurb: string }[]; items: StoreItem[]; cosmetics: StoreItem[] };
+export type Catalog = { rev: number; sections: { id: string; name: string; blurb: string }[]; items: StoreItem[]; cosmetics: StoreItem[]; bundles: Bundle[] };
+
+/** Normalises the bundles of a catalogue response. */
+export const bundlesOf = (v: unknown): Bundle[] => (Array.isArray(v) ? v : [])
+  .filter((b): b is Record<string, unknown> => !!b && typeof b === "object" && typeof (b as { id?: unknown }).id === "string")
+  .map((b) => ({
+    id: String(b.id),
+    name: String(b.name ?? b.id),
+    description: String(b.description ?? ""),
+    itemIds: Array.isArray(b.itemIds) ? b.itemIds.map(String) : [],
+    featured: !!b.featured,
+    isNew: !!b.isNew,
+    paid: !!b.paid,
+    fullPrice: Number(b.fullPrice) || 0,
+    price: Number(b.price) || 0,
+    savePercent: Number(b.savePercent) || 0,
+    createdAt: Number(b.createdAt) || 0,
+  }));
 
 export const toHttps = (u: unknown) => (typeof u === "string" && u ? u.replace(/^http:\/\/(?!localhost[:/]|127\.0\.0\.1[:/])/, "https://") : null);
 

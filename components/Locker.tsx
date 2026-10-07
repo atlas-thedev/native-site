@@ -239,9 +239,19 @@ export default function Locker({ initial }: { initial: Initial }) {
     try {
       const r = await storeAction("equip", id);
       setWearing(r.equipped);
-      window.location.reload();
+      // show the new cloak at once instead of reloading the page
+      const it = id ? (initial.nativeCapes ?? []).find((c) => c.id === id) ?? null : null;
+      const nextId = it ? "store" : "none";
+      const url = it?.stillUrl ?? null;
+      const anim = it?.animated && it.stripUrl ? { url: it.stripUrl, frames: it.frames, fps: it.fps } : null;
+      base.current = { ...base.current, capeId: nextId, capeUrl: url, capeAnim: anim };
+      setCapeId(nextId);
+      setCapeUrl(url);
+      setCapeData(undefined);
+      setMsg({ t: "ok", s: it ? `You’re wearing ${it.name}, in the launcher and in game.` : "Cloak taken off." });
     } catch (e) {
       setMsg({ t: "err", s: e instanceof Error ? e.message : "Couldn’t change your cloak." });
+    } finally {
       setWearBusy(null);
     }
   };
