@@ -1,6 +1,6 @@
 "use client";
 
-import { Palette, Plus, Sparkles, Upload } from "lucide-react";
+import { Palette, Plus, Sparkles, Upload, X } from "lucide-react";
 import { useState } from "react";
 import type { Shared } from "./AdminApp";
 import { Row } from "./AdminCapes";
@@ -11,7 +11,7 @@ import { nameFromFile, thumbFor } from "@/lib/autoThumb";
 import { fetchModel } from "../cosmetics/CosmeticViewer";
 import { COSMETIC_SLOTS, SLOT_NAMES, isCosmetic, type CosmeticSlot } from "@/lib/store";
 
-const blank = { name: "", description: "", tags: "", price: "", slot: "auto" as CosmeticSlot | "auto", featured: false, hidden: false, exclusive: false, dyeable: false, dyeDefault: "#ffffff" };
+const blank = { name: "", description: "", tags: "", price: "", slot: "auto" as CosmeticSlot | "auto", featured: false, hidden: false, exclusive: false, dyeable: false, dyeDefault: "#ffffff", dyeColors: [] as string[] };
 
 function Pick({ file, label, accept, onPick }: { file: File | null; label: string; accept: string; onPick: (f: File | null) => void }) {
   return (
@@ -22,16 +22,43 @@ function Pick({ file, label, accept, onPick }: { file: File | null; label: strin
   );
 }
 
+/** The (up to 5) colours players may dye an item, besides its default. */
+const MAX_DYES = 5;
+function DyeColors({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Dye colours">
+      {Array.from({ length: MAX_DYES }, (_, i) => {
+        const hex = value[i];
+        if (!hex) {
+          return i === value.length ? (
+            <button key={i} type="button" onClick={() => onChange([...value, "#ffffff"])} title="Add a colour" className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed border-line text-dim hover:border-fg hover:text-fg"><Plus className="h-4 w-4" /></button>
+          ) : (
+            <span key={i} className="h-8 w-8 rounded-lg border border-dashed border-line opacity-40" aria-hidden />
+          );
+        }
+        return (
+          <span key={i} className="group relative">
+            <input type="color" value={hex} onChange={(e) => onChange(value.map((v, j) => (j === i ? e.target.value : v)))} title={hex} aria-label={`Colour ${i + 1}`} className="h-8 w-8 cursor-pointer rounded-lg border border-line bg-transparent p-0.5" />
+            <button type="button" onClick={() => onChange(value.filter((_, j) => j !== i))} aria-label={`Remove colour ${i + 1}`} className="absolute -right-1.5 -top-1.5 hidden h-4 w-4 items-center justify-center rounded-full bg-inv text-inv-fg group-hover:flex"><X className="h-2.5 w-2.5" strokeWidth={3} /></button>
+          </span>
+        );
+      })}
+      <span className="text-[12px] text-dim">{value.length}/{MAX_DYES}</span>
+    </div>
+  );
+}
+
 /** Dye settings of one cosmetic: on/off, default colour and mask. Saving re-bakes its texture. */
 function DyeEdit({ it, onSaved }: { it: AdminItem; onSaved: (items: AdminItem[]) => void }) {
   const [on, setOn] = useState(!!it.dyeable);
   const [color, setColor] = useState(it.dyeDefault ?? "#ffffff");
+  const [colors, setColors] = useState<string[]>(it.dyeColors ?? []);
   const [mask, setMask] = useState<File | null>(null);
   const [dropMask, setDropMask] = useState(false);
   const { busy, run } = useAction();
-  const changed = on !== !!it.dyeable || (on && (color !== (it.dyeDefault ?? "#ffffff") || !!mask || dropMask));
+  const changed = on !== !!it.dyeable || (on && (color !== (it.dyeDefault ?? "#ffffff") || colors.join() !== (it.dyeColors ?? []).join() || !!mask || dropMask));
   const save = () => run("dye", async () => {
-    const body = on ? { dyeable: true, dyeDefault: color, ...(mask ? { dyeMask: await fileToBase64(mask) } : dropMask ? { dyeMask: "" } : {}) } : { dyeable: false };
+    const body = on ? { dyeable: true, dyeDefault: color, dyeColors: colors, ...(mask ? { dyeMask: await fileToBase64(mask) } : dropMask ? { dyeMask: "" } : {}) } : { dyeable: false };
     const d = await adm<{ items: AdminItem[] }>("PATCH", `store/items/${it.id}`, body);
     onSaved(d.items);
   }, on ? "Dye settings saved: the texture was re-baked." : "Dyes switched off.");
@@ -41,6 +68,7 @@ function DyeEdit({ it, onSaved }: { it: AdminItem; onSaved: (items: AdminItem[])
       <Toggle on={on} onChange={setOn} label="Dyeable" />
       {on && <>
         <label className="flex items-center gap-2 font-semibold"><input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-8 w-10 cursor-pointer rounded-md border border-line bg-transparent" /> Default <span className="font-mono text-[12px] text-dim">{color}</span></label>
+        <span className="flex items-center gap-2 font-semibold">Colours <DyeColors value={colors} onChange={setColors} /></span>
         <label className="cursor-pointer rounded-lg border border-dashed border-line px-2.5 py-1.5 font-semibold hover:border-fg">{mask ? mask.name : "Mask PNG…"}<input type="file" accept="image/png" className="sr-only" onChange={(e) => { setMask(e.target.files?.[0] ?? null); setDropMask(false); }} /></label>
         {it.dyeable && !mask && <label className="flex items-center gap-1.5 text-mute"><input type="checkbox" checked={dropMask} onChange={(e) => setDropMask(e.target.checked)} /> No mask (dye everything)</label>}
       </>}
@@ -73,7 +101,7 @@ export default function AdminCosmetics({ items: all, setItems }: Shared) {
       kind: "cosmetic", slot: f.slot, name, description: f.description, tags: f.tags,
       ...(f.price.trim() ? { price: Number(f.price) } : {}), // empty = the automatic price
       hidden: f.hidden, exclusive: f.exclusive,
-      ...(f.dyeable ? { dyeable: true, dyeDefault: f.dyeDefault, ...(mask ? { dyeMask: await fileToBase64(mask) } : {}) } : {}),
+      ...(f.dyeable ? { dyeable: true, dyeDefault: f.dyeDefault, dyeColors: f.dyeColors, ...(mask ? { dyeMask: await fileToBase64(mask) } : {}) } : {}),
       model: text, texture: await fileToBase64(texture), ...(thumb ? { thumb: await fileToBase64(thumb) } : auto ? { thumb: auto } : {}),
     };
     const d = await adm<{ items: AdminItem[] }>("POST", "store/items", body);
@@ -128,8 +156,9 @@ export default function AdminCosmetics({ items: all, setItems }: Shared) {
             <Toggle on={f.dyeable} onChange={(v) => setF({ ...f, dyeable: v })} label="Dyeable (players pick its colour)" />
             {f.dyeable && (
               <div className="flex flex-col gap-2.5 rounded-2xl border border-line p-3">
-                <p className="text-[13px] text-mute">Upload the texture <b>undyed</b> (white/grey where the colour goes). The colour is multiplied in, keeping the shading.</p>
+                <p className="text-[13px] text-mute">Upload the texture <b>undyed</b> (white/grey where the colour goes). The colour is multiplied in, keeping the shading. Players can only pick the default or one of your colours.</p>
                 <label className="flex items-center gap-3 text-[14px] font-semibold"><input type="color" value={f.dyeDefault} onChange={(e) => setF({ ...f, dyeDefault: e.target.value })} className="h-9 w-12 cursor-pointer rounded-md border border-line bg-transparent" /> Default colour <span className="font-mono text-[12px] text-dim">{f.dyeDefault}</span></label>
+                <div className="flex flex-col gap-1.5 text-[14px] font-semibold">Colours players can pick (up to 5)<DyeColors value={f.dyeColors} onChange={(v) => setF({ ...f, dyeColors: v })} /></div>
                 <Pick file={mask} label="Dye mask PNG (optional: opaque = takes the colour; none = the whole texture)" accept="image/png" onPick={setMask} />
               </div>
             )}

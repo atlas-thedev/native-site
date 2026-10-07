@@ -42,6 +42,8 @@ export type StoreItem = {
   dyeable?: boolean;
   /** the colour it comes in ('#rrggbb') */
   dyeDefault?: string | null;
+  /** Up to 5 extra colours the admin offers (players can only pick these or the default). */
+  dyeColors?: string[];
   /** append 'rrggbb' for the texture in that colour */
   dyeUrl?: string | null;
 };
@@ -75,7 +77,6 @@ export const dyesOf = (v: unknown): Dyes => {
   return out;
 };
 /** Quick picks for dyeable cosmetics (same list as the server and the launcher). */
-export const DYE_SWATCHES = ["#f2f2f2", "#9a9aa2", "#2b2b30", "#e5484d", "#ff8a3d", "#ffd23f", "#7ed957", "#2fbf71", "#3ec7e0", "#3d7bff", "#8a5cff", "#ff6fb5", "#8b5a2b", "#d4af37"];
 /** The texture of a dyeable item in `color` (its own texture for its own colour). */
 export const dyedTextureUrl = (it: Pick<StoreItem, "dyeable" | "dyeDefault" | "dyeUrl" | "textureUrl">, color: string | null | undefined) =>
   it.dyeable && it.dyeUrl && color && /^#[0-9a-f]{6}$/.test(color) && color !== it.dyeDefault ? `${it.dyeUrl}${color.slice(1)}` : it.textureUrl ?? null;

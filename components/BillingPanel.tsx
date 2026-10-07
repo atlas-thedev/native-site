@@ -1,6 +1,7 @@
 "use client";
 
-import { Crown, Gift, Loader2, Receipt } from "lucide-react";
+import { Gift, Loader2, Receipt } from "lucide-react";
+import PlusMark from "./plus/PlusMark";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getBilling, openPortal, redeemCode, type BillingState } from "./capes/billing";
@@ -55,7 +56,7 @@ export default function BillingPanel({ names }: { names: Record<string, string> 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="card flex flex-col p-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-2"><Crown className="h-[18px] w-[18px]" /></span>
+            <PlusMark size={34} />
             <p className="text-[18px] font-extrabold tracking-tight">Native+</p>
           </div>
           {plus?.active ? (
