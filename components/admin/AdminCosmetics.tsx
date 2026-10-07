@@ -20,7 +20,7 @@ function Pick({ file, label, accept, onPick }: { file: File | null; label: strin
   );
 }
 
-/** 3D cosmetics (hats, glasses, back items, shoes): NCM v1 model + texture + thumbnail. */
+/** 3D cosmetics (hats, glasses, back items, shoes, hand items, balloons): NCM v1 model + texture + thumbnail. */
 export default function AdminCosmetics({ items: all, setItems }: Shared) {
   const items = all.filter(isCosmetic);
   const [f, setF] = useState(blank);

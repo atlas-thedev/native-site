@@ -3,14 +3,14 @@
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, Check, Download, Loader2, LogOut, Plus, RotateCcw, Trash2, Upload, X } from "lucide-react";
 import Link from "next/link";
-import { COSMETIC_SLOTS, type CapeAnim, type CosmeticSlot, type StoreItem, type Wearing } from "@/lib/store";
+import { COSMETIC_SLOTS, SIDED_SLOTS, type CapeAnim, type CosmeticSlot, type Sides, type StoreItem, type Wearing } from "@/lib/store";
 import CapeStrip from "./CapeStrip";
 import { storeAction } from "./capes/actions";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LockerViewer, { type ViewerHandle } from "./LockerViewer";
 
 type Model = "default" | "slim";
-type Initial = { name: string; email: string; premium?: boolean; skin: string | null; cape: string | null; model: Model; capeAnim?: CapeAnim | null; capeStore?: string | null; nativeCapes?: StoreItem[]; capeId?: string; cosmetics?: StoreItem[]; ownedIds?: string[]; wearing?: Wearing };
+type Initial = { name: string; email: string; premium?: boolean; skin: string | null; cape: string | null; model: Model; capeAnim?: CapeAnim | null; capeStore?: string | null; nativeCapes?: StoreItem[]; capeId?: string; cosmetics?: StoreItem[]; ownedIds?: string[]; wearing?: Wearing; sides?: Sides };
 
 const COS_TABS = [
   { id: "cloaks", label: "Cloaks", noun: "cloaks" },
@@ -190,6 +190,8 @@ export default function Locker({ initial }: { initial: Initial }) {
   const cosById = useMemo(() => new Map(allCos.map((it) => [it.id, it])), [allCos]);
   const [owned, setOwned] = useState<Set<string>>(() => new Set(initial.ownedIds ?? []));
   const [outfit, setOutfit] = useState<Wearing>(initial.wearing ?? {});
+  // the side each worn hand item / balloon sits on, so the preview matches the game
+  const [outfitSides, setOutfitSides] = useState<Sides>(initial.sides ?? {});
   const [tryOn, setTryOn] = useState<StoreItem | null>(null);
   const [cosBusy, setCosBusy] = useState<string | null>(null);
   const worn = useMemo(() => {
@@ -197,14 +199,15 @@ export default function Locker({ initial }: { initial: Initial }) {
     if (tryOn?.slot) slots[tryOn.slot as CosmeticSlot] = tryOn.id;
     return COSMETIC_SLOTS.map((s) => (slots[s] ? cosById.get(slots[s]!) : undefined))
       .filter((it): it is StoreItem => !!it && !!it.modelUrl && !!it.textureUrl)
-      .map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, slot: it.slot }));
-  }, [outfit, tryOn, cosById]);
+      .map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, slot: it.slot, side: it.slot && SIDED_SLOTS.includes(it.slot) && tryOn?.id !== it.id ? outfitSides[it.slot] ?? null : null }));
+  }, [outfit, outfitSides, tryOn, cosById]);
   const wearCos = async (slot: CosmeticSlot, id: string | null) => {
     if (cosBusy) return;
     setCosBusy(id ?? `off:${slot}`);
     try {
       const r = await storeAction("equip", id, slot);
       setOutfit(r.wearing);
+      if (r.sides) setOutfitSides(r.sides as Sides);
     } catch (e) {
       setMsg({ t: "err", s: e instanceof Error ? e.message : "Couldn’t change that." });
     } finally {
@@ -220,6 +223,7 @@ export default function Locker({ initial }: { initial: Initial }) {
       setOwned((o) => new Set([...o, ...(c.owned ?? []).map((x) => x.id), it.id]));
       const r = await storeAction("equip", it.id, it.slot as CosmeticSlot);
       setOutfit(r.wearing);
+      if (r.sides) setOutfitSides(r.sides as Sides);
       setTryOn(null);
       setMsg({ t: "ok", s: `${it.name} is in your locker and you’re wearing it, in the launcher and in game.` });
     } catch (e) {

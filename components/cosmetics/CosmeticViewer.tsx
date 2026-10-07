@@ -159,7 +159,7 @@ const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function Cosmetic
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const wornKey = worn.map((w) => `${w.id}|${w.modelUrl}|${w.textureUrl}`).join(",");
+  const wornKey = worn.map((w) => `${w.id}|${w.modelUrl}|${w.textureUrl}|${w.side ?? ""}`).join(",");
   const wornRef = useRef(worn);
   wornRef.current = worn;
   const gen = useRef(0);

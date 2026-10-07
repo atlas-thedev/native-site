@@ -156,7 +156,7 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
   useEffect(apply, [walk, spin, showCape, layers, cape, elytra]);
 
   // Native 3D cosmetics (NCM v1)
-  const wornKey = worn.map((w) => `${w.id}|${w.modelUrl}|${w.textureUrl}`).join(",");
+  const wornKey = worn.map((w) => `${w.id}|${w.modelUrl}|${w.textureUrl}|${w.side ?? ""}`).join(",");
   const wornRef = useRef(worn);
   wornRef.current = worn;
   const gen = useRef(0);
@@ -176,6 +176,8 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
               const g = (o as import("three").Mesh).geometry;
               if (g && !g.attributes.normal) g.computeVertexNormals();
             });
+          // hand items / balloons: show the side the player picked (null = the item's default)
+          (b as unknown as { setSide?: (s: unknown) => void }).setSide?.(w.side);
           next.push(ncm.attachToPlayer(b, v.current.playerObject.skin));
         } catch {
           /* a broken cosmetic is skipped */
