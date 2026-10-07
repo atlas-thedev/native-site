@@ -535,7 +535,7 @@ async function finish(res, entry, slot, variants, k) {
           const pivot = add(add(add(mv(A.R, [0, 0, 0]), A.t), mv(A.R, o.map((v) => v * sigma))), add(bv.shift, pivotShift));
           part = {
             id: `${entry.id}-${variant || 'x'}-${merged.size}`, attach: bv.P.attach, pivot: pivot.map(r4), rotation: euler(A.R).map(r4),
-            ...(variant ? { side: variant, armor: { slot: variant + 'hand', mode: 'hide' } } : {}), ...(layer === 'translucent' ? { layer } : {}),
+            ...(variant ? { side: variant } : {}), ...(variant && slot === 'hand' ? { armor: { slot: variant + 'hand', mode: 'hide' } } : {}), // only hand items replace the held item; a balloon string doesn't ...(layer === 'translucent' ? { layer } : {}),
             anim: [...blink, ...anims], cubes: [], _o: o
           };
           // pivot above was A(origin point) = R*(o*sigma) + t ; the rotation origin enters through xf already

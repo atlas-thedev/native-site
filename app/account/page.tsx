@@ -105,7 +105,7 @@ export default async function AccountPage() {
           </Link>
         </div>
       )}
-      <Locker initial={{ name: s.account.name, email: s.account.email, premium, skin, cape, model, capeAnim, capeStore: wornStore, nativeCapes, capeId, cosmetics: catalog?.cosmetics ?? [], ownedIds: (mine?.owned ?? []).map((o) => o.id), wearing: mine?.wearing ?? {} }} />
+      <Locker initial={{ name: s.account.name, email: s.account.email, premium, skin, cape, model, capeAnim, capeStore: wornStore, nativeCapes, capeId, cosmetics: catalog?.cosmetics ?? [], ownedIds: (mine?.owned ?? []).map((o) => o.id), wearing: mine?.wearing ?? {}, sides: mine?.sides ?? {} }} />
       <BillingPanel names={names} />
     </>
   );

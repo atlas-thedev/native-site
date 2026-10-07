@@ -1,5 +1,5 @@
 import { API_URL } from "./config";
-import { isCosmetic, sortItems, toHttps, type Catalog, type Owned, type PlayerHit, type PlayerProfile, type StoreItem, type Wearing } from "../store";
+import { isCosmetic, sidesOf, sortItems, toHttps, type Catalog, type Sides, type Owned, type PlayerHit, type PlayerProfile, type StoreItem, type Wearing } from "../store";
 
 /** Public store catalog from the Native API. Never throws. */
 export async function getCatalog(): Promise<Catalog | null> {
@@ -32,15 +32,16 @@ export async function getCatalog(): Promise<Catalog | null> {
 }
 
 /** The signed-in account's Native capes and cosmetics and what it wears. Never throws. */
-export async function getMine(token: string): Promise<{ owned: Owned[]; equipped: string | null; wearing: Wearing; wishlist: string[] } | null> {
+export async function getMine(token: string): Promise<{ owned: Owned[]; equipped: string | null; wearing: Wearing; sides: Sides; wishlist: string[] } | null> {
   try {
     const r = await fetch(`${API_URL}/v1/store/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: AbortSignal.timeout(6000) });
     if (!r.ok) return null;
-    const d = (await r.json()) as { owned?: Owned[]; equipped?: string | null; wearing?: Wearing; wishlist?: { id: string }[] };
+    const d = (await r.json()) as { owned?: Owned[]; equipped?: string | null; wearing?: Wearing; sides?: unknown; wishlist?: { id: string }[] };
     return {
       owned: Array.isArray(d.owned) ? d.owned : [],
       equipped: d.equipped ?? null,
       wearing: d.wearing && typeof d.wearing === "object" ? d.wearing : {},
+      sides: sidesOf(d.sides),
       wishlist: Array.isArray(d.wishlist) ? d.wishlist.map((w) => w.id) : [],
     };
   } catch {
@@ -121,7 +122,7 @@ export async function getPlayer(name: string): Promise<PlayerProfile | null> {
     const r = await fetch(`${API_URL}/v1/store/users/${encodeURIComponent(name)}`, { next: { revalidate: 15 }, signal: AbortSignal.timeout(8000) });
     if (!r.ok) return null;
     const d = (await r.json()) as { profile?: PlayerProfile };
-    return d.profile ?? null;
+    return d.profile ? { ...d.profile, sides: sidesOf(d.profile.sides) } : null;
   } catch {
     return null;
   }

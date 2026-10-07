@@ -44,7 +44,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
   const list = source.filter((it) => matches(it, filter));
   const cape = profile.equipped ? byId.get(profile.equipped) : undefined;
   const worn: Worn[] = COSMETIC_SLOTS.map((s) => profile.wearing[s]).map((id) => (id ? byId.get(id) : undefined))
-    .filter((it): it is StoreItem => !!it && !!it.modelUrl && !!it.textureUrl).map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, slot: it.slot }));
+    .filter((it): it is StoreItem => !!it && !!it.modelUrl && !!it.textureUrl).map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, side: (it.slot && profile.sides?.[it.slot]) || null, slot: it.slot }));
 
   const hidden = tab === "locker" ? profile.hidden.locker : profile.hidden.wishlist;
   const filters = ([
