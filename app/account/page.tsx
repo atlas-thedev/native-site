@@ -5,7 +5,7 @@ import { API_URL } from "@/lib/server/config";
 import { readSession } from "@/lib/server/session";
 import { pageMeta } from "@/lib/seo";
 import { capeAnimOf, type CapeAnim, type StoreItem } from "@/lib/store";
-import { getCatalog, getMine } from "@/lib/server/store";
+import { getCatalog, getMine, getMojangLook } from "@/lib/server/store";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -60,19 +60,12 @@ export default async function AccountPage() {
   const premium = authType === "premium" || authType === "merged";
   let mojangCape: string | null = null;
   if (premium && mcUuid) {
-    try {
-      const r = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${mcUuid.replace(/-/g, "")}`, { cache: "no-store", signal: AbortSignal.timeout(6000) });
-      if (r.ok) {
-        const p = await r.json();
-        const v = (p.properties ?? []).find((x: { name: string }) => x.name === "textures")?.value;
-        const t = v ? JSON.parse(Buffer.from(v, "base64").toString("utf8")).textures ?? {} : {};
-        if (t.SKIN?.url) {
-          skin = https(t.SKIN.url);
-          model = t.SKIN.metadata?.model === "slim" ? "slim" : "default";
-        }
-        mojangCape = https(t.CAPE?.url);
-      }
-    } catch {}
+    const real = await getMojangLook(mcUuid);
+    if (real.skin) {
+      skin = real.skin;
+      model = real.model;
+    }
+    mojangCape = real.cape;
   }
 
   const [catalog, mine, founder] = await Promise.all([
