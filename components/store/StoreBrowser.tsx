@@ -123,6 +123,7 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
   }, [items]);
   // when (almost) everything is new the badge is noise: only show it when it means something
   const newMeans = useMemo(() => items.filter((it) => it.isNew).length <= items.length * 0.4, [items]);
+  const movesMeans = useMemo(() => items.filter(moves).length <= items.length * 0.4, [items]);
   const inCat = useMemo(() => items.filter((it) => cat === "all" || catOf(it) === cat), [items, cat]);
   const pass = useCallback((it: StoreItem, f: Filter) => {
     if (f === "free") return !it.exclusive && !isPaid(it);
@@ -232,24 +233,24 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
     const isWorn = realOf(c) === it.id;
     return (
       <motion.li key={it.id} layout="position" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: Math.min(i, 10) * 0.025, ease: [0.16, 1, 0.3, 1] }}>
-        <div className={`sx-card group ${isTry ? "is-try" : ""} ${isWorn ? "is-worn" : ""}`} style={tint(c)}>
+        <div className={`sx-card group ${isTry ? "is-try" : ""} ${isWorn ? "is-worn" : ""}`}>
           <button type="button" onClick={() => (wide ? tryItem(it) : (tryItem(it), setSheet(true)))} className="sx-art w-full" aria-pressed={isTry} aria-label={`Try on ${it.name}`}>
-            <span className="sx-pic"><Art it={it} skin={skin} model={model} size={150} /></span>
+            <span className="sx-pic"><Art it={it} skin={skin} model={model} size={190} /></span>
             <span className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
               {onSale(it) && <span className="sx-badge is-sale">−{Math.round((1 - priceNow(it) / it.price) * 100)}%</span>}
-              {it.isNew && newMeans && <span className="sx-badge is-inv">New</span>}
-              {moves(it) && <span className="sx-badge">{isCosmetic(it) ? "Moves" : "Animated"}</span>}
+              {it.isNew && newMeans && <span className="sx-badge is-new">New</span>}
+              {it.exclusive && <span className="sx-badge is-gold">Event</span>}
             </span>
-            {owned.has(it.id) && <span className="sx-badge is-own absolute bottom-2.5 left-2.5 group-hover:opacity-0">{isWorn ? <><Shirt /> Wearing</> : <><Check /> Owned</>}</span>}
+            <span className="absolute bottom-2.5 left-2.5 flex gap-1.5 group-hover:opacity-0">
+              {owned.has(it.id) ? <span className="sx-badge is-own">{isWorn ? "Wearing" : "Owned"}</span> : moves(it) && movesMeans ? <span className="sx-badge">Animated</span> : null}
+            </span>
             <span className="sx-try">{isTry ? <><Check /> Trying on</> : <><Shirt /> Try on</>}</span>
           </button>
           <span className="absolute right-2.5 top-2.5"><WishHeart itemId={it.id} signedIn={signedIn} /></span>
           <Link href={hrefOf(it)} className="sx-foot group/foot">
-            <span className="sx-kind"><i />{CAT[c].one}</span>
-            <span className="flex items-center justify-between gap-2">
-              <span className="truncate text-[14.5px] font-bold tracking-tight group-hover/foot:underline">{it.name}</span>
-              <Price it={it} />
-            </span>
+            <span className="min-w-0 flex-1 truncate text-[14.5px] font-semibold group-hover/foot:underline">{it.name}</span>
+            <span className="sx-div" aria-hidden />
+            <Price it={it} />
           </Link>
         </div>
       </motion.li>
@@ -261,7 +262,7 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
 
   // ---------- fitting room panel ----------
   const room = (
-    <div className="sx-room" style={focusItem ? tint(catOf(focusItem)) : undefined}>
+    <div className="sx-room">
       <Room skin={skin} model={model} cape={capeItem} worn={worn} />
       <div className="p-4">
         <div className="flex items-center justify-between gap-2">
@@ -270,7 +271,7 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
         </div>
         {focusItem ? (
           <div className="mt-3">
-            <span className="sx-kind" style={tint(catOf(focusItem))}><i />{CAT[catOf(focusItem)].one}</span>
+            <span className="sx-kind">{CAT[catOf(focusItem)].one}</span>
             <div className="mt-1 flex items-start justify-between gap-3">
               <h3 className="text-[20px] font-extrabold leading-tight tracking-tight">{focusItem.name}</h3>
               <Price it={focusItem} big />
@@ -291,7 +292,7 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
             if (!it) return null;
             const changed = tryOn[c] !== undefined && tryOn[c] !== realOf(c);
             return (
-              <li key={c} className="sx-room-row" style={tint(c)}>
+              <li key={c} className="sx-room-row">
                 <span className="sx-ico">{CAT[c].icon}</span>
                 <button onClick={() => setFocus(it.id)} className="min-w-0 flex-1 truncate text-left font-semibold">{it.name}</button>
                 <span className={`sx-badge ${changed ? "is-inv" : "is-own"}`}>{changed ? "Trying" : "Wearing"}</span>
@@ -315,25 +316,29 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
 
   return (
     <div>
-      <Hero items={spotlight} skin={skin} model={model} count={items.length} onTry={(it) => { tryItem(it); if (!wide) setSheet(true); }} owned={owned} />
+      <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-[40px] font-extrabold leading-none tracking-tight sm:text-[48px]">Store</h1>
+          <p className="mt-3 max-w-[460px] text-[15px] leading-relaxed text-mute">Cloaks and 3D cosmetics for Minecraft. Try anything on your own skin, then wear it in the launcher and in game.</p>
+        </div>
+        <label className="sx-search sm:w-[340px]">
+          <Search className="h-4 w-4 shrink-0" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search the store…" aria-label="Search the store" />
+          {q && <button onClick={() => setQ("")} aria-label="Clear search" className="text-dim hover:text-fg"><X className="h-4 w-4" /></button>}
+        </label>
+      </header>
       {banner}
       <div className="sx-bar mt-6">
-        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-          <div className="sx-cats min-w-0 flex-1" role="tablist" aria-label="Store categories">
-            <button role="tab" aria-selected={cat === "all"} onClick={() => pickCat("all")} className={`sx-cat ${cat === "all" ? "is-on" : ""}`} style={{ "--tint": "#e8e8ea" } as CSSProperties}>
-              <span className="sx-ico"><LayoutGrid /></span>All<span className="n">{counts.all}</span>
+        <div className="sx-cats" role="tablist" aria-label="Store categories">
+          <button role="tab" aria-selected={cat === "all"} onClick={() => pickCat("all")} className={`sx-cat ${cat === "all" ? "is-on" : ""}`}>
+            <LayoutGrid />All
+          </button>
+          <span className="sx-sep" aria-hidden />
+          {CATS.filter((c) => counts[c] > 0).map((c) => (
+            <button key={c} role="tab" aria-selected={cat === c} onClick={() => pickCat(c)} className={`sx-cat ${cat === c ? "is-on" : ""}`}>
+              {CAT[c].icon}{CAT[c].label}
             </button>
-            {CATS.filter((c) => counts[c] > 0).map((c) => (
-              <button key={c} role="tab" aria-selected={cat === c} onClick={() => pickCat(c)} className={`sx-cat ${cat === c ? "is-on" : ""}`} style={tint(c)}>
-                <span className="sx-ico">{CAT[c].icon}</span>{CAT[c].label}<span className="n">{counts[c]}</span>
-              </button>
-            ))}
-          </div>
-          <label className="st-input h-[42px] lg:w-[280px]">
-            <Search className="h-4 w-4 shrink-0" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search the store…" aria-label="Search the store" />
-            {q && <button onClick={() => setQ("")} aria-label="Clear search" className="text-dim hover:text-fg"><X className="h-4 w-4" /></button>}
-          </label>
+          ))}
         </div>
       </div>
 
@@ -353,24 +358,28 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
           {!items.length ? (
             <Empty title="The store is getting stocked." text="Cloaks and 3D cosmetics show up here, in the launcher and in your locker the moment they drop." />
           ) : shelves ? (
-            CATS.filter((c) => counts[c] > 0).map((c) => {
+            <>
+            {spotlight.length > 0 && (
+              <section className="mt-6" aria-label="Featured">
+                <div className="mb-3.5 flex items-center justify-between gap-3">
+                  <h2 className="text-[24px] font-extrabold tracking-tight">Featured</h2>
+                </div>
+                {grid(spotlight.slice(0, 4))}
+              </section>
+            )}
+            {CATS.filter((c) => counts[c] > 0).map((c) => {
               const rows = sortItems(items.filter((it) => catOf(it) === c));
               return (
-                <section key={c} className="mt-9 first:mt-6" aria-label={CAT[c].label} style={tint(c)}>
-                  <div className="mb-3.5 flex items-end justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <span className="sx-cat is-on pointer-events-none !h-9 !px-0 !pl-1.5 !pr-1.5" aria-hidden><span className="sx-ico">{CAT[c].icon}</span></span>
-                      <div>
-                        <h2 className="st-h2 leading-none">{CAT[c].label}</h2>
-                        <p className="mt-1 text-[13px] text-mute">{CAT[c].blurb}</p>
-                      </div>
-                    </div>
-                    {rows.length > 4 && <button onClick={() => { pickCat(c); document.querySelector(".sx-bar")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-mute hover:text-fg">See all {rows.length} <ArrowRight className="h-3.5 w-3.5" /></button>}
+                <section key={c} className="mt-12" aria-label={CAT[c].label}>
+                  <div className="mb-3.5 flex items-center justify-between gap-3">
+                    <h2 className="text-[24px] font-extrabold tracking-tight">{CAT[c].label}</h2>
+                    {rows.length > 4 && <button onClick={() => { pickCat(c); document.querySelector(".sx-bar")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="sx-more">View all <ArrowRight /></button>}
                   </div>
                   {grid(rows.slice(0, wide ? 8 : 6))}
                 </section>
               );
-            })
+            })}
+            </>
           ) : (
             <section className="mt-5" aria-label="Results">
               <p className="mb-3.5 text-[13.5px] text-mute"><b className="text-fg">{list.length}</b> {list.length === 1 ? "item" : "items"}{cat !== "all" ? ` in ${CAT[cat].label}` : ""}{needle ? ` for “${q.trim()}”` : ""}</p>
@@ -440,78 +449,12 @@ function Room({ skin, model, cape, worn }: { skin: string | null; model: "defaul
   );
 }
 
-/** The top of the store: a rotating spotlight on featured pieces. */
-function Hero({ items, skin, model, count, onTry, owned }: { items: StoreItem[]; skin: string | null; model: "default" | "slim"; count: number; onTry: (it: StoreItem) => void; owned: Set<string> }) {
-  const [i, setI] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const ROTATE = 6500;
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (items.length < 2 || paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    timer.current = setTimeout(() => setI((n) => (n + 1) % items.length), ROTATE);
-    return () => { if (timer.current) clearTimeout(timer.current); };
-  }, [i, paused, items.length]);
-  const it = items[i % Math.max(1, items.length)];
-  return (
-    <header className="sx-hero" style={it ? tint(catOf(it)) : undefined} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-      <div className="relative z-[1] grid items-center gap-6 px-6 py-8 sm:px-9 md:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] md:py-10">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-[0.14em] text-dim"><Sparkles className="h-3.5 w-3.5" /> Native Store · {count} items</p>
-          <h1 className="mt-2 text-[clamp(2.1rem,4.6vw,3.1rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">Cloaks and cosmetics,<br />all in one place.</h1>
-          <p className="mt-3 max-w-[520px] text-[15px] leading-relaxed text-mute">Try anything on your own skin, mix a whole outfit and wear it in the launcher and in game. Native+ members get every paid piece.</p>
-          {it && (
-            <AnimatePresence mode="wait">
-              <motion.div key={it.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3 }} className="mt-6 rounded-[12px] border-2 border-line bg-[color-mix(in_srgb,var(--bg)_70%,transparent)] p-4 backdrop-blur-sm">
-                <div className="flex items-center gap-2">
-                  <span className="sx-badge is-gold"><Star /> Featured</span>
-                  <span className="sx-kind"><i />{CAT[catOf(it)].one}</span>
-                  {owned.has(it.id) && <span className="sx-badge is-own"><Check /> Owned</span>}
-                </div>
-                <div className="mt-2 flex items-end justify-between gap-4">
-                  <div className="min-w-0">
-                    <h2 className="truncate text-[24px] font-extrabold tracking-tight">{it.name}</h2>
-                    {it.description && <p className="line-clamp-1 text-[13.5px] text-mute">{it.description}</p>}
-                  </div>
-                  <Price it={it} big />
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <PxButton variant="light" onClick={() => onTry(it)}><Shirt /> Try it on</PxButton>
-                  <PxLink href={hrefOf(it)} variant="ghost">View <ArrowRight /></PxLink>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          )}
-          {items.length > 1 && (
-            <div className="sx-dots mt-5" role="tablist" aria-label="Featured items">
-              {items.map((x, n) => (
-                <button key={x.id} role="tab" aria-selected={n === i} aria-label={x.name} onClick={() => setI(n)} className={`sx-dot ${n === i ? "is-on" : ""}`}>
-                  {n === i && !paused && <i key={`f${i}`} style={{ animationDuration: `${ROTATE}ms` }} />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        {it && (
-          <button type="button" onClick={() => onTry(it)} className="sx-stage h-[260px] md:h-[320px]" aria-label={`Try on ${it.name}`}>
-            <AnimatePresence mode="wait">
-              <motion.span key={it.id} initial={{ opacity: 0, scale: 0.9, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="relative">
-                <Art it={it} skin={skin} model={model} size={280} />
-              </motion.span>
-            </AnimatePresence>
-          </button>
-        )}
-      </div>
-    </header>
-  );
-}
 
 function Empty({ title, text, action }: { title: string; text: string; action?: ReactNode }) {
   return (
     <div className="st-panel mt-6 flex flex-col items-center px-6 py-16 text-center">
-      <div className="flex flex-wrap justify-center gap-2">
-        {CATS.map((c) => <span key={c} className="sx-cat is-on pointer-events-none !h-11 !w-11 !justify-center !p-0" style={tint(c)}><span className="sx-ico">{CAT[c].icon}</span></span>)}
-      </div>
-      <p className="mt-6 text-[22px] font-extrabold tracking-tight">{title}</p>
+      <ShoppingBag className="h-8 w-8 text-dim" />
+      <p className="mt-5 text-[22px] font-extrabold tracking-tight">{title}</p>
       <p className="mt-2 max-w-[440px] text-mute">{text}</p>
       {action && <div className="mt-6">{action}</div>}
     </div>
