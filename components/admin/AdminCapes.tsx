@@ -35,7 +35,7 @@ export function Row({ it, onSaved }: { it: AdminItem; onSaved: (items: AdminItem
           <p className="flex flex-wrap items-center gap-1.5 text-[16px] font-bold">{it.name}
             {cosmetic && it.slot && <Badge>{SLOT_NAMES[it.slot]}</Badge>}{cosmetic && it.motion && <Badge>Moves</Badge>}{it.animated && <Badge>Animated</Badge>}{it.featured && <Badge solid>Featured</Badge>}{it.hidden && <Badge>Hidden</Badge>}{it.exclusive && <Badge>Event</Badge>}
           </p>
-          <p className="mt-0.5 text-[13px] text-mute">{it.id} · {it.owners ?? 0} owners · {it.exclusive ? "never sold" : it.price > 0 ? usd(it.price) : "free"}{it.salePrice != null ? ` (on sale ${usd(it.salePrice)})` : ""}</p>
+          <p className="mt-0.5 text-[13px] text-mute">{it.id} · {it.owners ?? 0} owners · {it.exclusive ? "never sold" : usd(it.price)}{it.salePrice != null ? ` (on sale ${usd(it.salePrice)})` : ""}</p>
         </div>
         {!it.exclusive && (
           <div className="flex items-center gap-2">
@@ -46,7 +46,6 @@ export function Row({ it, onSaved }: { it: AdminItem; onSaved: (items: AdminItem
         )}
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
-        <Btn variant="ghost" busy={busy === "f"} onClick={() => patch({ featured: !it.featured }, "f", it.featured ? "Unfeatured." : "Featured.")}>{it.featured ? "Unfeature" : "Feature"}</Btn>
         <Btn variant="ghost" busy={busy === "h"} onClick={() => patch({ hidden: !it.hidden }, "h", it.hidden ? "Visible in the store." : "Hidden from the store.")}>{it.hidden ? "Show" : "Hide"}</Btn>
         <Btn variant="ghost" busy={busy === "x"} onClick={() => patch({ exclusive: !it.exclusive }, "x", "Saved.")}>{it.exclusive ? "Make buyable" : "Make event-only"}</Btn>
         <Btn variant="ghost" busy={busy === "owners"} onClick={loadOwners}><Users className="h-4 w-4" /> Owners</Btn>
@@ -70,7 +69,7 @@ export function Row({ it, onSaved }: { it: AdminItem; onSaved: (items: AdminItem
   );
 }
 
-const blank = { name: "", description: "", tags: "", price: "1.99", animated: true, frames: "24", fps: "12", featured: false, hidden: false, exclusive: false };
+const blank = { name: "", description: "", tags: "", price: "", animated: true, frames: "24", fps: "12", featured: false, hidden: false, exclusive: false };
 
 export default function AdminCapes({ items: all, setItems, reload }: Shared) {
   const items = all.filter((i) => !isCosmetic(i));
@@ -84,11 +83,16 @@ export default function AdminCapes({ items: all, setItems, reload }: Shared) {
     await reload();
     return d;
   }, `Prices updated to ${usd(Number(bulk))}.`);
+  const autoAll = () => confirm("Price everything automatically? Cloaks: 1.99 static, up to 2.99 animated. Cosmetics: 1.99 and up with motion, size and detail.") && run("auto", async () => {
+    const d = await adm<{ changed: number }>("POST", "site/prices", { price: 0 });
+    await reload();
+    return d;
+  }, "Every item now has its automatic price.");
   const create = () => run("create", async () => {
     if (!still) throw new Error(f.animated ? "Add the first-frame PNG." : "Add the cape PNG.");
     if (f.animated && !strip) throw new Error("Add the frame strip PNG.");
     const body = {
-      name: f.name, description: f.description, tags: f.tags, price: Number(f.price) || 0, featured: f.featured, hidden: f.hidden, exclusive: f.exclusive,
+      name: f.name, description: f.description, tags: f.tags, ...(f.price.trim() ? { price: Number(f.price) } : {}), featured: false, hidden: f.hidden, exclusive: f.exclusive,
       animated: f.animated, frames: Number(f.frames), fps: Number(f.fps),
       still: await fileToBase64(still), ...(f.animated && strip ? { strip: await fileToBase64(strip) } : {}),
     };
@@ -98,17 +102,18 @@ export default function AdminCapes({ items: all, setItems, reload }: Shared) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Panel title="Pricing" sub="Every buyable cape at one price. Event-only capes are never sold. Offers discount on top of this.">
+      <Panel title="Pricing" sub="Nothing is free (event-only items are given, never sold). New uploads get an automatic price; offers discount on top.">
         <div className="flex flex-wrap items-end gap-3">
-          <Field label="Price (USD)"><input type="number" min={0} max={99.99} step={0.01} className={`${input} w-32`} value={bulk} onChange={(e) => setBulk(e.target.value)} /></Field>
-          <Btn busy={busy === "bulk"} onClick={setAll}>Set all capes to {usd(Number(bulk))}</Btn>
+          <Field label="Price (USD)"><input type="number" min={1.99} max={99.99} step={0.01} className={`${input} w-32`} value={bulk} onChange={(e) => setBulk(e.target.value)} /></Field>
+          <Btn busy={busy === "bulk"} onClick={setAll}>Set everything to {usd(Number(bulk))}</Btn>
+          <Btn variant="ghost" busy={busy === "auto"} onClick={autoAll}>Automatic prices</Btn>
         </div>
       </Panel>
 
       <Panel title="Add a cape" actions={<Btn busy={busy === "create"} disabled={f.name.trim().length < 2} onClick={create}><Plus className="h-4 w-4" /> Add cape</Btn>}>
         <div className="grid gap-5 md:grid-cols-2">
           <Field label="Name"><input className={input} maxLength={40} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>
-          <Field label="Price (USD, 0 = free)"><input type="number" min={0} step={0.01} className={input} value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} /></Field>
+          <Field label="Price (USD, empty = automatic)"><input type="number" min={1.99} step={0.01} className={input} placeholder="Automatic" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} /></Field>
           <Field label="Description"><textarea className={textarea} maxLength={200} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></Field>
           <div className="flex flex-col gap-3">
             <Field label="Tags (comma separated)"><input className={input} placeholder="animated, cute" value={f.tags} onChange={(e) => setF({ ...f, tags: e.target.value })} /></Field>
@@ -133,7 +138,6 @@ export default function AdminCapes({ items: all, setItems, reload }: Shared) {
             )}
           </div>
           <div className="flex flex-col gap-2.5">
-            <Toggle on={f.featured} onChange={(v) => setF({ ...f, featured: v })} label="Featured" />
             <Toggle on={f.hidden} onChange={(v) => setF({ ...f, hidden: v })} label="Hidden (draft)" />
             <Toggle on={f.exclusive} onChange={(v) => setF({ ...f, exclusive: v })} label="Event-only (given by admins, never sold)" />
           </div>

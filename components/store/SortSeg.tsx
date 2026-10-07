@@ -4,7 +4,7 @@ import { Clock, Flame, Star, Type } from "lucide-react";
 import type { SortKey } from "@/lib/store";
 
 const OPTIONS = [
-  { id: "featured", label: "Featured", Icon: Star },
+  { id: "featured", label: "Recommended", Icon: Star },
   { id: "popular", label: "Most used", Icon: Flame },
   { id: "new", label: "Newest", Icon: Clock },
   { id: "name", label: "A–Z", Icon: Type },

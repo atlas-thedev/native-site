@@ -14,7 +14,7 @@ import JsonLd from "@/components/JsonLd";
 import PlusPlans from "@/components/PlusPlans";
 import PlusMark from "@/components/plus/PlusMark";
 import PlusCapes from "@/components/plus/PlusCapes";
-import WornShot from "@/components/cosmetics/WornShot";
+import MyShot from "@/components/plus/MyShot";
 import Sky from "@/components/plus/Sky";
 import CapeStrip from "@/components/CapeStrip";
 import { getCatalog } from "@/lib/server/store";
@@ -218,7 +218,7 @@ export default async function PlusPage() {
             {cosmetics.slice(0, 12).map((it) => (
               <li key={it.id}>
                 <Link href={`/cosmetics/${it.id}`} className="st-card flex flex-col items-center p-3 text-center">
-                  <WornShot item={it} skin={null} model="default" className="cutout-sm h-[120px] w-[120px] object-contain" />
+                  <MyShot item={it} className="cutout-sm h-[120px] w-[120px] object-contain" />
                   <span className="mt-2 block w-full truncate text-[13.5px] font-bold">{it.name}</span>
                   <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-gold">Included</span>
                 </Link>
