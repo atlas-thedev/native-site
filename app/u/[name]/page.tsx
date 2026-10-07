@@ -35,7 +35,7 @@ export default async function PlayerPage({ params }: Params) {
 
   return (
     <div className="mx-auto max-w-[1280px] px-5 pb-32 pt-8 sm:pt-10">
-      <ItemHead trail={[{ label: "Store", href: "/cloaks" }, { label: "Players", href: "/players" }, { label: p.name }]} back="/players" />
+      <ItemHead trail={[{ label: "Store", href: "/store" }, { label: "Players", href: "/players" }, { label: p.name }]} back="/players" />
       <div className="mb-6"><PlayerSearch className="w-full sm:w-[360px]" /></div>
       <ProfileView
         profile={p}

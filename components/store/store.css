@@ -1,0 +1,310 @@
+/* ===== Unified store (/store): one shelf for cloaks and 3D cosmetics, with a live fitting room ===== */
+.sx-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 2px solid var(--line);
+  background:
+    radial-gradient(70% 90% at 78% 30%, color-mix(in srgb, var(--tint, var(--fg)) 22%, transparent), transparent 70%),
+    color-mix(in srgb, var(--fg) 4%, var(--bg));
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.05), 0 4px 0 rgb(0 0 0 / 0.45);
+  transition: background 0.6s ease;
+}
+.sx-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(color-mix(in srgb, var(--fg) 7%, transparent) 1px, transparent 1px) 0 0 / 22px 22px;
+  -webkit-mask-image: linear-gradient(90deg, transparent 35%, #000 75%);
+  mask-image: linear-gradient(90deg, transparent 35%, #000 75%);
+}
+.sx-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sx-stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  width: 62%;
+  height: 16%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.45), transparent);
+}
+.sx-dots { display: flex; gap: 6px; }
+.sx-dot {
+  position: relative;
+  overflow: hidden;
+  width: 28px;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--fg) 16%, transparent);
+  transition: width 0.25s, background 0.25s;
+}
+.sx-dot.is-on { width: 46px; background: color-mix(in srgb, var(--fg) 26%, transparent); }
+.sx-dot > i {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  background: var(--fg);
+  animation: sx-fill linear forwards;
+}
+@keyframes sx-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* sticky category bar */
+.sx-bar {
+  position: sticky;
+  top: 72px;
+  z-index: 30;
+  margin: 0 -8px;
+  padding: 8px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+}
+.sx-cats {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.sx-cats::-webkit-scrollbar { display: none; }
+.sx-cat {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 14px 0 10px;
+  border-radius: 10px;
+  border: 2px solid var(--line);
+  background: color-mix(in srgb, var(--fg) 4%, var(--bg));
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--mute);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.4);
+  transition: color 0.15s, border-color 0.15s, background-color 0.15s, transform 0.15s;
+}
+.sx-cat:hover { color: var(--fg); border-color: var(--ring); transform: translateY(-1px); }
+.sx-cat .sx-ico {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--tint) 22%, transparent);
+  color: color-mix(in srgb, var(--tint) 80%, var(--fg));
+}
+.sx-cat .sx-ico svg { width: 14px; height: 14px; }
+.sx-cat .n { font-size: 11px; font-weight: 800; opacity: 0.45; }
+.sx-cat.is-on {
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--tint) 70%, var(--fg));
+  background: color-mix(in srgb, var(--tint) 14%, var(--bg));
+}
+.sx-cat.is-on .sx-ico { background: var(--tint); color: #111; }
+
+.sx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--mute);
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+}
+.sx-chip:hover { color: var(--fg); border-color: var(--ring); }
+.sx-chip.is-on { color: var(--inv-fg); background: var(--inv); border-color: var(--inv); }
+.sx-chip svg { width: 13px; height: 13px; }
+.sx-chip .n { font-size: 10.5px; font-weight: 800; opacity: 0.55; }
+
+/* cards */
+.sx-card {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: color-mix(in srgb, var(--fg) 4%, var(--bg));
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.05), 0 3px 0 rgb(0 0 0 / 0.5);
+  transition: transform 0.18s var(--ease-out-expo, ease), border-color 0.18s, box-shadow 0.18s;
+}
+.sx-card:hover { transform: translateY(-3px); border-color: var(--ring); box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.08), 0 7px 0 rgb(0 0 0 / 0.5); }
+.sx-card.is-try { border-color: var(--tint); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tint) 30%, transparent), 0 3px 0 rgb(0 0 0 / 0.5); }
+.sx-card.is-worn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, #7fe07a 70%, transparent);
+}
+.sx-art {
+  position: relative;
+  display: flex;
+  aspect-ratio: 1 / 1;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 55% at 50% 42%, color-mix(in srgb, var(--tint) 26%, transparent), transparent 72%),
+    linear-gradient(180deg, color-mix(in srgb, var(--tint) 7%, var(--bg)), color-mix(in srgb, var(--fg) 2%, var(--bg)));
+}
+.sx-art::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 10%;
+  width: 56%;
+  height: 10%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.4), transparent);
+}
+.sx-art > .sx-pic { position: relative; transition: transform 0.35s var(--ease-out-expo, ease); }
+.sx-card:hover .sx-art > .sx-pic { transform: scale(1.07) translateY(-2px); }
+.sx-try {
+  position: absolute;
+  inset: auto 10px 10px 10px;
+  display: flex;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid var(--line);
+  font-size: 12.5px;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.18s, transform 0.18s;
+}
+.sx-try svg { width: 14px; height: 14px; }
+.sx-card:hover .sx-try, .sx-card:focus-within .sx-try, .sx-card.is-try .sx-try { opacity: 1; transform: none; }
+.sx-card.is-try .sx-try { background: var(--tint); color: #111; border-color: transparent; }
+@media (hover: none) { .sx-try { display: none; } }
+.sx-foot { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px 12px; border-top: 2px solid var(--line); }
+.sx-kind { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+.sx-kind i { width: 7px; height: 7px; border-radius: 2px; background: var(--tint); }
+.sx-price { font-family: var(--font-mono, ui-monospace); font-size: 12.5px; font-weight: 700; }
+.sx-price.is-free { color: #7fe07a; }
+.sx-price s { margin-left: 4px; font-weight: 500; opacity: 0.45; }
+.sx-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 5px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--fg) 14%, var(--bg));
+  color: var(--fg);
+  border: 1.5px solid rgb(0 0 0 / 0.5);
+}
+.sx-badge.is-inv { background: var(--inv); color: var(--inv-fg); }
+.sx-badge.is-sale { background: #ff5a5a; color: #fff; }
+.sx-badge.is-own { background: #7fe07a; color: #0b2a0a; }
+.sx-badge.is-gold { background: #ffcf4a; color: #2b1b02; }
+.sx-badge svg { width: 10px; height: 10px; }
+.sx-skel {
+  width: 52%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--fg) 6%, transparent) 30%, color-mix(in srgb, var(--fg) 12%, transparent) 50%, color-mix(in srgb, var(--fg) 6%, transparent) 70%) 0 0 / 300% 100%;
+  animation: sx-shine 1.4s linear infinite;
+}
+@keyframes sx-shine { to { background-position: -150% 0; } }
+
+/* fitting room */
+.sx-room {
+  overflow: hidden;
+  border-radius: 16px;
+  border: 2px solid var(--line);
+  background: color-mix(in srgb, var(--fg) 4%, var(--bg));
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.05), 0 4px 0 rgb(0 0 0 / 0.45);
+}
+.sx-room-stage {
+  position: relative;
+  height: 380px;
+  background:
+    radial-gradient(60% 60% at 50% 45%, color-mix(in srgb, var(--tint, var(--fg)) 20%, transparent), transparent 72%),
+    linear-gradient(180deg, color-mix(in srgb, var(--fg) 5%, var(--bg)), color-mix(in srgb, var(--fg) 2%, var(--bg)));
+  transition: background 0.5s ease;
+}
+.sx-room-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 6px 8px 6px 10px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+.sx-room-row:hover { background: color-mix(in srgb, var(--fg) 5%, transparent); }
+.sx-room-row .sx-ico { display: inline-flex; width: 22px; height: 22px; flex: none; align-items: center; justify-content: center; border-radius: 6px; background: color-mix(in srgb, var(--tint) 22%, transparent); color: color-mix(in srgb, var(--tint) 80%, var(--fg)); }
+.sx-room-row .sx-ico svg { width: 13px; height: 13px; }
+.sx-iconbtn {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--mute);
+  transition: color 0.15s, background-color 0.15s;
+}
+.sx-iconbtn:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.sx-iconbtn.is-on { color: var(--inv-fg); background: var(--inv); }
+.sx-iconbtn svg { width: 15px; height: 15px; }
+.sx-sheet {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 70;
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 20px 20px 0 0;
+  border: 2px solid var(--line);
+  border-bottom: 0;
+  background: var(--bg);
+  box-shadow: 0 -20px 60px rgb(0 0 0 / 0.5);
+}
+.sx-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 60;
+  display: flex;
+  max-width: calc(100vw - 24px);
+  align-items: center;
+  gap: 10px;
+  transform: translateX(-50%);
+  padding: 8px 8px 8px 14px;
+  border-radius: 14px;
+  border: 2px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.45);
+}

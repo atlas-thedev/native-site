@@ -5,8 +5,7 @@ import { getCatalog } from "@/lib/server/store";
 const pages: [string, number, MetadataRoute.Sitemap[number]["changeFrequency"]][] = [
   ["", 1, "weekly"],
   ["/download", 0.9, "weekly"],
-  ["/cloaks", 0.8, "daily"],
-  ["/cosmetics", 0.8, "daily"],
+  ["/store", 0.9, "daily"],
   ["/players", 0.5, "daily"],
   ["/plus", 0.7, "monthly"],
   ["/vote", 0.6, "daily"],

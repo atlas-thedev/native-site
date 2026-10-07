@@ -55,7 +55,7 @@ export default function Announcement() {
       <>
         <Tag className="h-3.5 w-3.5 shrink-0 text-fg" />
         <span className="truncate"><b className="text-fg">{offer.title}</b> · {offer.percent}% off{offer.itemIds.length ? " selected cloaks" : " every cloak"}</span>
-        <Link href="/cloaks" className={pill}>Shop cloaks <ArrowRight className="h-3 w-3" /></Link>
+        <Link href="/store" className={pill}>Visit the store <ArrowRight className="h-3 w-3" /></Link>
       </>
     );
   } else if (launch.prelaunch) {

@@ -336,7 +336,7 @@ export default function Locker({ initial }: { initial: Initial }) {
           <>
             <div className="mt-8 flex items-center justify-between gap-3">
               <p className="eyebrow">More in the Native Store</p>
-              <Link href="/cosmetics" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-mute transition hover:text-fg">Fitting room <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <Link href="/store" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-mute transition hover:text-fg">Fitting room <ArrowRight className="h-3.5 w-3.5" /></Link>
             </div>
             <div className="mt-3 grid grid-cols-3 gap-2.5 sm:grid-cols-4">
               {more.map((it, i) => {
@@ -389,7 +389,7 @@ export default function Locker({ initial }: { initial: Initial }) {
                     {tryOn.exclusive ? (
                       <span className="rounded-full border border-line px-3.5 py-2 text-[13px] font-semibold text-dim">Event only</span>
                     ) : tryOn.paid ? (
-                      <Link href="/cosmetics" className="rounded-full bg-inv px-4 py-2 text-[13px] font-semibold text-inv-fg">Get it · {priceOf(tryOn)}</Link>
+                      <Link href={tryOn ? `/cosmetics/${tryOn.id}` : "/store"} className="rounded-full bg-inv px-4 py-2 text-[13px] font-semibold text-inv-fg">Get it · {priceOf(tryOn)}</Link>
                     ) : (
                       <button onClick={addTryOn} disabled={!!cosBusy} className="inline-flex items-center gap-1.5 rounded-full bg-inv px-4 py-2 text-[13px] font-semibold text-inv-fg transition hover:opacity-85 disabled:opacity-60">
                         {cosBusy === `add:${tryOn.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" strokeWidth={3} />} Add &amp; wear
@@ -502,7 +502,7 @@ export default function Locker({ initial }: { initial: Initial }) {
 <div>
             <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
               <p className="text-[14px] text-dim">{initial.premium ? "Wear a Native cloak over your Minecraft cape, or go without. Your Minecraft capes are in the launcher's Locker." : "Pick a Native cloak or a classic cape, or go without."}</p>
-              <Link href="/cloaks" className="inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-[13px] font-semibold transition hover:bg-surface-2">Browse Native cloaks <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <Link href="/store?c=capes" className="inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-[13px] font-semibold transition hover:bg-surface-2">Browse Native cloaks <ArrowRight className="h-3.5 w-3.5" /></Link>
             </div>
             {(initial.nativeCapes?.length ?? 0) > 0 && (
               <>
