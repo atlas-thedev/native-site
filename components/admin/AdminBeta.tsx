@@ -29,6 +29,7 @@ import {
   useAction,
 } from "./ui";
 import type { Shared } from "./AdminApp";
+import AdminBetaUpdates from "./AdminBetaUpdates";
 import type { BetaAnswers } from "@/lib/launch";
 
 type Status = "pending" | "approved" | "waitlist" | "rejected";
@@ -213,6 +214,8 @@ export default function AdminBeta({ doc, setDoc }: Shared) {
           hint={c ? `${c.rejected} rejected` : undefined}
         />
       </div>
+
+      <AdminBetaUpdates />
 
       <Panel
         title="Applications"
