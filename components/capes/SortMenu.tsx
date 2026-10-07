@@ -6,7 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { SortKey } from "@/lib/store";
 
 const OPTIONS: { id: SortKey; label: string }[] = [
-  { id: "featured", label: "Featured" },
+  { id: "featured", label: "Recommended" },
   { id: "popular", label: "Most popular" },
   { id: "new", label: "Newest" },
   { id: "name", label: "A–Z" },

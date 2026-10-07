@@ -96,7 +96,7 @@ export default function CosmeticGallery({ items, signedIn, owned, wearing, banne
       {banner}
 
       <div className="st-tabs" role="tablist" aria-label="Cosmetic categories">
-        {([["featured", "Featured", <Star key="s" />], ["all", "All", <LayoutGrid key="l" />], ...COSMETIC_SLOTS.map((s) => [s, SLOT_LABEL[s], SLOT_ICON[s]])] as [Tab, string, ReactNode][]).map(([id, label, icon]) => (
+        {([["featured", "Browse", <Star key="s" />], ["all", "All", <LayoutGrid key="l" />], ...COSMETIC_SLOTS.map((s) => [s, SLOT_LABEL[s], SLOT_ICON[s]])] as [Tab, string, ReactNode][]).map(([id, label, icon]) => (
           <button key={id} role="tab" aria-selected={tab === id} className={`st-tab ${tab === id ? "is-on" : ""}`} onClick={() => setTab(id)}>
             {icon}{label}{id !== "featured" && <span className="n">{counts[id]}</span>}
           </button>
@@ -133,8 +133,6 @@ export default function CosmeticGallery({ items, signedIn, owned, wearing, banne
         </section>
       ) : (
         <>
-          {row("Featured", featured, () => open("all"))}
-
           <section className="mt-12" aria-label="Discover">
             <h2 className="st-h2 mb-4">Discover</h2>
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
