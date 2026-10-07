@@ -263,7 +263,31 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
   // ---------- fitting room panel ----------
   const room = (
     <div className="sx-room">
-      <Room skin={skin} model={model} cape={capeItem} worn={worn} />
+      <Room skin={skin} model={model} cape={capeItem} worn={worn}>
+        {([["hats", "glasses", "back", "shoes"], ["capes", "hand", "balloon"]] as Cat[][]).map((col, side) => (
+          <div key={side} className={`sx-slots ${side ? "is-right" : "is-left"}`}>
+            {col.filter((c) => c === "capes" || counts[c] > 0).map((c) => {
+              const id = outfitOf(c);
+              const it = id ? byId.get(id) : null;
+              const changed = tryOn[c] !== undefined && tryOn[c] !== realOf(c);
+              return (
+                <div key={c} className={`sx-slot ${it ? "is-full" : ""} ${changed ? "is-try" : ""} ${it && focus === it.id ? "is-focus" : ""}`}>
+                  {it ? (
+                    <>
+                      <button onClick={() => setFocus(it.id)} className="sx-slot-hit" title={`${it.name}${changed ? " (trying on)" : " (wearing)"}`} aria-label={`${CAT[c].one}: ${it.name}`}>
+                        <SlotArt it={it} skin={skin} model={model} />
+                      </button>
+                      <button onClick={() => clearSlot(c)} className="sx-slot-x" aria-label={`Take off ${it.name}`} title="Take off"><X /></button>
+                    </>
+                  ) : (
+                    <button onClick={() => pickCat(c)} className="sx-slot-hit sx-slot-empty" title={`${CAT[c].one}: empty. Browse ${CAT[c].label}`} aria-label={`${CAT[c].one}: empty`}>{CAT[c].icon}</button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </Room>
       <div className="p-4">
         <div className="flex items-center justify-between gap-2">
           <p className="text-[12px] font-extrabold uppercase tracking-[0.12em] text-dim">Fitting room</p>
@@ -285,23 +309,10 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
         ) : (
           <p className="mt-2 text-[13.5px] leading-relaxed text-mute">Tap anything in the store to try it on. Mix cloaks with hats, wings and more, then wear the whole look in one go.</p>
         )}
-        <ul className="mt-4 border-t-2 border-line pt-3">
-          {CATS.map((c) => {
-            const id = outfitOf(c);
-            const it = id ? byId.get(id) : null;
-            if (!it) return null;
-            const changed = tryOn[c] !== undefined && tryOn[c] !== realOf(c);
-            return (
-              <li key={c} className="sx-room-row">
-                <span className="sx-ico">{CAT[c].icon}</span>
-                <button onClick={() => setFocus(it.id)} className="min-w-0 flex-1 truncate text-left font-semibold">{it.name}</button>
-                <span className={`sx-badge ${changed ? "is-inv" : "is-own"}`}>{changed ? "Trying" : "Wearing"}</span>
-                <button onClick={() => clearSlot(c)} className="sx-iconbtn" aria-label={`Take off ${it.name}`} title="Take off"><X /></button>
-              </li>
-            );
-          })}
-          {CATS.every((c) => !outfitOf(c)) && <li className="px-2.5 py-2 text-[13px] text-dim">Nothing on yet.</li>}
-        </ul>
+        {(() => {
+          const on = CATS.filter((c) => outfitOf(c)).length;
+          return on > 0 && <p className="mt-4 border-t-2 border-line pt-3 text-[12.5px] text-mute">{on} {on === 1 ? "piece" : "pieces"} on{trying.length ? ` · ${trying.length} trying on` : ""}. Click a slot to see it, × to take it off.</p>;
+        })()}
         {trying.length > 0 && signedIn && (
           <PxButton variant={outfitReady ? "light" : "locked"} className="mt-3 w-full" disabled={!outfitReady || !!busy} onClick={wearOutfit} title={outfitReady ? undefined : "Some pieces are paid: get them on their item page first."}>
             {busy === "outfit" ? <Loader2 className="animate-spin" /> : <Shirt />} Wear this outfit
@@ -423,7 +434,14 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
 }
 
 /** The 3D player in the fitting room: your skin with the cloak and every cosmetic you're trying on. */
-function Room({ skin, model, cape, worn }: { skin: string | null; model: "default" | "slim"; cape: StoreItem | null; worn: Worn[] }) {
+/** A small picture of what sits in a fitting-room slot. */
+function SlotArt({ it, skin, model }: { it: StoreItem; skin: string | null; model: "default" | "slim" }) {
+  if (!isCosmetic(it)) return <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={20} label={`${it.name} cloak`} className="cutout-sm" />;
+  const flat = !it.stillUrl || it.stillUrl === it.textureUrl;
+  return <WornShot item={it} skin={skin} model={model} className="h-full w-full object-contain" hideFallback={flat} alt="" />;
+}
+
+function Room({ skin, model, cape, worn, children }: { skin: string | null; model: "default" | "slim"; cape: StoreItem | null; worn: Worn[]; children?: ReactNode }) {
   const [walk, setWalk] = useState(true);
   const [spin, setSpin] = useState(false);
   const skinUrl = skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png");
@@ -444,6 +462,7 @@ function Room({ skin, model, cape, worn }: { skin: string | null; model: "defaul
         <button onClick={() => setWalk((w) => !w)} className={`sx-iconbtn ${walk ? "is-on" : ""}`} aria-pressed={walk} title={walk ? "Stand still" : "Walk"} aria-label="Walk">{walk ? <Pause /> : <Play />}</button>
         <button onClick={() => setSpin((s) => !s)} className={`sx-iconbtn ${spin ? "is-on" : ""}`} aria-pressed={spin} title="Spin" aria-label="Spin"><RotateCw /></button>
       </div>
+      {children}
       <span className="pointer-events-none absolute bottom-4 right-3 text-[11.5px] font-semibold text-dim">Drag to turn</span>
     </div>
   );
