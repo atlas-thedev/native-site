@@ -44,8 +44,8 @@ export default async function CosmeticPage({ params }: Params) {
 
   return (
     <div className="mx-auto max-w-[1280px] px-5 pb-32 pt-8 sm:pt-10">
-      <JsonLd data={breadcrumb([{ name: "Cosmetics", path: "/cosmetics" }, { name: item.name, path: `/cosmetics/${item.id}` }])} />
-      <ItemHead trail={[{ label: "Store", href: "/cosmetics" }, { label: "Cosmetics", href: "/cosmetics" }, { label: item.slot ? SLOT_NAMES[item.slot] : "Cosmetic" }, { label: item.name }]} back="/cosmetics" title={item.name} aside={<WishButton itemId={item.id} signedIn={!!s} />} />
+      <JsonLd data={breadcrumb([{ name: "Store", path: "/store" }, { name: item.name, path: `/cosmetics/${item.id}` }])} />
+      <ItemHead trail={[{ label: "Store", href: "/store" }, item.slot ? { label: SLOT_NAMES[item.slot], href: `/store?c=${item.slot}` } : { label: "Cosmetics" }, { label: item.name }]} back={item.slot ? `/store?c=${item.slot}` : "/store"} title={item.name} aside={<WishButton itemId={item.id} signedIn={!!s} />} />
       <CosmeticDetail item={item} all={all} signedIn={!!s} account={s?.account.name ?? null} owned={mine?.owned ?? []} wearing={mine?.wearing ?? {}} skin={look.skin} model={look.model} cape={cape} />
 
       {related.length > 0 && (

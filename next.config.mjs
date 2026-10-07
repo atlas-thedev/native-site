@@ -19,7 +19,7 @@ const nextConfig = {
   async redirects() {
     return [
       // the cloak wall used to live at /capes; /capes/*.png (classic cape textures) stay put
-      { source: "/capes", destination: "/cloaks", permanent: true },
+      { source: "/capes", destination: "/store?c=capes", permanent: true },
       { source: "/capes/:id([a-z0-9-]+)", destination: "/cloaks/:id", permanent: true },
     ];
   },

@@ -5,10 +5,10 @@ import { fetchModel } from "./CosmeticViewer";
 import { peekWornShot, shotKey, wornShot } from "@/lib/wornShot";
 import type { StoreItem } from "@/lib/store";
 
-type Props = { item: StoreItem; skin: string | null; model: "default" | "slim"; className?: string; alt?: string };
+type Props = { item: StoreItem; skin: string | null; model: "default" | "slim"; className?: string; alt?: string; /** keep the image invisible until the worn shot is drawn (for flat atlas thumbnails) */ hideFallback?: boolean };
 
 /** The cosmetic worn on your skin (drawn once, then cached); the flat thumbnail shows until it is ready. */
-export default function WornShot({ item, skin, model, className = "", alt = "" }: Props) {
+export default function WornShot({ item, skin, model, className = "", alt = "", hideFallback = false }: Props) {
   const skinUrl = skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png");
   const ref = useRef<HTMLImageElement>(null);
   const [url, setUrl] = useState<string | null>(null);
@@ -38,5 +38,5 @@ export default function WornShot({ item, skin, model, className = "", alt = "" }
   }, [seen, item.id, item.modelUrl, item.textureUrl, skinUrl, model]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // eslint-disable-next-line @next/next/no-img-element
-  return <img ref={ref} src={url ?? item.stillUrl} alt={alt} loading="lazy" draggable={false} className={`${className} ${url ? "[image-rendering:auto]" : ""}`} />;
+  return <img ref={ref} src={url ?? item.stillUrl} alt={alt} loading="lazy" draggable={false} className={`${className} ${url ? "[image-rendering:auto]" : hideFallback ? "opacity-0" : ""} transition-opacity duration-300`} />;
 }

@@ -27,7 +27,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
       <StoreHero
         title="Players"
         blurb="Look up any Native player by name. See what they wear, what they own and what they want next."
-        cta={{ text: "Looking for something to wear?", label: "Browse cloaks", href: "/cloaks" }}
+        cta={{ text: "Looking for something to wear?", label: "Browse the store", href: "/store" }}
         aside={<PlayerSearch q={q} className="w-full sm:w-[360px]" />}
       />
       <h2 className="st-h2 flex items-center gap-3"><Users className="h-5 w-5" />{q ? `Players matching “${q}”` : "Top collectors"}</h2>

@@ -142,10 +142,10 @@ export default async function PlusPage() {
                 Get Native+
               </a>
               <Link
-                href="/cloaks"
+                href="/store"
                 className="inline-flex h-12 items-center rounded-full border border-line px-7 text-[15px] font-semibold transition hover:bg-surface-2"
               >
-                Browse capes
+                Browse the store
               </Link>
             </div>
             <p className="mt-5 text-[14px] text-dim">
@@ -194,7 +194,7 @@ export default async function PlusPage() {
               </p>
             </div>
             <Link
-              href="/cloaks"
+              href="/store?c=capes"
               className="text-[14.5px] font-semibold underline underline-offset-4 hover:opacity-70"
             >
               All capes
@@ -212,7 +212,7 @@ export default async function PlusPage() {
               <h2 className="text-[clamp(1.7rem,3vw,2.3rem)] font-extrabold tracking-tight">Every cosmetic, free</h2>
               <p className="mt-1.5 text-mute">Hats, glasses, wings, backpacks and shoes. All of them while you’re a member, and every new one we make.</p>
             </div>
-            <Link href="/cosmetics" className="text-[14.5px] font-semibold underline underline-offset-4 hover:opacity-70">All cosmetics</Link>
+            <Link href="/store" className="text-[14.5px] font-semibold underline underline-offset-4 hover:opacity-70">All cosmetics</Link>
           </div>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
             {cosmetics.slice(0, 12).map((it) => (
