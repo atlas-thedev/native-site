@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ArrowRight, CircleDot, Clock, Crown, Hand, Feather, Flame, Footprints, Glasses, LayoutGrid, Search, Sparkles, Star, X } from "lucide-react";
+import { ArrowRight, Clock, Crown, Hand, Feather, Flame, Footprints, Glasses, LayoutGrid, Search, Sparkles, Star, X } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 import WornShot from "./WornShot";
@@ -14,10 +14,10 @@ import { COSMETIC_SLOTS, SLOT_NAMES, sortBy, sortItems, type CosmeticSlot, type 
 type Tab = "featured" | "all" | CosmeticSlot;
 type Props = { items: StoreItem[]; signedIn: boolean; owned: Owned[]; wearing: Wearing; banner?: ReactNode; skin?: string | null; model?: "default" | "slim" };
 
-export const SLOT_COLOR: Record<CosmeticSlot, string> = { hats: "#ff8a7a", glasses: "#7fb2ff", back: "#9fe0ff", shoes: "#ffb45c", hand: "#d7a6ff", balloon: "#ff9ec7" };
-const SLOT_LABEL: Record<CosmeticSlot, string> = { hats: "Headwear", glasses: "Glasses", back: "Wings", shoes: "Shoes", hand: "In hand", balloon: "Balloons" };
-const SLOT_BLURB: Record<CosmeticSlot, string> = { hats: "Crowns, caps and halos", glasses: "Shades, visors and specs", back: "Wings, packs and jetpacks", shoes: "Sneakers and rocket boots", hand: "Swords, lanterns and gadgets", balloon: "Floating companions" };
-const SLOT_ICON: Record<CosmeticSlot, ReactNode> = { hats: <Crown />, glasses: <Glasses />, back: <Feather />, shoes: <Footprints />, hand: <Hand />, balloon: <CircleDot /> };
+export const SLOT_COLOR: Record<CosmeticSlot, string> = { hats: "#ff8a7a", glasses: "#7fb2ff", back: "#9fe0ff", shoes: "#ffb45c", hand: "#d7a6ff" };
+const SLOT_LABEL: Record<CosmeticSlot, string> = { hats: "Headwear", glasses: "Glasses", back: "Wings", shoes: "Shoes", hand: "In hand" };
+const SLOT_BLURB: Record<CosmeticSlot, string> = { hats: "Crowns, caps and halos", glasses: "Shades, visors and specs", back: "Wings, packs and jetpacks", shoes: "Sneakers and rocket boots", hand: "Swords, lanterns and gadgets" };
+const SLOT_ICON: Record<CosmeticSlot, ReactNode> = { hats: <Crown />, glasses: <Glasses />, back: <Feather />, shoes: <Footprints />, hand: <Hand /> };
 
 /** The cosmetics shop: category tabs, then rows (featured, discover, new, trending, spotlight) or a plain grid when you search or pick a slot. */
 export default function CosmeticGallery({ items, signedIn, owned, wearing, banner, skin = null, model = "default" }: Props) {
@@ -81,7 +81,7 @@ export default function CosmeticGallery({ items, signedIn, owned, wearing, banne
     <div>
       <StoreHero
         title="Native Cosmetics"
-        blurb={<>Hats, glasses, wings, backpacks, shoes, hand items and balloons in real 3D.<br />Preview any piece on your own skin and wear it in the launcher and in game.<br />Native+ members get every cosmetic free.</>}
+        blurb={<>Hats, glasses, wings, backpacks, shoes and hand items in real 3D.<br />Preview any piece on your own skin and wear it in the launcher and in game.<br />Native+ members get every cosmetic free.</>}
         cta={{ text: "Looking for a cloak?", label: "Go to Cloaks", href: "/cloaks" }}
         aside={
           items.length > 0 && (

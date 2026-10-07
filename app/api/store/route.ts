@@ -3,8 +3,8 @@ import { api, clearSession, readSession, upstreamHeaders } from "@/lib/server/se
 
 export const dynamic = "force-dynamic";
 const json = (b: unknown, status = 200) => NextResponse.json(b, { status, headers: { "Cache-Control": "no-store" } });
-type Me = { ok?: boolean; error?: string; added?: number; bundles?: Record<string, unknown>; wishlist?: { id: string }[]; prefs?: { hideLocker?: boolean; hideWishlist?: boolean }; equipped?: string | null; wearing?: Record<string, string>; sides?: Record<string, string>; owned?: { id: string; acquiredAt: number }[] };
-const SLOTS = ["hats", "glasses", "back", "shoes", "hand", "balloon"];
+type Me = { ok?: boolean; error?: string; dyes?: Record<string, string>; wishlist?: { id: string }[]; prefs?: { hideLocker?: boolean; hideWishlist?: boolean }; equipped?: string | null; wearing?: Record<string, string>; sides?: Record<string, string>; owned?: { id: string; acquiredAt: number }[] };
+const SLOTS = ["hats", "glasses", "back", "shoes", "hand"];
 const wearingOf = (d: Me) => (d.wearing && typeof d.wearing === "object" ? d.wearing : {});
 
 /** The signed-in account's Native capes and what it wears. */
@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     return json({ ok: true, signedIn: false, equipped: null, wearing: {}, owned: [] });
   }
   const d = (data ?? {}) as Me;
-  return json({ ok: status < 400, signedIn: true, equipped: d.equipped ?? null, wearing: wearingOf(d), sides: d.sides ?? {}, owned: Array.isArray(d.owned) ? d.owned : [], bundles: d.bundles ?? {}, wishlist: Array.isArray(d.wishlist) ? d.wishlist.map((w) => w.id) : [], prefs: d.prefs ?? { hideLocker: false, hideWishlist: false } }, status < 400 ? 200 : 502);
+  return json({ ok: status < 400, signedIn: true, equipped: d.equipped ?? null, wearing: wearingOf(d), sides: d.sides ?? {}, owned: Array.isArray(d.owned) ? d.owned : [], dyes: d.dyes ?? {}, wishlist: Array.isArray(d.wishlist) ? d.wishlist.map((w) => w.id) : [], prefs: d.prefs ?? { hideLocker: false, hideWishlist: false } }, status < 400 ? 200 : 502);
 }
 
 const ACTIONS = { equip: "/v1/store/equip", claim: "/v1/store/claim", unclaim: "/v1/store/unclaim", wish: "/v1/store/wishlist", prefs: "/v1/store/prefs" } as const;
@@ -26,25 +26,26 @@ const ACTIONS = { equip: "/v1/store/equip", claim: "/v1/store/claim", unclaim: "
  * { action: "claim" | "unclaim", itemId } adds a cape to / removes it from the locker.
  * { action: "equip", itemId } wears it (itemId null takes the cape off).
  * { action: "equip", slot, itemId: null } takes the cosmetic in that slot off.
- * { action: "claimBundle", bundleId } adds a free bundle (or, with Native+, any bundle) to the locker.
+ * { action: "dye", itemId, color: "#rrggbb" | null } recolours a dyeable cosmetic (null = its own colour).
  */
 export async function POST(req: Request) {
   const s = await readSession();
   if (!s) return json({ ok: false, error: "Sign in to use Native capes." }, 401);
-  let body: { itemId?: unknown; action?: unknown; slot?: unknown; side?: unknown; on?: unknown; hideLocker?: unknown; hideWishlist?: unknown } = {};
+  let body: { itemId?: unknown; action?: unknown; color?: unknown; slot?: unknown; side?: unknown; on?: unknown; hideLocker?: unknown; hideWishlist?: unknown } = {};
   try {
     body = await req.json();
   } catch {
     return json({ ok: false, error: "Bad request." }, 400);
   }
-  if (body.action === "claimBundle") {
-    const bundleId = typeof (body as { bundleId?: unknown }).bundleId === "string" ? String((body as { bundleId: string }).bundleId).slice(0, 80) : "";
-    if (!bundleId) return json({ ok: false, error: "Pick a bundle." }, 400);
-    const r = await api(`/v1/store/bundles/${encodeURIComponent(bundleId)}/claim`, { method: "POST", headers: upstreamHeaders(req, { Authorization: `Bearer ${s.token}`, "Content-Type": "application/json" }), body: "{}" });
+  if (body.action === "dye") {
+    const itemId = typeof body.itemId === "string" ? body.itemId.slice(0, 80) : "";
+    const color = typeof body.color === "string" && /^#[0-9a-fA-F]{6}$/.test(body.color) ? body.color.toLowerCase() : null;
+    if (!itemId) return json({ ok: false, error: "Pick an item." }, 400);
+    const r = await api("/v1/store/dye", { method: "POST", headers: upstreamHeaders(req, { Authorization: `Bearer ${s.token}`, "Content-Type": "application/json" }), body: JSON.stringify({ itemId, color }) });
     if (r.status === 401) { await clearSession(); return json({ ok: false, error: "Your session expired. Sign in again.", expired: true }, 401); }
-    const d = (r.data ?? {}) as Me & { needsPurchase?: boolean };
-    if (r.status >= 400 || d.ok === false) return json({ ok: false, error: d.error || "Couldn’t add that bundle.", needsPurchase: !!d.needsPurchase }, r.status >= 400 ? r.status : 502);
-    return json({ ok: true, added: d.added ?? 0, owned: Array.isArray(d.owned) ? d.owned : [], bundles: d.bundles ?? {} });
+    const d = (r.data ?? {}) as Me;
+    if (r.status >= 400 || d.ok === false) return json({ ok: false, error: d.error || "Couldn’t dye that." }, r.status >= 400 ? r.status : 502);
+    return json({ ok: true, dyes: d.dyes ?? {} });
   }
   const action = (typeof body.action === "string" && body.action in ACTIONS ? body.action : "equip") as keyof typeof ACTIONS;
   const itemId = body.itemId == null || body.itemId === "" ? null : String(body.itemId).slice(0, 80);

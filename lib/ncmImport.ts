@@ -60,8 +60,23 @@ function findSuffix(files, idx, suffix) {
 }
 
 // ---------- discovery ----------
-const HMC_SLOTS = { HELMET: 'hats', BACKPACK: 'back', OFFHAND: 'hand', MAINHAND: 'hand', BALLOON: 'balloon' };
+const HMC_SLOTS = { HELMET: 'hats', BACKPACK: 'back', OFFHAND: 'hand', MAINHAND: 'hand' };
 const HMC_ALL = ['HELMET', 'CHESTPLATE', 'LEGGINGS', 'BOOTS', 'BACKPACK', 'OFFHAND', 'MAINHAND', 'BALLOON'];
+/** '#rrggbb' from a pack colour ('#RRGGBB', 'r, g, b', 0xRRGGBB); white and junk -> null. */
+function colorOf(v) {
+  if (v == null) return null;
+  let rgb = null;
+  if (typeof v === 'number') rgb = [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+  else {
+    const t = String(v).trim();
+    const hex = t.match(/^#?([0-9a-f]{6})$/i);
+    if (hex) rgb = [0, 2, 4].map((i) => parseInt(hex[1].slice(i, i + 2), 16));
+    const parts = t.split(/[\s,]+/).map(Number);
+    if (!rgb && parts.length === 3 && parts.every((n) => Number.isFinite(n) && n >= 0 && n <= 255)) rgb = parts;
+  }
+  if (!rgb || rgb.every((n) => n >= 250)) return null;
+  return '#' + rgb.map((n) => Math.round(n).toString(16).padStart(2, '0')).join('');
+}
 const title = (id) => id.replace(/^.*[:/]/, '').replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).trim();
 
 /** Finds every cosmetic the pack defines. entries: [{ id, name, slot, side, kind: 'java'|'bb', ... }], notes: [string]. */
@@ -75,20 +90,21 @@ export function discover(files) {
   }
   // item id -> java model reference
   const items = new Map();
-  const put = (id, model, ns) => { if (id && model) { items.set(String(id).toLowerCase(), { model: String(model), ns }); } };
+  const put = (id, model, ns, color = null) => { if (id && model) { items.set(String(id).toLowerCase(), { model: String(model), ns, color }); } };
   for (const { doc } of docs) {
     if (doc.items && typeof doc.items === 'object') { // ItemsAdder
       const ns = doc.info?.namespace || 'minecraft';
       for (const [id, v] of Object.entries(doc.items)) {
         const m = v?.resource?.model_path || v?.resource?.model;
-        if (m) { put(id, String(m).includes(':') ? m : `${ns}:${m}`); put(`${ns}:${id}`, String(m).includes(':') ? m : `${ns}:${m}`); }
+        const c = colorOf(v?.graphics?.color ?? v?.resource?.color ?? v?.color);
+        if (m) { put(id, String(m).includes(':') ? m : `${ns}:${m}`, null, c); put(`${ns}:${id}`, String(m).includes(':') ? m : `${ns}:${m}`, null, c); }
       }
     }
     for (const [id, v] of Object.entries(doc)) { // Nexo / Oraxen
       if (!v || typeof v !== 'object') continue;
       const pack = v.Pack || v.pack;
       const m = pack && (pack.model || pack.parent_model);
-      if (m) put(id, m);
+      if (m) put(id, m, undefined, colorOf(v.color ?? pack?.color));
     }
   }
   const bbs = new Map();
@@ -101,20 +117,20 @@ export function discover(files) {
       const hmc = v.slot.toUpperCase();
       if (!HMC_ALL.includes(hmc) || seen.has(id)) continue;
       const slot = HMC_SLOTS[hmc];
-      if (!slot) { notes.push(`${id}: ${hmc} cosmetics (armor skins) aren't supported`); continue; }
-      const side = hmc === 'OFFHAND' ? 'left' : hmc === 'MAINHAND' ? 'right' : slot === 'balloon' ? 'right' : null;
+      if (!slot) { notes.push(`${id}: ${hmc === 'BALLOON' ? 'balloons' : `${hmc} cosmetics (armor skins)`} aren't supported`); continue; }
+      const side = hmc === 'OFFHAND' ? 'left' : hmc === 'MAINHAND' ? 'right' : null;
       const mat = String(v.item?.material || '');
       const ref = mat.replace(/^(nexo|oraxen|itemsadder|ia):/i, '').toLowerCase();
       const modelId = v.model ? String(v.model).toLowerCase() : null;
       if (modelId && bbs.has(modelId)) { seen.add(id); entries.push({ id, name: title(id), slot, side, kind: 'bb', bb: bbs.get(modelId), hmc }); continue; }
       const it = items.get(ref) || items.get(ref.split(':').pop());
-      if (it) { seen.add(id); entries.push({ id, name: title(id), slot, side, kind: 'java', model: it.model, hmc }); continue; }
+      if (it) { seen.add(id); entries.push({ id, name: title(id), slot, side, kind: 'java', model: it.model, hmc, color: it.color || null }); continue; }
       notes.push(`${id}: no model found (${mat || modelId || 'no item'})`);
     }
   }
   if (!entries.length) { // no HMC definitions: offer every item model and every bbmodel
     for (const [id, it] of items) if (!id.includes(':') && findModel(files, idx, it.model)) entries.push({ id, name: title(id), slot: 'hats', side: null, kind: 'java', model: it.model });
-    for (const [id, k] of bbs) entries.push({ id, name: title(id), slot: 'balloon', side: 'right', kind: 'bb', bb: k });
+    for (const [id, k] of bbs) entries.push({ id, name: title(id), slot: 'hats', side: null, kind: 'bb', bb: k });
   }
   return { entries, notes };
 }
@@ -214,7 +230,7 @@ async function javaIR(files, idx, entry, side) {
       const tex = resolveTexRef(m.textures, face.texture);
       if (!tex) continue;
       used.add(tex);
-      faces[f] = { uv: face.uv ? face.uv.map((v) => num(v)) : defaultUv(f, from, to), tex, rot: ((num(face.rotation) % 360) + 360) % 360 };
+      faces[f] = { uv: face.uv ? face.uv.map((v) => num(v)) : defaultUv(f, from, to), tex, rot: ((num(face.rotation) % 360) + 360) % 360, ...(Number.isInteger(face.tintindex) && face.tintindex >= 0 ? { tint: true } : {}) };
     }
     const origin = e.rotation ? vec3(e.rotation.origin, [8, 8, 8]) : [8, 8, 8];
     let R = I3;
@@ -451,6 +467,9 @@ function pack(ir, built, variants, slot, k, opts) {
   const W = Math.max(k, al(usedW));
   if (W > 2048 || H > 2048 || (W / k) > 2048 || (H / k) > 2048) return { ok: false };
   const out = new Uint8ClampedArray(W * Math.max(H, k) * 4);
+  // faces Minecraft tints (tintindex): the parts a player can dye
+  const mask = new Uint8ClampedArray(W * Math.max(H, k) * 4);
+  let tinted = false;
   const info = new Map(); // `${ei}:${st}` -> { x, y, translucent, empty }
   for (const t of items) {
     const e = ir.elements[t.ei];
@@ -487,13 +506,14 @@ function pack(ir, built, variants, slot, k, opts) {
         const px = sampleFace(tex, source, s, tt, frame);
         const o = ((oy + j) * W + ox + i) * 4;
         out[o] = px[0]; out[o + 1] = px[1]; out[o + 2] = px[2]; out[o + 3] = px[3];
+        if (source.tint && px[3] > 0) { mask[o] = mask[o + 1] = mask[o + 2] = 255; mask[o + 3] = 255; tinted = true; }
         if (px[3] > 0) any = true;
         if (px[3] > 0 && px[3] < 255) translucent = true;
       }
     }
     info.set(`${t.ei}:${t.st}`, { x: t.x, y: t.y, translucent, empty: !any });
   }
-  return { ok: true, W, H: Math.max(H, k), pixels: out, info, tasks, sigma, built, ir };
+  return { ok: true, W, H: Math.max(H, k), pixels: out, mask: tinted ? mask : null, info, tasks, sigma, built, ir };
 }
 
 async function finish(res, entry, slot, variants, k) {
@@ -535,7 +555,8 @@ async function finish(res, entry, slot, variants, k) {
           const pivot = add(add(add(mv(A.R, [0, 0, 0]), A.t), mv(A.R, o.map((v) => v * sigma))), add(bv.shift, pivotShift));
           part = {
             id: `${entry.id}-${variant || 'x'}-${merged.size}`, attach: bv.P.attach, pivot: pivot.map(r4), rotation: euler(A.R).map(r4),
-            ...(variant ? { side: variant } : {}), ...(variant && slot === 'hand' ? { armor: { slot: variant + 'hand', mode: 'hide' } } : {}), // only hand items replace the held item; a balloon string doesn't ...(layer === 'translucent' ? { layer } : {}),
+            // only hand items replace the held item
+            ...(variant ? { side: variant } : {}), ...(variant && slot === 'hand' ? { armor: { slot: variant + 'hand', mode: 'hide' } } : {}), ...(layer === 'translucent' ? { layer } : {}),
             anim: [...blink, ...anims], cubes: [], _o: o
           };
           // pivot above was A(origin point) = R*(o*sigma) + t ; the rotation origin enters through xf already
@@ -561,7 +582,54 @@ async function finish(res, entry, slot, variants, k) {
   g.putImageData(new ImageData(res.pixels, W, H), 0, 0);
   const png = await new Promise((r) => canvas.toBlob(r, 'image/png'));
   const bytes = new Uint8Array(await png.arrayBuffer());
+  // dyeable: the tinted faces as a mask (opaque = takes the colour)
+  let maskBytes = null;
+  if (res.mask) {
+    g.clearRect(0, 0, W, H);
+    g.putImageData(new ImageData(res.mask, W, H), 0, 0);
+    const m = await new Promise((r) => canvas.toBlob(r, 'image/png'));
+    maskBytes = new Uint8Array(await m.arrayBuffer());
+  }
   if (!ir.elements.length) throw new Error('empty');
   const model = { format: 1, texture: [W / k, H / k], parts };
-  return { model, png: bytes, info: { parts: parts.length, cubes, density: k, size: [W, H], slot, sides: variants.filter(Boolean) } };
+  return { model, png: bytes, mask: maskBytes, color: entry.color || null, info: { parts: parts.length, cubes, density: k, size: [W, H], slot, sides: variants.filter(Boolean) } };
+}
+
+/**
+ * Dyes an undyed texture the way the server does (lib/dye on the API): colour x brightness where the mask
+ * is opaque (no mask = everywhere). Used for import previews and thumbnails. Returns PNG bytes.
+ */
+export async function bakeDye(png, mask, hex) {
+  const load = async (bytes) => createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+  const base = await load(png);
+  const W = base.width, H = base.height;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const g = canvas.getContext('2d', { willReadFrequently: true });
+  g.drawImage(base, 0, 0);
+  const img = g.getImageData(0, 0, W, H);
+  let m = null;
+  if (mask) {
+    const mb = await load(mask);
+    g.clearRect(0, 0, W, H);
+    g.imageSmoothingEnabled = false;
+    g.drawImage(mb, 0, 0, W, H);
+    m = g.getImageData(0, 0, W, H).data;
+  }
+  const c = [1, 3, 5].map((i) => parseInt(String(hex).slice(i, i + 2), 16));
+  const d = img.data;
+  for (let o = 0; o < d.length; o += 4) {
+    if (!d[o + 3]) continue;
+    const k = m ? m[o + 3] / 255 : 1;
+    if (!k) continue;
+    const r = d[o], gg = d[o + 1], b = d[o + 2];
+    const lum = Math.min(255, Math.max(r, gg, b) * 0.35 + (0.299 * r + 0.587 * gg + 0.114 * b) * 0.65) / 255;
+    d[o] = Math.round(r + (c[0] * lum - r) * k);
+    d[o + 1] = Math.round(gg + (c[1] * lum - gg) * k);
+    d[o + 2] = Math.round(b + (c[2] * lum - b) * k);
+  }
+  g.clearRect(0, 0, W, H);
+  g.putImageData(img, 0, 0);
+  const out = await new Promise((r) => canvas.toBlob(r, 'image/png'));
+  return new Uint8Array(await out.arrayBuffer());
 }

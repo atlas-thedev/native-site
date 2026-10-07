@@ -85,7 +85,7 @@ export default function BillingPanel({ names }: { names: Record<string, string> 
             <ul className="mt-3 flex-1 divide-y divide-line text-[14px]">
               {purchases.slice(0, 5).map((p) => (
                 <li key={p.transactionId} className="flex items-center justify-between gap-3 py-2">
-                  <span className="truncate font-semibold">{p.kind === "plus" ? `Native+ ${p.plan === "yearly" ? "yearly" : "monthly"}` : p.kind === "bundle" && p.bundleName ? `${p.bundleName} bundle` : p.kind === "bundle" ? (p.itemId ?? "").split(",").map((id) => names[id] ?? id).join(", ") : names[p.itemId ?? ""] ?? "Cloak"}</span>
+                  <span className="truncate font-semibold">{p.kind === "plus" ? `Native+ ${p.plan === "yearly" ? "yearly" : "monthly"}` : p.kind === "bundle" ? (p.itemId ?? "").split(",").map((id) => names[id] ?? id).join(", ") : names[p.itemId ?? ""] ?? "Cloak"}</span>
                   <span className="shrink-0 text-mute">{money(p.amount)} · {STATUS[p.status] ?? p.status} · {fmt(p.createdAt)}</span>
                 </li>
               ))}

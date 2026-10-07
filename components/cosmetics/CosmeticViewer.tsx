@@ -27,7 +27,6 @@ const SHOTS: Record<CosmeticSlot | "all", [number, number, number]> = {
   back: [Math.PI - 0.6, 3, 0.62],
   shoes: [0.7, -17, 0.95],
   hand: [0.55, -2, 0.7],
-  balloon: [0.4, 6, 0.55],
 };
 
 const models = new Map<string, Promise<unknown>>();
