@@ -1,5 +1,6 @@
 "use client";
 
+import { thumbFor } from "@/lib/autoThumb";
 import { FolderUp, Plus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CosmeticViewer from "../cosmetics/CosmeticViewer";
@@ -10,20 +11,6 @@ import { COSMETIC_SLOTS, SIDED_SLOTS, SLOT_NAMES, type CosmeticSlot, type Side }
 type Opt = { on: boolean; name: string; slot: CosmeticSlot; side: Side; scale: string; ox: string; oy: string; oz: string };
 type Found = { id: string; name: string; slot: CosmeticSlot; side: Side | null; kind: string };
 type Lib = typeof import("@/lib/ncmImport");
-
-/** A store thumbnail for an imported piece: the same worn shot the store draws, on the default skin. Null if it can't be drawn. */
-async function thumbFor(id: string, model: unknown, png: Uint8Array): Promise<string | null> {
-  const texture = URL.createObjectURL(new Blob([png as BlobPart], { type: "image/png" }));
-  try {
-    const { wornShot } = await import("@/lib/wornShot");
-    const url: string | null = await wornShot({ item: { id: `import:${id}` }, asset: { model, texture }, skinUrl: "/skins/steve.png", model: "default" });
-    return url ? url.replace(/^data:image\/png;base64,/, "") : null;
-  } catch {
-    return null;
-  } finally {
-    URL.revokeObjectURL(texture);
-  }
-}
 
 const toB64 = (u8: Uint8Array) => {
   let s = "";
@@ -93,7 +80,7 @@ export default function AdminImportPack({ setItems }: { setItems: (items: AdminI
       // without a thumbnail the store would show the raw texture atlas
       const thumb = await thumbFor(e.id, r.model, r.png);
       const d = await adm<{ items: AdminItem[] }>("POST", "store/items", {
-        kind: "cosmetic", slot: opts[e.id].slot, name: opts[e.id].name.trim() || e.name, description: "", tags: "", price: 0,
+        kind: "cosmetic", slot: opts[e.id].slot, name: opts[e.id].name.trim() || e.name, description: "", tags: "",
         featured: false, hidden: !publish, exclusive: false, model: JSON.stringify(r.model), texture: toB64(r.png), ...(thumb ? { thumb } : {}),
       });
       last = d.items;

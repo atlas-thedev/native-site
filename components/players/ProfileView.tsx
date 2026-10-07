@@ -7,6 +7,7 @@ import CapeStrip from "../CapeStrip";
 import LockerViewer from "../LockerViewer";
 import type { Worn } from "../cosmetics/CosmeticViewer";
 import ItemCard from "../store/ItemCard";
+import WornShot from "../cosmetics/WornShot";
 import { SLOT_COLOR } from "../cosmetics/CosmeticGallery";
 import { COSMETIC_SLOTS, SLOT_NAMES, isCosmetic, type PlayerProfile, type StoreItem } from "@/lib/store";
 import { storeActionRaw } from "../capes/actions";
@@ -112,7 +113,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
                   <li key={it.id}>
                     <Link href={`/${isCosmetic(it) ? "cosmetics" : "cloaks"}/${it.id}`} className="inline-flex items-center gap-2.5 rounded-[8px] border-2 border-line bg-surface px-2.5 py-2 transition hover:border-fg/40" style={it.slot ? ({ borderLeftColor: SLOT_COLOR[it.slot], borderLeftWidth: 4 } as React.CSSProperties) : undefined}>
                       <span className="flex h-9 w-9 items-center justify-center">
-                        {isCosmetic(it) ? <img src={it.stillUrl} alt="" className="h-9 w-9 object-contain [image-rendering:pixelated]" /> : <CapeStrip strip={null} still={it.stillUrl} frames={1} fps={1} width={22} label={it.name} />}
+                        {isCosmetic(it) ? <Shot it={it} skin={skin} model={model} className="h-9 w-9 object-contain" /> : <CapeStrip strip={null} still={it.stillUrl} frames={1} fps={1} width={22} label={it.name} />}
                       </span>
                       <span className="text-[13.5px] font-bold">{it.name}</span>
                     </Link>
@@ -163,7 +164,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
                 worn={wornIds.has(it.id)}
                 own={wornIds.has(it.id)}
                 art={isCosmetic(it)
-                  ? <img src={it.stillUrl} alt={it.name} loading="lazy" draggable={false} className="cutout-sm h-[150px] w-[150px] max-w-[78%] object-contain [image-rendering:pixelated]" />
+                  ? <Shot it={it} skin={skin} model={model} alt={it.name} className="cutout-sm h-[150px] w-[150px] max-w-[78%] object-contain" />
                   : <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={72} label={`${it.name} cloak`} className="cutout-sm" />}
                 left={<>{it.animated || it.motion ? <span className="st-tag is-inv">{isCosmetic(it) ? "Moves" : "Animated"}</span> : null}{TAG(it)}</>}
               />
@@ -175,4 +176,10 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
       )}
     </>
   );
+}
+
+/** A cosmetic drawn worn on this player's skin; never the flat texture sheet of imported pieces. */
+function Shot({ it, skin, model, className, alt = "" }: { it: StoreItem; skin: string; model: "default" | "slim"; className: string; alt?: string }) {
+  if (!it.modelUrl || !it.textureUrl) return it.stillUrl ? <img src={it.stillUrl} alt={alt} className={className} /> : null; // eslint-disable-line @next/next/no-img-element
+  return <WornShot item={it} skin={skin} model={model} className={className} alt={alt} hideFallback={!it.stillUrl || it.stillUrl === it.textureUrl} />;
 }

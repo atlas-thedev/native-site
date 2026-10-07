@@ -357,9 +357,6 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
     </div>
   );
 
-  // ---------- hero ----------
-  // only what you marked as featured in the admin panel; nothing featured = no Featured shelf
-  const spotlight = useMemo(() => sortItems(items).filter((it) => it.featured).slice(0, 6), [items]);
 
   return (
     <div>
@@ -406,14 +403,6 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
             <Empty title="The store is getting stocked." text="Cloaks and 3D cosmetics show up here, in the launcher and in your locker the moment they drop." />
           ) : shelves ? (
             <>
-            {spotlight.length > 0 && (
-              <section className="mt-6" aria-label="Featured">
-                <div className="mb-3.5 flex items-center justify-between gap-3">
-                  <h2 className="text-[24px] font-extrabold tracking-tight">Featured</h2>
-                </div>
-                {grid(spotlight.slice(0, 4))}
-              </section>
-            )}
             {CATS.filter((c) => counts[c] > 0).map((c) => {
               const rows = sortItems(items.filter((it) => catOf(it) === c));
               return (

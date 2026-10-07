@@ -49,7 +49,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ action: string 
     new Promise<null>((r) => setTimeout(() => r(null), 3000)),
   ]);
   const [isAdmin, skin] = await Promise.all([admin, look]);
-  return json({ ok: true, account: { name: s.account.name, uuid: s.account.uuid ?? null, isAdmin, skin } });
+  return json({ ok: true, account: { name: s.account.name, uuid: s.account.uuid ?? null, isAdmin, skin, model: s.account.model === "slim" ? "slim" : "default" } });
 }
 
 export async function POST(req: Request, ctx: { params: Promise<{ action: string }> }) {
