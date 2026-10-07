@@ -358,7 +358,8 @@ export default function StoreBrowser({ items, signedIn, owned: ownedIn, equipped
   );
 
   // ---------- hero ----------
-  const spotlight = useMemo(() => { const f = sortItems(items).filter((it) => it.featured); return (f.length ? f : sortItems(items)).slice(0, 6); }, [items]);
+  // only what you marked as featured in the admin panel; nothing featured = no Featured shelf
+  const spotlight = useMemo(() => sortItems(items).filter((it) => it.featured).slice(0, 6), [items]);
 
   return (
     <div>
