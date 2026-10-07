@@ -142,10 +142,10 @@ export default async function PlusPage() {
                 Get Native+
               </a>
               <Link
-                href="/store"
+                href="/download"
                 className="inline-flex h-12 items-center rounded-full border border-line px-7 text-[15px] font-semibold transition hover:bg-surface-2"
               >
-                Browse the store
+                Get the launcher
               </Link>
             </div>
             <p className="mt-5 text-[14px] text-dim">
@@ -194,10 +194,10 @@ export default async function PlusPage() {
               </p>
             </div>
             <Link
-              href="/store?c=capes"
+              href="/download"
               className="text-[14.5px] font-semibold underline underline-offset-4 hover:opacity-70"
             >
-              All capes
+              See them all in the launcher
             </Link>
           </div>
           <PlusCapes items={showcase} />
@@ -212,16 +212,16 @@ export default async function PlusPage() {
               <h2 className="text-[clamp(1.7rem,3vw,2.3rem)] font-extrabold tracking-tight">Every cosmetic, free</h2>
               <p className="mt-1.5 text-mute">Hats, glasses, wings, backpacks and shoes. All of them while you’re a member, and every new one we make.</p>
             </div>
-            <Link href="/store" className="text-[14.5px] font-semibold underline underline-offset-4 hover:opacity-70">All cosmetics</Link>
+            <Link href="/download" className="text-[14.5px] font-semibold underline underline-offset-4 hover:opacity-70">See them all in the launcher</Link>
           </div>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
             {cosmetics.slice(0, 12).map((it) => (
               <li key={it.id}>
-                <Link href={`/cosmetics/${it.id}`} className="st-card flex flex-col items-center p-3 text-center">
+                <div className="st-card flex flex-col items-center p-3 text-center">
                   <MyShot item={it} className="cutout-sm h-[120px] w-[120px] object-contain" />
                   <span className="mt-2 block w-full truncate text-[13.5px] font-bold">{it.name}</span>
                   <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-gold">Included</span>
-                </Link>
+                </div>
               </li>
             ))}
           </ul>

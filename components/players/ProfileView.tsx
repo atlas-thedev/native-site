@@ -8,8 +8,7 @@ import LockerViewer from "../LockerViewer";
 import type { Worn } from "../cosmetics/CosmeticViewer";
 import ItemCard from "../store/ItemCard";
 import WornShot from "../cosmetics/WornShot";
-import { SLOT_COLOR } from "../cosmetics/CosmeticGallery";
-import { COSMETIC_SLOTS, SLOT_NAMES, isCosmetic, type PlayerProfile, type StoreItem } from "@/lib/store";
+import { COSMETIC_SLOTS, SLOT_COLOR, SLOT_NAMES, isCosmetic, type PlayerProfile, type StoreItem } from "@/lib/store";
 import { storeActionRaw } from "../capes/actions";
 
 type Tab = "locker" | "wishlist";
@@ -111,7 +110,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
               <ul className="mt-2 flex flex-wrap gap-2.5">
                 {[...wornIds].map((id) => byId.get(id)).filter((i): i is StoreItem => !!i).map((it) => (
                   <li key={it.id}>
-                    <Link href={`/${isCosmetic(it) ? "cosmetics" : "cloaks"}/${it.id}`} className="inline-flex items-center gap-2.5 rounded-[8px] border-2 border-line bg-surface px-2.5 py-2 transition hover:border-fg/40" style={it.slot ? ({ borderLeftColor: SLOT_COLOR[it.slot], borderLeftWidth: 4 } as React.CSSProperties) : undefined}>
+                    <Link href="/store" className="inline-flex items-center gap-2.5 rounded-[8px] border-2 border-line bg-surface px-2.5 py-2 transition hover:border-fg/40" style={it.slot ? ({ borderLeftColor: SLOT_COLOR[it.slot], borderLeftWidth: 4 } as React.CSSProperties) : undefined}>
                       <span className="flex h-9 w-9 items-center justify-center">
                         {isCosmetic(it) ? <Shot it={it} skin={skin} model={model} className="h-9 w-9 object-contain" /> : <CapeStrip strip={null} still={it.stillUrl} frames={1} fps={1} width={22} label={it.name} />}
                       </span>
@@ -159,7 +158,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
             <li key={it.id}>
               <ItemCard
                 item={it}
-                href={`/${isCosmetic(it) ? "cosmetics" : "cloaks"}/${it.id}`}
+                href="/store"
                 aspect="aspect-[4/5]"
                 worn={wornIds.has(it.id)}
                 own={wornIds.has(it.id)}

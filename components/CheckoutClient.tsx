@@ -99,8 +99,8 @@ export default function CheckoutClient() {
             Your purchase unlocks on your Native account in a few seconds. If you bought from the launcher, head back to it and it’ll update by itself. A receipt is on its way to your email.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href={back ?? "/account"} className={btn}>{back ? "Back to the store" : "Open your locker"}</Link>
-            <Link href="/store" className={ghost}>Browse the store</Link>
+            <Link href={back ?? "/account"} className={btn}>{back ? "Go back" : "Your account"}</Link>
+            <Link href="/download" className={ghost}>Get the launcher</Link>
           </div>
         </>
       ) : phase === "closed" ? (
@@ -109,7 +109,7 @@ export default function CheckoutClient() {
           <p className="mx-auto mt-4 max-w-[460px] text-[17px] text-mute">You haven’t been charged. Pick up where you left off, or go back.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button onClick={reopen} className={btn}>Continue to payment</button>
-            <Link href={back ?? "/store"} className={ghost}>Go back</Link>
+            <Link href={back ?? "/plus"} className={ghost}>Go back</Link>
           </div>
         </>
       ) : phase === "error" ? (
@@ -117,7 +117,7 @@ export default function CheckoutClient() {
           <h1 className="text-[clamp(2.2rem,5vw,3.4rem)] font-extrabold leading-[1.02] tracking-[-0.04em]">Checkout unavailable</h1>
           <p className="mx-auto mt-4 max-w-[460px] text-[17px] text-mute" role="alert">{error}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href={back ?? "/store"} className={btn}>Back to the store</Link>
+            <Link href={back ?? "/plus"} className={btn}>Go back</Link>
             <Link href="/support" className={ghost}>Get help</Link>
           </div>
         </>

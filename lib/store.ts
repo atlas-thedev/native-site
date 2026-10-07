@@ -48,6 +48,8 @@ export type StoreItem = {
 
 export const COSMETIC_SLOTS = ["hats", "glasses", "back", "shoes", "hand"] as const;
 export type CosmeticSlot = (typeof COSMETIC_SLOTS)[number];
+/** Accent colour per cosmetic slot. */
+export const SLOT_COLOR: Record<CosmeticSlot, string> = { hats: "#ff8a7a", glasses: "#7fb2ff", back: "#9fe0ff", shoes: "#ffb45c", hand: "#d7a6ff" };
 export const SLOT_NAMES: Record<CosmeticSlot, string> = { hats: "Hats", glasses: "Glasses", back: "Wings & Backpacks", shoes: "Shoes", hand: "Hand Items" };
 export const SIDED_SLOTS: readonly string[] = ["hand"];
 export type Side = "left" | "right";
