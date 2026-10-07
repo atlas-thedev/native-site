@@ -7,7 +7,7 @@ import { fetchModel, type Worn } from "./cosmetics/CosmeticViewer";
 
 type Built = { update: (t: number, walk: number) => void; dispose: () => void };
 
-export type ViewerHandle = { reset: () => void };
+export type ViewerHandle = { reset: () => void; zoom: (factor: number) => void };
 type Props = {
   skin: string;
   cape: string | null;
@@ -199,6 +199,12 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
       if (!sv) return;
       sv.controls.reset();
       sv.camera.rotation.x = -0.2;
+      sv.zoom = 0.7;
+    },
+    /** Button zoom (the wheel is left to the page so scrolling never gets stuck on the preview). */
+    zoom: (factor: number) => {
+      const sv = v.current;
+      if (sv) sv.zoom = Math.min(1.8, Math.max(0.45, sv.zoom * factor));
     },
   }));
 
