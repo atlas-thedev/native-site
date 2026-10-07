@@ -1,6 +1,6 @@
 import { permanentRedirect } from "next/navigation";
 
-/** Cosmetics now live in the combined store. */
-export default function CosmeticsPage() {
+/** The store lives in the Native launcher now. */
+export default function Page() {
   permanentRedirect("/store");
 }

@@ -1,6 +1,6 @@
 import { permanentRedirect } from "next/navigation";
 
-/** Cloaks now live in the combined store. */
-export default function CloaksPage() {
-  permanentRedirect("/store?c=capes");
+/** The store lives in the Native launcher now. */
+export default function Page() {
+  permanentRedirect("/store");
 }

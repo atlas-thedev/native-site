@@ -23,10 +23,10 @@ export default function PerksCards() {
               Your skin. Your cape.
             </h3>
             <p className="mt-4 max-w-[420px] text-[16.5px] leading-relaxed text-mute">
-              Browse Native capes, preview them in 3D and wear them everywhere you play.
+              Browse Native capes in the launcher, preview them in 3D and wear them everywhere you play.
             </p>
-            <Link href="/store" className="nx-pill nx-pill-ghost mt-7 h-12 w-fit px-6 text-[15px]">
-              Visit the store <ArrowUpRight className="h-4 w-4" />
+            <Link href="/download" className="nx-pill nx-pill-ghost mt-7 h-12 w-fit px-6 text-[15px]">
+              Get the launcher <ArrowUpRight className="h-4 w-4" />
             </Link>
             <div className="nx-shot mt-9 hidden sm:block">
               <Image src="/ui/locker-capes.webp" alt="Cape locker" width={900} height={560} sizes="560px" />

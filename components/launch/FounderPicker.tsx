@@ -150,7 +150,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
                   {busy === "wear" ? <Loader2 className="h-4 w-4 animate-spin" /> : <PartyPopper className="h-4 w-4" />} Wear it now
                 </button>
               )}
-              <Link href="/account" className="inline-flex h-12 items-center rounded-full border border-line px-6 text-[15px] font-semibold transition hover:bg-surface-2">Go to your locker</Link>
+              <Link href="/account" className="inline-flex h-12 items-center rounded-full border border-line px-6 text-[15px] font-semibold transition hover:bg-surface-2">Your account</Link>
             </div>
             <AnimatePresence>
               {err && (

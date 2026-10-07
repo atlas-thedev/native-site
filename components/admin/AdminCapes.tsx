@@ -1,7 +1,6 @@
 "use client";
 
-import { ExternalLink, Plus, Trash2, Upload, Users } from "lucide-react";
-import Link from "next/link";
+import { Plus, Trash2, Upload, Users } from "lucide-react";
 import { useState } from "react";
 import CapeStrip from "../CapeStrip";
 import type { Shared } from "./AdminApp";
@@ -49,7 +48,6 @@ export function Row({ it, onSaved }: { it: AdminItem; onSaved: (items: AdminItem
         <Btn variant="ghost" busy={busy === "h"} onClick={() => patch({ hidden: !it.hidden }, "h", it.hidden ? "Visible in the store." : "Hidden from the store.")}>{it.hidden ? "Show" : "Hide"}</Btn>
         <Btn variant="ghost" busy={busy === "x"} onClick={() => patch({ exclusive: !it.exclusive }, "x", "Saved.")}>{it.exclusive ? "Make buyable" : "Make event-only"}</Btn>
         <Btn variant="ghost" busy={busy === "owners"} onClick={loadOwners}><Users className="h-4 w-4" /> Owners</Btn>
-        <Link href={cosmetic ? `/cosmetics/${it.id}` : `/cloaks/${it.id}`} target="_blank" className="inline-flex h-10 items-center gap-1.5 rounded-full border border-line px-4 text-[14px] font-semibold hover:bg-surface-2"><ExternalLink className="h-4 w-4" /> View</Link>
         <Btn variant="danger" busy={busy === "del"} onClick={del} title="Delete"><Trash2 className="h-4 w-4" /></Btn>
       </div>
       {owners && (

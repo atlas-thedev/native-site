@@ -15,7 +15,6 @@ import SkinHead from "./SkinHead";
 const nav = [
   { href: "/", label: "Home" },
   { href: "/#features", label: "Features" },
-  { href: "/store", label: "Store" },
   { href: "/players", label: "Players" },
   { href: "/beta", label: "Beta" },
   { href: "/changes", label: "Changes" },

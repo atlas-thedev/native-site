@@ -33,7 +33,6 @@ export const nav = [
   { href: "/#features", label: "Features" },
   { href: "/#tour", label: "Tour" },
   { href: "/#versions", label: "Versions" },
-  { href: "/store", label: "Store" },
   { href: "/plus", label: "Native+" },
   { href: "/beta", label: "Beta" },
   { href: "/changes", label: "Changes" },

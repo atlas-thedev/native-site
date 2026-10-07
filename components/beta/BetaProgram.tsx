@@ -1042,8 +1042,8 @@ function Status({
 
         <div className="mt-8 flex flex-wrap gap-3">
           {app.status === "approved" && (
-            <Link href="/account" className={primary}>
-              Wear your cape
+            <Link href="/download" className={primary}>
+              Wear it in the launcher
             </Link>
           )}
           {app.status === "pending" && (
