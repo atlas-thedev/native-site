@@ -21,6 +21,9 @@ const nextConfig = {
       // the cloak wall used to live at /capes; /capes/*.png (classic cape textures) stay put
       { source: "/capes", destination: "/store?c=capes", permanent: true },
       { source: "/capes/:id([a-z0-9-]+)", destination: "/cloaks/:id", permanent: true },
+      // cloaks and cosmetics share one store now (item pages stay at /cloaks/:id and /cosmetics/:id)
+      { source: "/cloaks", destination: "/store?c=capes", permanent: true },
+      { source: "/cosmetics", destination: "/store", permanent: true },
     ];
   },
   webpack(config) {
