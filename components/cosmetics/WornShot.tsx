@@ -38,5 +38,5 @@ export default function WornShot({ item, skin, model, className = "", alt = "", 
   }, [seen, item.id, item.modelUrl, item.textureUrl, skinUrl, model]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // eslint-disable-next-line @next/next/no-img-element
-  return <img ref={ref} src={url ?? item.stillUrl} alt={alt} loading="lazy" draggable={false} className={`${className} ${url ? "[image-rendering:auto]" : hideFallback ? "opacity-0" : ""} transition-opacity duration-300`} />;
+  return <img ref={ref} src={url ?? item.stillUrl} alt={alt} loading="lazy" draggable={false} data-ready={url ? "" : undefined} className={`${className} ${url ? "[image-rendering:auto]" : hideFallback ? "opacity-0" : ""} transition-opacity duration-300`} />;
 }
