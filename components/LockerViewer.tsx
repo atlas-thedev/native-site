@@ -61,12 +61,13 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
   useEffect(() => {
     let dead = false;
     let ro: ResizeObserver | undefined;
+    let io: IntersectionObserver | undefined;
     (async () => {
       const l = await import("skinview3d");
       if (dead || !canvas.current || !wrap.current) return;
       lib.current = l;
       const r = wrap.current.getBoundingClientRect();
-      const sv = new l.SkinViewer({ canvas: canvas.current, width: Math.max(200, r.width), height: Math.max(260, r.height) });
+      const sv = new l.SkinViewer({ canvas: canvas.current, width: Math.max(200, r.width), height: Math.max(260, r.height), pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5) });
       sv.zoom = zoomRef.current;
       sv.fov = 38;
       sv.controls.enableZoom = false;
@@ -91,10 +92,16 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
         if (b.width > 50 && b.height > 50) v.current.setSize(b.width, b.height);
       });
       ro.observe(wrap.current);
+      // stop drawing while the preview is scrolled out of view (keeps the page smooth)
+      if (typeof IntersectionObserver !== "undefined") {
+        io = new IntersectionObserver((e) => { if (v.current) v.current.renderPaused = !e.some((x) => x.isIntersecting); });
+        io.observe(wrap.current);
+      }
     })();
     return () => {
       dead = true;
       ro?.disconnect();
+      io?.disconnect();
       built.current.forEach((b) => b.dispose());
       built.current = [];
       v.current?.dispose();

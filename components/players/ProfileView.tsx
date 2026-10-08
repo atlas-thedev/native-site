@@ -1,10 +1,10 @@
 "use client";
 
-import { Check, Copy, Crown, EyeOff, Heart, Lock, Package } from "lucide-react";
+import { Check, Copy, Crown, EyeOff, Heart, Lock, Minus, Package, Plus, RotateCcw } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import CapeStrip from "../CapeStrip";
-import LockerViewer from "../LockerViewer";
+import LockerViewer, { type ViewerHandle } from "../LockerViewer";
 import type { Worn } from "../cosmetics/CosmeticViewer";
 import ItemCard from "../store/ItemCard";
 import WornShot from "../cosmetics/WornShot";
@@ -35,7 +35,8 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
   const [filter, setFilter] = useState<Filter>("all");
   const [prefs, setPrefs] = useState(initialPrefs);
   const [copied, setCopied] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [prefsError, setPrefsError] = useState("");
+  const viewer = useRef<ViewerHandle>(null);
 
   const wornIds = useMemo(() => new Set([profile.equipped, ...Object.values(profile.wearing)].filter(Boolean) as string[]), [profile]);
   const ownedItems = useMemo(() => profile.owned.map((o) => byId.get(o.id)).filter((i): i is StoreItem => !!i), [profile.owned, byId]);
@@ -47,7 +48,11 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
   const worn: Worn[] = COSMETIC_SLOTS.map((s) => profile.wearing[s]).map((id) => (id ? byId.get(id) : undefined))
     .filter((it): it is StoreItem => !!it && !!it.modelUrl && !!it.textureUrl).map((it) => ({ id: it.id, modelUrl: it.modelUrl!, textureUrl: it.textureUrl!, side: (it.slot && profile.sides?.[it.slot]) || null, slot: it.slot }));
 
-  const hidden = tab === "locker" ? profile.hidden.locker : profile.hidden.wishlist;
+  // Owners always see their own items; the toggles only hide them from other players.
+  const hiddenLocker = own ? false : profile.hidden.locker;
+  const hiddenWish = own ? false : profile.hidden.wishlist;
+  const hidden = tab === "locker" ? hiddenLocker : hiddenWish;
+  const privateNow = own && (tab === "locker" ? prefs.hideLocker : prefs.hideWishlist);
   const filters = ([
     ["all", "All", source.length],
     ["capes", "Cloaks", source.filter((i) => matches(i, "capes")).length],
@@ -61,28 +66,39 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
       setTimeout(() => setCopied(false), 2200);
     } catch {}
   };
-  const toggle = async (key: "hideLocker" | "hideWishlist") => {
-    setSaving(true);
+  // Optimistic: flip at once, save in the background, roll back only if the save fails.
+  const toggle = (key: "hideLocker" | "hideWishlist") => {
     const next = !prefs[key];
-    try {
-      const r = await storeActionRaw({ action: "prefs", [key]: next });
-      if (r.ok) setPrefs({ ...prefs, [key]: next });
-    } finally {
-      setSaving(false);
-    }
+    setPrefs((p) => ({ ...p, [key]: next }));
+    setPrefsError("");
+    storeActionRaw({ action: "prefs", [key]: next })
+      .then((r) => {
+        if (!r.ok) throw new Error();
+      })
+      .catch(() => {
+        setPrefs((p) => ({ ...p, [key]: !next }));
+        setPrefsError("Couldn't save that, try again.");
+      });
   };
 
   return (
     <>
       <section className="grid gap-6 lg:grid-cols-[360px_1fr]">
-        <div className={`st-panel relative overflow-hidden !bg-black${profile.plus ? " !border-[#e9b53a]/60 shadow-[0_0_40px_-12px_rgb(255_190_60/0.45)]" : ""}`}>
+        <div className={`st-panel relative flex flex-col overflow-hidden !bg-black${profile.plus ? " !border-[#e9b53a]/60 shadow-[0_0_40px_-12px_rgb(255_190_60/0.45)]" : ""}`}>
           {profile.plus && (
             <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-2 rounded-[7px] border border-[#ffd76a]/50 bg-black/70 py-1 pl-1.5 pr-2.5 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#ffd76a] backdrop-blur">
               <PlusMark size={18} /> Native+ member
             </span>
           )}
-          <div className="relative h-full min-h-[460px] bg-black">
-            <LockerViewer zoom={0.56} skin={skin} model={model} cape={cape?.stillUrl ?? null} capeAnim={cape?.animated && cape.stripUrl ? { url: cape.stripUrl, frames: cape.frames, fps: cape.fps } : null} walk spin showCape layers worn={worn} />
+          <div className="relative min-h-[500px] flex-1 bg-black pt-12">
+            <LockerViewer ref={viewer} zoom={0.56} skin={skin} model={model} cape={cape?.stillUrl ?? null} capeAnim={cape?.animated && cape.stripUrl ? { url: cape.stripUrl, frames: cape.frames, fps: cape.fps } : null} walk spin showCape layers worn={worn} />
+            <div className="absolute bottom-3 right-3 z-10 flex gap-1.5">
+              {([["Zoom out", Minus, () => viewer.current?.zoom(1 / 1.15)], ["Reset view", RotateCcw, () => viewer.current?.reset()], ["Zoom in", Plus, () => viewer.current?.zoom(1.15)]] as const).map(([label, Icon, fn]) => (
+                <button key={label} type="button" onClick={fn} aria-label={label} title={label} className="flex h-8 w-8 items-center justify-center rounded-[7px] border-2 border-line bg-black/70 text-fg/80 backdrop-blur transition hover:border-fg/40 hover:text-fg">
+                  <Icon className="h-4 w-4" />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <div className="st-panel p-6">
@@ -104,8 +120,8 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
           </div>
           <dl className="mt-6 grid grid-cols-3 gap-3">
             {[
-              ["In locker", profile.hidden.locker ? "Hidden" : profile.counts.owned.toLocaleString()],
-              ["Wishlist", profile.hidden.wishlist ? "Hidden" : profile.counts.wishlist.toLocaleString()],
+              ["In locker", hiddenLocker ? "Hidden" : profile.counts.owned.toLocaleString()],
+              ["Wishlist", hiddenWish ? "Hidden" : profile.counts.wishlist.toLocaleString()],
               ["Wearing", String(wornIds.size)],
             ].map(([k, v]) => (
               <div key={k} className="rounded-[8px] border-2 border-line bg-black/20 p-3 shadow-[inset_0_2px_0_rgb(0_0_0/0.3)]">
@@ -145,9 +161,10 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
             <div className="st-sep mt-6 pt-5">
               <p className="text-[12px] font-semibold uppercase tracking-wider text-dim">Privacy · only you see this</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                <button disabled={saving} onClick={() => toggle("hideLocker")} className={`pxb is-ghost is-sm ${prefs.hideLocker ? "is-on" : ""}`} aria-pressed={prefs.hideLocker}><span className="pxb-face"><EyeOff /> Hide my locker</span></button>
-                <button disabled={saving} onClick={() => toggle("hideWishlist")} className={`pxb is-ghost is-sm ${prefs.hideWishlist ? "is-on" : ""}`} aria-pressed={prefs.hideWishlist}><span className="pxb-face"><EyeOff /> Hide my wishlist</span></button>
+                <button type="button" onClick={() => toggle("hideLocker")} className={`pxb is-ghost is-sm ${prefs.hideLocker ? "is-on" : ""}`} aria-pressed={prefs.hideLocker}><span className="pxb-face"><EyeOff /> Hide my locker</span></button>
+                <button type="button" onClick={() => toggle("hideWishlist")} className={`pxb is-ghost is-sm ${prefs.hideWishlist ? "is-on" : ""}`} aria-pressed={prefs.hideWishlist}><span className="pxb-face"><EyeOff /> Hide my wishlist</span></button>
               </div>
+              <p className="mt-2 text-[12.5px] text-dim">{prefsError || (prefs.hideLocker || prefs.hideWishlist ? `Other players can't see your ${prefs.hideLocker && prefs.hideWishlist ? "locker or wishlist" : prefs.hideLocker ? "locker" : "wishlist"}. You still can.` : "Everyone can see your locker and wishlist.")}</p>
             </div>
           )}
         </div>
@@ -159,6 +176,9 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
           <button role="tab" aria-selected={tab === "wishlist"} className={tab === "wishlist" ? "is-on" : ""} onClick={() => { setTab("wishlist"); setFilter("all"); }}><Heart /> Wishlist</button>
         </div>
       </div>
+      {privateNow && (
+        <p className="mt-3 inline-flex items-center gap-2 text-[13px] text-dim"><EyeOff className="h-4 w-4" /> Hidden from other players. Only you can see this.</p>
+      )}
       {!hidden && filters.length > 1 && (
         <div className="st-tabs mt-3" role="tablist" aria-label="Filter items">
           {filters.map(([id, label, n]) => (
