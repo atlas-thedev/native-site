@@ -66,5 +66,14 @@ export type Poll = {
   myVote: string | null;
   total: number | null;
   showResults: boolean;
-  options: { id: string; label: string; description: string; image: string | null; votes: number | null }[];
+  /** closed polls: the admin's pick, else the option with the most votes (null on a tie) */
+  winnerId?: string | null;
+  winnerPicked?: boolean;
+  options: { id: string; label: string; description: string; image: string | null; votes: number | null; itemId?: string | null; item?: PollItem | null }[];
+};
+
+/** A Store item used as a vote option (hidden concept pieces included). */
+export type PollItem = {
+  id: string; name: string; kind?: "cape" | "cosmetic"; slot?: string | null; hidden?: boolean; exclusive?: boolean; price?: number;
+  animated?: boolean; frames?: number; fps?: number; stripUrl?: string | null; stillUrl: string; modelUrl?: string | null; textureUrl?: string | null;
 };

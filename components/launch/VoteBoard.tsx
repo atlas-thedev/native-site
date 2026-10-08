@@ -1,22 +1,41 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { Check, Crown, Loader2, Lock, Trophy } from "lucide-react";
+import { ArrowRight, Check, Crown, Hammer, Loader2, Lock, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import Countdown from "./Countdown";
 import Sky from "../plus/Sky";
-import type { Poll } from "@/lib/launch";
+import ItemArt from "./ItemArt";
+import type { Poll, PollItem } from "@/lib/launch";
+import type { StoreItem } from "@/lib/store";
 
 const pct = (n: number | null, total: number | null) => (n == null || !total ? 0 : Math.round((n / total) * 100));
 const plural = (n: number, one: string, many: string) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
+const asItem = (it: PollItem) => it as unknown as StoreItem;
+const itemHref = (it: PollItem) => (it.kind === "cosmetic" ? `/cosmetics/${encodeURIComponent(it.id)}` : `/cloaks/${encodeURIComponent(it.id)}`);
+/** Who won a closed poll: the server's pick (admin or most votes), else the unique top vote. */
+const winnerOf = (poll: Poll) => {
+  if (poll.status === "open") return null;
+  if (poll.winnerId !== undefined) return poll.options.find((o) => o.id === poll.winnerId) ?? null;
+  if (!poll.showResults) return null;
+  const top = Math.max(0, ...poll.options.map((x) => x.votes ?? 0));
+  const tops = poll.options.filter((x) => (x.votes ?? 0) === top);
+  return top > 0 && tops.length === 1 ? tops[0] : null;
+};
+
+function OptionArt({ o, size }: { o: Poll["options"][number]; size: number }) {
+  if (o.item && (o.item.kind === "cosmetic" ? o.item.modelUrl : true)) return <ItemArt item={asItem(o.item)} width={size} className="cutout-sm transition duration-500 group-hover:scale-105" />;
+  if (o.image) return <img src={o.image} alt="" className="cutout-sm max-h-[78%] max-w-[78%] object-contain transition duration-500 [image-rendering:pixelated] group-hover:scale-105" />;
+  return <span className="text-[64px] font-extrabold tracking-tight text-dim">{o.label.slice(0, 1)}</span>;
+}
 
 function Option({ poll, o, busy, onVote, signedIn }: { poll: Poll; o: Poll["options"][number]; busy: string | null; onVote: (id: string) => void; signedIn: boolean }) {
   const open = poll.status === "open";
   const mine = poll.myVote === o.id;
   const p = pct(o.votes, poll.total);
   const top = poll.showResults ? Math.max(...poll.options.map((x) => x.votes ?? 0)) : -1;
-  const leading = poll.showResults && top > 0 && (o.votes ?? 0) === top;
+  const leading = open ? poll.showResults && top > 0 && (o.votes ?? 0) === top : winnerOf(poll)?.id === o.id;
   const clickable = open && !mine && !busy;
 
   return (
@@ -28,12 +47,8 @@ function Option({ poll, o, busy, onVote, signedIn }: { poll: Poll; o: Poll["opti
         aria-pressed={mine}
         className={`group relative flex h-full w-full flex-col overflow-hidden rounded-[22px] border text-left transition duration-300 ${mine ? "border-fg bg-surface-2" : "border-line bg-surface"} ${clickable ? "hover:-translate-y-1 hover:border-fg/40" : ""} disabled:cursor-default`}
       >
-        <div className={`dots relative flex items-center justify-center ${!o.image ? "aspect-[5/2]" : poll.options.length === 2 ? "aspect-[16/9]" : "aspect-[4/3]"}`}>
-          {o.image ? (
-            <img src={o.image} alt="" className="cutout-sm max-h-[78%] max-w-[78%] object-contain transition duration-500 [image-rendering:pixelated] group-hover:scale-105" />
-          ) : (
-            <span className="text-[64px] font-extrabold tracking-tight text-dim">{o.label.slice(0, 1)}</span>
-          )}
+        <div className={`dots relative flex items-center justify-center ${!o.image && !o.item ? "aspect-[5/2]" : poll.options.length === 2 ? "aspect-[16/9]" : "aspect-[4/3]"}`}>
+          <OptionArt o={o} size={poll.options.length === 2 ? 92 : 72} />
           <div className="absolute inset-x-3 top-3 flex justify-between gap-2">
             {leading ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-inv px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-inv-fg">
@@ -161,6 +176,57 @@ function PollCard({ poll, signedIn, onChange }: { poll: Poll; signedIn: boolean;
   );
 }
 
+/** A finished campaign: the winner up front, the rest of the field underneath. */
+function WinnerCard({ poll }: { poll: Poll }) {
+  const win = winnerOf(poll);
+  const rest = poll.options.filter((o) => o.id !== win?.id);
+  const released = !!win?.item && !win.item.hidden;
+  return (
+    <article className="card overflow-hidden">
+      <div className="grid md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+        <div className="dots relative flex min-h-[240px] items-center justify-center p-6">
+          {win ? <span className="group"><OptionArt o={win} size={110} /></span> : <Trophy className="h-10 w-10 text-dim" />}
+          {win && (
+            <span className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full bg-inv px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-inv-fg">
+              <Crown className="h-3 w-3" /> Winner
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col p-6 sm:p-8">
+          <p className="text-[12.5px] font-semibold uppercase tracking-wider text-dim">
+            {poll.title}
+            {poll.total != null && <span> · {plural(poll.total, "vote", "votes")}</span>}
+          </p>
+          <h3 className="mt-2 text-[clamp(1.6rem,3vw,2.2rem)] font-extrabold leading-[1.05] tracking-[-0.035em]">{win ? win.label : "No clear winner"}</h3>
+          {win?.description ? <p className="mt-2 leading-relaxed text-mute">{win.description}</p> : !win && <p className="mt-2 text-mute">It ended in a tie, so the team picks.</p>}
+          {win && poll.showResults && poll.total ? <p className="mt-3 text-[14px] font-semibold">{pct(win.votes, poll.total)}% of the vote</p> : null}
+          {win?.item && (
+            <div className="mt-5">
+              {released ? (
+                <Link href={itemHref(win.item)} className="inline-flex h-11 items-center gap-2 rounded-full bg-inv px-6 text-[14.5px] font-semibold text-inv-fg transition hover:opacity-85">
+                  Out now in the Store <ArrowRight className="h-4 w-4" />
+                </Link>
+              ) : (
+                <span className="inline-flex h-11 items-center gap-2 rounded-full border border-line px-5 text-[14.5px] font-semibold text-mute"><Hammer className="h-4 w-4" /> Being made</span>
+              )}
+            </div>
+          )}
+          {rest.length > 0 && (
+            <ul className="mt-6 flex flex-wrap gap-2 border-t border-line pt-5">
+              {rest.map((o) => (
+                <li key={o.id} className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[13px] font-semibold text-mute">
+                  {o.label}
+                  {poll.showResults && poll.total ? <span className="tabular-nums text-dim">{pct(o.votes, poll.total)}%</span> : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
 /** Community votes: the open ones first, then the results of the old ones. Refreshes on its own. */
 export default function VoteBoard({ initial, signedIn }: { initial: Poll[]; signedIn: boolean }) {
   const [polls, setPolls] = useState(initial);
@@ -189,7 +255,7 @@ export default function VoteBoard({ initial, signedIn }: { initial: Poll[]; sign
         <div className="relative mx-auto max-w-[1180px] px-5 pb-36 pt-20 sm:pt-28 lg:pb-44">
           <p className="eyebrow">Community vote</p>
           <h1 className="mt-5 max-w-[760px] text-[clamp(3rem,7.4vw,6rem)] font-extrabold leading-[0.92] tracking-[-0.05em]">You pick what’s next.</h1>
-          <p className="mt-6 max-w-[480px] text-[19px] leading-relaxed text-mute">New capes and features go to a vote. Whatever wins is what we make next.</p>
+          <p className="mt-6 max-w-[480px] text-[19px] leading-relaxed text-mute">New cloaks, cosmetics and features go to a vote. Whatever wins is what we make next.</p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <span className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-bg/70 px-4 text-[14px] font-semibold backdrop-blur">
               <span className={`h-2 w-2 rounded-full ${live.length ? "bg-fg [animation:pulse-soft_1.4s_infinite]" : "bg-dim"}`} />
@@ -221,11 +287,11 @@ export default function VoteBoard({ initial, signedIn }: { initial: Poll[]; sign
 
         {past.length > 0 && (
           <section className="mt-24">
-            <h2 className="text-[clamp(1.7rem,3vw,2.3rem)] font-extrabold tracking-tight">Past results</h2>
-            <p className="mt-1.5 text-mute">What the community picked before.</p>
+            <h2 className="text-[clamp(1.7rem,3vw,2.3rem)] font-extrabold tracking-tight">Past campaigns</h2>
+            <p className="mt-1.5 text-mute">What the community picked before, and where it is now.</p>
             <div className="mt-8 flex flex-col gap-6">
               {past.map((p) => (
-                <PollCard key={p.id} poll={p} signedIn={signedIn} onChange={update} />
+                <WinnerCard key={p.id} poll={p} />
               ))}
             </div>
           </section>

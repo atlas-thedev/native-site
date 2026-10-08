@@ -405,8 +405,8 @@ export default function BetaProgram({
           <p className="mt-1.5 text-mute">Never sold, never in a sale. Accepted testers only.</p>
         </div>
         <div className="grid gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-          <div className="beta-cape-stage card relative overflow-hidden p-0">
-            <div className="dots relative h-[380px] sm:h-[460px]">
+          <div className="beta-cape-stage card relative flex flex-col overflow-hidden p-0">
+            <div className="dots relative min-h-[380px] flex-1 sm:min-h-[460px]">
               {cape ? (
                 <LockerViewer
                   skin={skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")}
