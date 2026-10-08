@@ -3,13 +3,13 @@
 import { motion } from "motion/react";
 import { ArrowRight, Gift, UserPlus } from "lucide-react";
 import Link from "next/link";
-import CapeStrip from "../CapeStrip";
+import ItemArt from "./ItemArt";
 import Countdown from "./Countdown";
 import ToonScene from "./Toons";
 import { useLaunch } from "./LaunchContext";
 import { useAccount } from "../useAccount";
 import { INTRO } from "@/lib/site";
-import type { StoreItem } from "@/lib/store";
+import { isCosmetic, type StoreItem } from "@/lib/store";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const up = (d: number) => ({ initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.9, delay: d + INTRO, ease } });
@@ -60,13 +60,13 @@ export default function LaunchHero({ founder }: { founder: StoreItem[] }) {
               {founder.map((it, i) => (
                 <li key={it.id}>
                   <Link href={pickHref} className="group flex flex-col items-center rounded-[20px] border border-line bg-bg/80 px-3 pb-2.5 pt-3 backdrop-blur transition hover:-translate-y-1 hover:border-fg/40" style={{ transitionDelay: `${i * 30}ms` }}>
-                    <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={46} label={`${it.name} cape`} className="cutout-sm transition duration-500 group-hover:scale-110" />
+                    <ItemArt item={it} width={46} className="cutout-sm transition duration-500 group-hover:scale-110" />
                     <span className="mt-2 text-[12.5px] font-bold tracking-tight">{it.name}</span>
                   </Link>
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-[12.5px] text-dim">After launch every cape is $1.99.</p>
+            <p className="mt-3 text-[12.5px] text-dim">{founder.some(isCosmetic) ? "After launch they’re sold in the Store." : "After launch every cape is $1.99."}</p>
           </motion.div>
         )}
       </div>

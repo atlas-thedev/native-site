@@ -6,17 +6,17 @@ import { Check, Gift, Loader2, PartyPopper } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { playClaimMagic } from "./claimMagic";
-import CapeStrip from "../CapeStrip";
+import ItemArt from "./ItemArt";
 import LockerViewer from "../LockerViewer";
 import { storeAction } from "../capes/actions";
 import { Mascot, Sparkle } from "./Toons";
 import Countdown from "./Countdown";
 import { useLaunch } from "./LaunchContext";
-import { money, type StoreItem } from "@/lib/store";
+import { isCosmetic, money, type StoreItem } from "@/lib/store";
 
 type Props = { name: string; capes: StoreItem[]; picked: string | null; welcome: boolean; skin: string | null; model: "default" | "slim" };
 
-/** Pick one of the founder capes for free (pre-launch accounts only). */
+/** Pick one founder gift (a cloak or a cosmetic) for free (pre-launch accounts only). */
 export default function FounderPicker({ name, capes, picked: initialPicked, welcome, skin, model }: Props) {
   const { launch } = useLaunch();
   const [picked, setPicked] = useState(initialPicked);
@@ -26,6 +26,8 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
   const [worn, setWorn] = useState(false);
   const item = capes.find((c) => c.id === sel) ?? capes[0];
   const done = !!picked;
+  const hasCosmetics = capes.some(isCosmetic);
+  const noun = hasCosmetics ? "gift" : "cape";
 
   const claim = async () => {
     if (!item) return;
@@ -35,14 +37,14 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
       const r = await fetch("/api/founder", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ itemId: item.id }) });
       const d = await r.json().catch(() => ({}));
       if (d.expired) return void (window.location.href = "/login?next=/founder");
-      if (!d.ok) throw new Error(d.error || "Couldn’t claim that cape.");
+      if (!d.ok) throw new Error(d.error || `Couldn’t claim that ${noun}.`);
       const id = d.picked ?? item.id;
       const thumb = document.querySelector(`[data-founder-cape="${CSS.escape(item.id)}"]`);
       setBusy(null);
       await playClaimMagic(thumb, { caption: `${item.name} is yours`, onArrive: () => setPicked(id) });
       setPicked(id);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Couldn’t claim that cape.");
+      setErr(e instanceof Error ? e.message : `Couldn’t claim that ${noun}.`);
     } finally {
       setBusy(null);
     }
@@ -64,7 +66,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
   if (!item) {
     return (
       <div className="mx-auto max-w-[640px] px-5 py-32 text-center">
-        <h1 className="text-[40px] font-extrabold tracking-tight">Founder capes are on their way.</h1>
+        <h1 className="text-[40px] font-extrabold tracking-tight">Founder gifts are on their way.</h1>
         <p className="mt-4 text-mute">Check back soon. Your free pick is saved for you.</p>
       </div>
     );
@@ -78,35 +80,42 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
         <Sparkle className="toon-twinkle absolute right-[14%] top-10 hidden w-4 sm:block [animation-delay:-1s]" />
         <p className="eyebrow">{welcome ? `Welcome to Native, ${name}` : "Founder reward"}</p>
         <h1 className="mt-4 text-balance text-[clamp(2.4rem,5.6vw,4.4rem)] font-extrabold leading-[1] tracking-[-0.045em]">
-          {done ? "Your founder cape is yours." : "Pick your free founder cape."}
+          {done ? `Your founder ${noun} is yours.` : `Pick your free founder ${noun}.`}
         </h1>
         <p className="mx-auto mt-5 max-w-[560px] text-[17px] text-mute">
           {done
             ? `${pickedItem?.name ?? "It"} lives in your locker forever. Wear it on the site now, and in the launcher and in game from day one.`
-            : `You joined before launch, so one of these is on us. Choose carefully, you only get one. After launch each cape costs ${money(1.99)}.`}
+            : `You joined before launch, so one of these is on us. Choose carefully, you only get one. After launch ${hasCosmetics ? "each one is sold in the Store" : `each cape costs ${money(1.99)}`}.`}
         </p>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-        <div className="card overflow-hidden">
-          <div className="dots relative h-[420px] sm:h-[560px]">
-            <LockerViewer
-              skin={skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")}
-              model={model}
-              cape={(pickedItem ?? item).stillUrl}
-              capeAnim={(pickedItem ?? item).animated && (pickedItem ?? item).stripUrl ? { url: (pickedItem ?? item).stripUrl!, frames: (pickedItem ?? item).frames, fps: (pickedItem ?? item).fps } : null}
-              walk
-              spin
-              showCape
-              layers
-              elytra={false}
-            />
+        <div className="card flex flex-col overflow-hidden">
+          <div className="dots relative min-h-[420px] flex-1 sm:min-h-[560px]">
+            {(() => {
+              const shown = pickedItem ?? item;
+              const cos = isCosmetic(shown) && shown.modelUrl && shown.textureUrl;
+              return (
+                <LockerViewer
+                  skin={skin ?? (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")}
+                  model={model}
+                  cape={cos ? null : shown.stillUrl}
+                  capeAnim={!cos && shown.animated && shown.stripUrl ? { url: shown.stripUrl, frames: shown.frames, fps: shown.fps } : null}
+                  worn={cos ? [{ id: shown.id, modelUrl: shown.modelUrl!, textureUrl: shown.textureUrl!, slot: shown.slot }] : []}
+                  walk
+                  spin
+                  showCape={!cos}
+                  layers
+                  elytra={false}
+                />
+              );
+            })()}
             <Mascot className="pointer-events-none absolute -bottom-2 -left-4 w-[110px] opacity-90 sm:w-[140px]" />
           </div>
         </div>
 
         <div className="flex flex-col gap-5">
-          <ul className="grid grid-cols-3 gap-3" role="radiogroup" aria-label="Founder capes">
+          <ul className="grid grid-cols-3 gap-3" role="radiogroup" aria-label={hasCosmetics ? "Founder gifts" : "Founder capes"}>
             {capes.map((c) => {
               const on = (picked ?? sel) === c.id;
               const locked = done && picked !== c.id;
@@ -120,7 +129,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
                     className={`group relative flex w-full flex-col items-center rounded-[22px] border p-3 transition ${on ? "border-fg bg-surface-2" : "border-line bg-surface hover:-translate-y-0.5 hover:bg-surface-2"} ${locked ? "opacity-40" : ""}`}
                   >
                     <div data-founder-cape={c.id} className="dots flex aspect-[4/5] w-full items-center justify-center rounded-2xl">
-                      <CapeStrip strip={c.animated ? c.stripUrl : null} still={c.stillUrl} frames={c.frames} fps={c.fps} width={64} label={`${c.name} cape`} className="cutout-sm transition duration-500 group-hover:scale-[1.06]" />
+                      <ItemArt item={c} width={64} skin={skin} model={model} className="cutout-sm transition duration-500 group-hover:scale-[1.06]" />
                     </div>
                     <span className="mt-2.5 truncate text-[14px] font-bold tracking-tight">{c.name}</span>
                     <span className="text-[12px] text-dim">{done ? (picked === c.id ? "Yours" : money(c.price || 1.99)) : <><s>{money(c.price || 1.99)}</s> · Free</>}</span>

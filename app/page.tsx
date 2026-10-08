@@ -28,7 +28,7 @@ export default async function Home() {
     getSiteConfig(),
     getCatalog(),
   ]);
-  const byId = new Map((catalog?.items ?? []).map((i) => [i.id, i]));
+  const byId = new Map([...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])].map((i) => [i.id, i]));
   const founder = cfg.launch.founderCapes
     .map((id) => byId.get(id))
     .filter((i) => !!i);

@@ -8,7 +8,7 @@ import { pageMeta } from "@/lib/seo";
 import type { StoreItem } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
-export const metadata = pageMeta({ title: "Your free founder cloak", description: "Join Native before launch and pick one exclusive cloak for free.", path: "/founder", noindex: true });
+export const metadata = pageMeta({ title: "Your free founder gift", description: "Join Native before launch and pick one cloak or cosmetic for free.", path: "/founder", noindex: true });
 
 type Founder = { eligible?: boolean; picked?: string | null; capes?: string[] };
 
@@ -26,7 +26,7 @@ export default async function FounderPage({ searchParams }: { searchParams: Prom
     if (e && typeof e === "object" && "digest" in e) throw e;
   }
   const [catalog, look, cfg] = await Promise.all([getCatalog(), getLook(s.account.name, s.account.model, s.account.uuid), getSiteConfig()]);
-  const byId = new Map((catalog?.items ?? []).map((i) => [i.id, i]));
+  const byId = new Map([...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])].map((i) => [i.id, i]));
   const capes = (f?.capes ?? cfg.launch.founderCapes).map((id) => byId.get(id)).filter((i): i is StoreItem => !!i);
   if (!f?.eligible && !f?.picked) redirect("/account");
 
