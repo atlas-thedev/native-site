@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Crown, EyeOff, Heart, Lock, Minus, Package, Plus, RotateCcw } from "lucide-react";
+import { Check, Copy, Crown, EyeOff, Heart, Lock, Package, Pause, Play, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import CapeStrip from "../CapeStrip";
@@ -37,6 +37,9 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
   const [copied, setCopied] = useState(false);
   const [prefsError, setPrefsError] = useState("");
   const viewer = useRef<ViewerHandle>(null);
+  const [zoomState, setZoomState] = useState({ in: true, out: true });
+  const [paused, setPaused] = useState(false);
+  const zoomBy = (f: number) => { const r = viewer.current?.zoom(f); if (r) setZoomState(r); };
 
   const wornIds = useMemo(() => new Set([profile.equipped, ...Object.values(profile.wearing)].filter(Boolean) as string[]), [profile]);
   const ownedItems = useMemo(() => profile.owned.map((o) => byId.get(o.id)).filter((i): i is StoreItem => !!i), [profile.owned, byId]);
@@ -90,14 +93,17 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
               <PlusMark size={18} /> Native+ member
             </span>
           )}
-          <div className="relative min-h-[500px] flex-1 bg-black pt-12">
+          <div className="relative min-h-[500px] flex-1 bg-black pb-14 pt-12">
             <LockerViewer ref={viewer} zoom={0.56} skin={skin} model={model} cape={cape?.stillUrl ?? null} capeAnim={cape?.animated && cape.stripUrl ? { url: cape.stripUrl, frames: cape.frames, fps: cape.fps } : null} walk spin showCape layers worn={worn} />
-            <div className="absolute bottom-3 right-3 z-10 flex gap-1.5">
-              {([["Zoom out", Minus, () => viewer.current?.zoom(1 / 1.15)], ["Reset view", RotateCcw, () => viewer.current?.reset()], ["Zoom in", Plus, () => viewer.current?.zoom(1.15)]] as const).map(([label, Icon, fn]) => (
-                <button key={label} type="button" onClick={fn} aria-label={label} title={label} className="flex h-8 w-8 items-center justify-center rounded-[7px] border-2 border-line bg-black/70 text-fg/80 backdrop-blur transition hover:border-fg/40 hover:text-fg">
-                  <Icon className="h-4 w-4" />
-                </button>
-              ))}
+            <div className="viewer-actions">
+              <div>
+                <button type="button" onClick={() => { viewer.current?.reset(); setZoomState({ in: true, out: true }); }} title="Reset view" aria-label="Reset view"><RotateCcw /></button>
+                <button type="button" onClick={() => zoomBy(1 / 1.25)} disabled={!zoomState.out} title="Zoom out" aria-label="Zoom out"><ZoomOut /></button>
+                <button type="button" onClick={() => zoomBy(1.25)} disabled={!zoomState.in} title="Zoom in" aria-label="Zoom in"><ZoomIn /></button>
+              </div>
+              <div>
+                <button type="button" onClick={() => { const p = !paused; setPaused(p); viewer.current?.pause(p); }} title={paused ? "Play preview" : "Pause preview"} aria-label={paused ? "Play preview" : "Pause preview"}>{paused ? <Play /> : <Pause />}</button>
+              </div>
             </div>
           </div>
         </div>
