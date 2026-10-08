@@ -1,0 +1,29 @@
+name: domain-move
+on:
+  push:
+    branches: [playnative-domain]
+    paths: ['.github/workflows/domain-move.yml']
+permissions:
+  contents: write
+jobs:
+  move:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace nativelaunch.xyz with playnative.fun
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git grep -lI -e 'nativelaunch\.xyz' -- . ':!.github' > /tmp/files.txt || true
+          echo "Files:"; cat /tmp/files.txt
+          if [ -s /tmp/files.txt ]; then xargs -a /tmp/files.txt sed -i 's/api\.nativelaunch\.xyz/api.playnative.fun/g; s/nativelaunch\.xyz/playnative.fun/g'; fi
+          if [ -f deploy/nginx-nativelaunch.xyz.conf ]; then git mv deploy/nginx-nativelaunch.xyz.conf deploy/nginx-playnative.fun.conf; fi
+          {
+            echo "## changed files"; cat /tmp/files.txt
+            echo "## remaining nativelaunch / new playnative lines (excluding assets-packs, lockfile)"
+            git grep -nI -e 'nativelaunch' -e 'playnative' -- . ':!assets-packs' ':!package-lock.json' ':!domain-report.txt' | cut -c1-300 || true
+          } > domain-report.txt
+          git add -A
+          git commit -m "Move nativelaunch.xyz to playnative.fun"
+          git push
