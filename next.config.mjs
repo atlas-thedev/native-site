@@ -24,6 +24,9 @@ const nextConfig = {
       // cloaks and cosmetics share one store now (item pages stay at /cloaks/:id and /cosmetics/:id)
       { source: "/cloaks", destination: "/store?c=capes", permanent: true },
       { source: "/cosmetics", destination: "/store", permanent: true },
+      // the admin dashboard lives in the launcher now (Admin tab)
+      { source: "/admin", destination: "/download", permanent: false },
+      { source: "/admin/:path*", destination: "/download", permanent: false },
     ];
   },
   webpack(config) {

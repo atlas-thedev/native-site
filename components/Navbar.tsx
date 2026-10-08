@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, Crown, Gift, Menu, Shield, X } from "lucide-react";
+import { ChevronDown, Crown, Gift, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import "../app/redesign.css";
@@ -180,11 +180,6 @@ export default function Navbar() {
               <ThemeToggle />
             </div>
           </div>
-          {me?.isAdmin && (
-            <Link href="/admin" aria-label="Admin dashboard" title="Admin dashboard" className={`${box} hidden w-11 sm:inline-flex`}>
-              <Shield className="h-[17px] w-[17px]" />
-            </Link>
-          )}
           <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className={`${box} hidden w-11 2xl:inline-flex`}>
             <Discord className="h-[17px] w-[17px]" />
           </a>
@@ -214,7 +209,6 @@ export default function Navbar() {
                 ...nav,
                 { href: "/plus", label: "Native+" },
                 { href: gift ? giftCta.href : "/download", label: gift ? giftCta.label : "Download" },
-                ...(me?.isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
                 name ? { href: "/account", label: "Account" } : { href: "/login", label: "Sign in" },
               ].map((l) => (
                 <li key={l.href + l.label}>

@@ -9,7 +9,7 @@ import { useLaunch } from "./LaunchContext";
 import { useAccount } from "../useAccount";
 import { site } from "@/lib/site";
 
-const OPEN = ["/login", "/admin"];
+const OPEN = ["/login"];
 
 /** Covers the site while maintenance is on. Admins (and the sign-in page) get through. */
 export default function MaintenanceGate() {
@@ -32,7 +32,7 @@ export default function MaintenanceGate() {
   if (!block) {
     return me?.isAdmin ? (
       <div className="fixed bottom-4 left-1/2 z-[90] -translate-x-1/2 rounded-full border border-line bg-bg/90 px-4 py-2 text-[12.5px] font-semibold shadow-lg backdrop-blur">
-        Maintenance mode is on, so only admins can see the site. <Link className="underline" href="/admin">Turn off</Link>
+        Maintenance mode is on, so only admins can see the site. Turn it off in the launcher: Admin → Website.
       </div>
     ) : null;
   }
