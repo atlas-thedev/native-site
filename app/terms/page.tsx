@@ -70,7 +70,7 @@ const sections: Section[] = [
       "Paid capes: when you buy a cape it stays in your Native locker for as long as your account and the Native cape service exist, unless it’s refunded or charged back.",
       "Native+ is a subscription, billed monthly or yearly in advance, that renews automatically until you cancel. While it’s active you can add every paid Native cape and cosmetic to your locker and you get the Native+ badge. Capes and cosmetics added through Native+ and the badge are removed when the membership ends. You can cancel at any time; you keep Native+ until the end of the period you paid for.",
       "Prices are shown in US dollars before tax. We may change prices for future purchases or renewals; we’ll tell members before a price change affects their renewal.",
-      "Refunds are covered by our Refund Policy at nativelaunch.xyz/refunds.",
+      "Refunds are covered by our Refund Policy at playnative.fun/refunds.",
     ],
   },
   {

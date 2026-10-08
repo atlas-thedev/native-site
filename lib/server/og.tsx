@@ -74,7 +74,7 @@ export async function itemCard(item: StoreItem): Promise<ImageResponse> {
           <div style={{ display: "flex", marginTop: 22, fontSize: 30, color: "#27405c", maxWidth: 640 }}>
             {(item.description || "Only on Native. Wear it in the launcher and in game.").slice(0, 110)}
           </div>
-          <div style={{ display: "flex", marginTop: 34, fontSize: 28, fontWeight: 700 }}>nativelaunch.xyz</div>
+          <div style={{ display: "flex", marginTop: 34, fontSize: 28, fontWeight: 700 }}>playnative.fun</div>
         </div>
         <div style={{ display: "flex", width: 420, alignItems: "center", justifyContent: "center", paddingRight: 70, paddingBottom: 60 }}>
           <div style={{ display: "flex", padding: 28, background: "rgba(11,18,32,0.88)", border: "6px solid #0b1220", borderRadius: 18 }}>{art}</div>
