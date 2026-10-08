@@ -22,12 +22,16 @@ type Props = {
   /** Native 3D cosmetics to wear (a back item hides the cape, like in game). */
   worn?: Worn[];
   onError?: () => void;
+  /** Camera zoom; lower shows more headroom for tall hats. */
+  zoom?: number;
 };
 
 /** Responsive, transparent skinview3d canvas used by the account locker. */
-const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ skin, cape, model, walk, spin, showCape: showCapeIn, layers, elytra, capeAnim, worn = [], onError }, ref) {
+const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ skin, cape, model, walk, spin, showCape: showCapeIn, layers, elytra, capeAnim, worn = [], onError, zoom = 0.7 }, ref) {
   const showCape = showCapeIn && !worn.some((w) => w.slot === "back");
   const built = useRef<Built[]>([]);
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
   const walkRef = useRef(walk);
   walkRef.current = walk;
   const wrap = useRef<HTMLDivElement>(null);
@@ -63,7 +67,7 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
       lib.current = l;
       const r = wrap.current.getBoundingClientRect();
       const sv = new l.SkinViewer({ canvas: canvas.current, width: Math.max(200, r.width), height: Math.max(260, r.height) });
-      sv.zoom = 0.7;
+      sv.zoom = zoomRef.current;
       sv.fov = 38;
       sv.controls.enableZoom = false;
       sv.controls.enablePan = false;
@@ -199,7 +203,7 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
       if (!sv) return;
       sv.controls.reset();
       sv.camera.rotation.x = -0.2;
-      sv.zoom = 0.7;
+      sv.zoom = zoomRef.current;
     },
     /** Button zoom (the wheel is left to the page so scrolling never gets stuck on the preview). */
     zoom: (factor: number) => {
