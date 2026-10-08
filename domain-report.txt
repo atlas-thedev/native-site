@@ -1,0 +1,31 @@
+## changed files
+app/terms/page.tsx
+deploy/deploy.sh
+deploy/nginx-nativelaunch.xyz.conf
+lib/server/config.ts
+lib/server/og.tsx
+lib/site.ts
+## remaining nativelaunch / new playnative lines (excluding assets-packs, lockfile)
+.github/workflows/ci.yml:30:          NEXT_PUBLIC_SITE_URL: https://nativelaunch.xyz
+.github/workflows/domain-move.yml:4:    branches: [playnative-domain]
+.github/workflows/domain-move.yml:13:      - name: Replace nativelaunch.xyz with playnative.fun
+.github/workflows/domain-move.yml:18:          git grep -lI -e 'nativelaunch\.xyz' -- . ':!.github' > /tmp/files.txt || true
+.github/workflows/domain-move.yml:20:          if [ -s /tmp/files.txt ]; then xargs -a /tmp/files.txt sed -i 's/api\.nativelaunch\.xyz/api.playnative.fun/g; s/nativelaunch\.xyz/playnative.fun/g'; fi
+.github/workflows/domain-move.yml:21:          if [ -f deploy/nginx-nativelaunch.xyz.conf ]; then git mv deploy/nginx-nativelaunch.xyz.conf deploy/nginx-playnative.fun.conf; fi
+.github/workflows/domain-move.yml:24:            echo "## remaining nativelaunch / new playnative lines (excluding assets-packs, lockfile)"
+.github/workflows/domain-move.yml:25:            git grep -nI -e 'nativelaunch' -e 'playnative' -- . ':!assets-packs' ':!package-lock.json' ':!domain-report.txt' | cut -c1-300 || true
+.github/workflows/domain-move.yml:28:          git commit -m "Move nativelaunch.xyz to playnative.fun"
+app/terms/page.tsx:73:      "Refunds are covered by our Refund Policy at playnative.fun/refunds.",
+deploy/deploy.sh:6:NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://playnative.fun} npm run build
+deploy/nginx-playnative.fun.conf:5:    server_name playnative.fun www.playnative.fun;
+deploy/nginx-playnative.fun.conf:9:    location / { return 301 https://playnative.fun$request_uri; }
+deploy/nginx-playnative.fun.conf:15:    server_name www.playnative.fun;
+deploy/nginx-playnative.fun.conf:16:    ssl_certificate /etc/letsencrypt/live/playnative.fun/fullchain.pem;
+deploy/nginx-playnative.fun.conf:17:    ssl_certificate_key /etc/letsencrypt/live/playnative.fun/privkey.pem;
+deploy/nginx-playnative.fun.conf:18:    return 301 https://playnative.fun$request_uri;
+deploy/nginx-playnative.fun.conf:24:    server_name playnative.fun;
+deploy/nginx-playnative.fun.conf:26:    ssl_certificate /etc/letsencrypt/live/playnative.fun/fullchain.pem;
+deploy/nginx-playnative.fun.conf:27:    ssl_certificate_key /etc/letsencrypt/live/playnative.fun/privkey.pem;
+lib/server/config.ts:3:export const API_URL = (process.env.NATIVE_API_URL ?? "https://api.playnative.fun").replace(/\/$/, "");
+lib/server/og.tsx:77:          <div style={{ display: "flex", marginTop: 34, fontSize: 28, fontWeight: 700 }}>playnative.fun</div>
+lib/site.ts:14:  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://playnative.fun").replace(/\/$/, ""),

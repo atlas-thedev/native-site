@@ -3,7 +3,7 @@
 # Usage: VPS=ubuntu@158.178.247.161 KEY=~/.ssh/vps.pem ./deploy/deploy.sh
 set -euo pipefail
 VPS=${VPS:-ubuntu@158.178.247.161}; KEY=${KEY:-$HOME/.ssh/vps.pem}
-NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://nativelaunch.xyz} npm run build
+NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://playnative.fun} npm run build
 rm -rf /tmp/native-pkg && mkdir /tmp/native-pkg
 cp -r .next/standalone/. /tmp/native-pkg/ && mkdir -p /tmp/native-pkg/.next
 cp -r .next/static /tmp/native-pkg/.next/static && cp -r public /tmp/native-pkg/public

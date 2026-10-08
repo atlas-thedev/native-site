@@ -11,7 +11,7 @@ export const site = {
   fallbackVersion: "4.1.12",
   discord: "https://discord.gg/m9QpHFP8e",
   youtube: "https://www.youtube.com/@native-client",
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://nativelaunch.xyz").replace(/\/$/, ""),
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://playnative.fun").replace(/\/$/, ""),
   keywords: [
     "Minecraft launcher",
     "Native Client",
