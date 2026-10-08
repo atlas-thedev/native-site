@@ -11,7 +11,7 @@ const sections: Section[] = [
   {
     h: "Who sells to you",
     body: [
-      "Our order process is conducted by our online reseller Paddle.com. Paddle.com is the merchant of record for all our orders. Paddle provides all customer service inquiries about payments and handles returns and refunds.",
+      "Our order process is conducted by our online reseller Tebex Limited (tebex.io). Tebex is the merchant of record for all our orders, handles payment, tax and receipts, and processes refunds.",
     ],
   },
   {
@@ -25,8 +25,8 @@ const sections: Section[] = [
     h: "How to ask for a refund",
     body: [
       [
-        "use the link in the receipt email from Paddle, or visit paddle.net and look up your order;",
-        "or contact us through the Support page or our Discord server with the email you paid with and your order number.",
+        "contact us through the Support page or our Discord server with the email you paid with and your transaction ID (it’s on your Tebex receipt), and we’ll issue the refund;",
+        "or contact Tebex’s payment support using the details in your receipt email.",
       ],
       "Refunds go back to the original payment method. Your bank may take 5–10 business days to show it.",
     ],
@@ -41,7 +41,7 @@ const sections: Section[] = [
   {
     h: "Cancelling Native+",
     body: [
-      "You can cancel Native+ at any time from your account page (Manage billing) or from the link in your Paddle receipt. Cancelling stops future renewals; you keep Native+ until the end of the period you already paid for.",
+      "You can cancel Native+ at any time from your account page (Manage billing), which opens the Tebex payment portal. Cancelling stops future renewals; you keep Native+ until the end of the period you already paid for.",
     ],
   },
   {
@@ -55,5 +55,5 @@ const sections: Section[] = [
 ];
 
 export default function Page() {
-  return <Legal title="Refund Policy" path="/refunds" updated="October 3, 2026" intro="Short and simple: changed your mind? Ask within 14 days and you’ll get your money back." sections={sections} />;
+  return <Legal title="Refund Policy" path="/refunds" updated="October 8, 2026" intro="Short and simple: changed your mind? Ask within 14 days and you’ll get your money back." sections={sections} />;
 }

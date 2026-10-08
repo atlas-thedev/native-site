@@ -22,7 +22,7 @@ const ACTIONS = { checkout: "/v1/billing/checkout", portal: "/v1/billing/portal"
 
 /**
  * { action: "checkout", kind: "cape", itemId } | { action: "checkout", kind: "bundle", itemIds } | { action: "checkout", kind: "plus", plan: "monthly" | "yearly" }
- * { action: "portal" } opens Paddle's customer portal. { action: "redeem", code } redeems a code.
+ * { action: "portal" } returns the /billing page (Tebex payment portal). { action: "redeem", code } redeems a code.
  */
 export async function POST(req: Request) {
   const s = await readSession();

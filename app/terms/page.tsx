@@ -66,7 +66,7 @@ const sections: Section[] = [
   {
     h: "Purchases and Native+",
     body: [
-      "Our order process is conducted by our online reseller Paddle.com. Paddle.com is the merchant of record for all our orders, handles payment, tax and receipts, and provides customer service for payments and refunds. Paddle’s buyer terms also apply to your purchase.",
+      "Our order process is conducted by our online reseller Tebex Limited (tebex.io). Tebex is the merchant of record for all our orders and handles payment, tax and receipts. Tebex’s checkout terms also apply to your purchase.",
       "Paid capes: when you buy a cape it stays in your Native locker for as long as your account and the Native cape service exist, unless it’s refunded or charged back.",
       "Native+ is a subscription, billed monthly or yearly in advance, that renews automatically until you cancel. While it’s active you can add every paid Native cape and cosmetic to your locker and you get the Native+ badge. Capes and cosmetics added through Native+ and the badge are removed when the membership ends. You can cancel at any time; you keep Native+ until the end of the period you paid for.",
       "Prices are shown in US dollars before tax. We may change prices for future purchases or renewals; we’ll tell members before a price change affects their renewal.",
@@ -108,5 +108,5 @@ const sections: Section[] = [
 ];
 
 export default function Page() {
-  return <Legal title="Terms of Service" path="/terms" updated="October 3, 2026" intro="Plain-language rules for using Native Client and its online services. They’re short, so please read them." sections={sections} />;
+  return <Legal title="Terms of Service" path="/terms" updated="October 8, 2026" intro="Plain-language rules for using Native Client and its online services. They’re short, so please read them." sections={sections} />;
 }

@@ -41,7 +41,7 @@ export default function PlusPlans() {
     setErr("");
     setBusy("portal");
     try {
-      await openPortal();
+      await openPortal(bill?.config);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Couldn’t open billing.");
     } finally {

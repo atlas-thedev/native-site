@@ -52,7 +52,7 @@ const sections: Section[] = [
         "Modrinth and CurseForge, for searching and downloading mods, modpacks and other content. They receive the requests the launcher makes.",
         "mclo.gs, but only when you choose to share a log from the crash analyzer. That log is uploaded there.",
         "An email delivery provider, to send you verification and password reset emails.",
-        "Paddle.com, our reseller and merchant of record. When you buy a cape or Native+, Paddle collects your payment details, billing email and country to process the payment, calculate tax and prevent fraud. We never see or store your card details; we receive your order, its status and a Paddle customer ID so we can unlock what you bought.",
+        "Tebex Limited (tebex.io), our reseller and merchant of record. When you buy a cape or Native+, Tebex collects your name, payment details, billing email and country to process the payment, calculate tax and prevent fraud. We never see or store your card details; we receive your order, its status, the email you paid with and a Tebex transaction or subscription reference so we can unlock what you bought.",
       ],
       "Each of these has its own privacy policy.",
     ],
@@ -60,7 +60,7 @@ const sections: Section[] = [
   {
     h: "This website",
     body: [
-      "This site sets only the cookies it needs: when you sign in, a secure session cookie keeps you signed in (and a small cookie holds your username so the page can greet you). We store your light/dark choice and any skins you save to your library in your browser’s local storage. We don’t use advertising or third-party tracking cookies. The checkout page loads Paddle’s payment form, which may set the cookies it needs to take a payment securely.",
+      "This site sets only the cookies it needs: when you sign in, a secure session cookie keeps you signed in (and a small cookie holds your username so the page can greet you). We store your light/dark choice and any skins you save to your library in your browser’s local storage. We don’t use advertising or third-party tracking cookies. The checkout and billing pages load Tebex’s payment form (Tebex.js), which may set the cookies it needs to take a payment securely.",
     ],
   },
   {
@@ -100,5 +100,5 @@ const sections: Section[] = [
 ];
 
 export default function Page() {
-  return <Legal title="Privacy Policy" path="/privacy" updated="October 3, 2026" intro="What Native collects, why it does, and the choices you have. Written to be read, not skimmed." sections={sections} />;
+  return <Legal title="Privacy Policy" path="/privacy" updated="October 8, 2026" intro="What Native collects, why it does, and the choices you have. Written to be read, not skimmed." sections={sections} />;
 }

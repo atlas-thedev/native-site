@@ -27,7 +27,7 @@ export default function BillingPanel({ names }: { names: Record<string, string> 
     setMsg(null);
     setBusy("portal");
     try {
-      await openPortal();
+      await openPortal(bill?.config);
     } catch (e) {
       setMsg({ t: "err", s: e instanceof Error ? e.message : "Couldn’t open billing." });
     } finally {

@@ -93,7 +93,7 @@ const faq = [
   ],
   [
     "Who handles the payment?",
-    "Our order process is conducted by our online reseller Paddle.com. Paddle is the merchant of record for all our orders and handles payment, tax, receipts and refunds.",
+    "Our order process is conducted by our online reseller Tebex. Tebex is the merchant of record for all our orders and handles payment, tax and receipts.",
   ],
   [
     "Can I get a refund?",
