@@ -85,7 +85,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
         <p className="mx-auto mt-5 max-w-[560px] text-[17px] text-mute">
           {done
             ? `${pickedItem?.name ?? "It"} lives in your locker forever. Wear it on the site now, and in the launcher and in game from day one.`
-            : `You joined before launch, so one of these is on us. Choose carefully, you only get one. After launch ${hasCosmetics ? "each one is sold in the Store" : `each cape costs ${money(1.99)}`}.`}
+            : `You joined before launch, so one of these is on us. Choose carefully, you only get one.`}
         </p>
       </header>
 

@@ -9,7 +9,7 @@ import ToonScene from "./Toons";
 import { useLaunch } from "./LaunchContext";
 import { useAccount } from "../useAccount";
 import { INTRO } from "@/lib/site";
-import { isCosmetic, type StoreItem } from "@/lib/store";
+import type { StoreItem } from "@/lib/store";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const up = (d: number) => ({ initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.9, delay: d + INTRO, ease } });
@@ -66,7 +66,6 @@ export default function LaunchHero({ founder }: { founder: StoreItem[] }) {
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-[12.5px] text-dim">{founder.some(isCosmetic) ? "After launch they’re sold in the Store." : "After launch every cape is $1.99."}</p>
           </motion.div>
         )}
       </div>
