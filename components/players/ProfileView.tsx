@@ -10,6 +10,7 @@ import ItemCard from "../store/ItemCard";
 import WornShot from "../cosmetics/WornShot";
 import { COSMETIC_SLOTS, SLOT_COLOR, SLOT_NAMES, isCosmetic, type PlayerProfile, type StoreItem } from "@/lib/store";
 import { storeActionRaw } from "../capes/actions";
+import PlusMark from "../plus/PlusMark";
 
 type Tab = "locker" | "wishlist";
 type Filter = "all" | "capes" | (typeof COSMETIC_SLOTS)[number];
@@ -74,9 +75,14 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
   return (
     <>
       <section className="grid gap-6 lg:grid-cols-[360px_1fr]">
-        <div className="st-panel overflow-hidden !bg-black">
-          <div className="relative h-[420px] bg-black">
-            <LockerViewer skin={skin} model={model} cape={cape?.stillUrl ?? null} capeAnim={cape?.animated && cape.stripUrl ? { url: cape.stripUrl, frames: cape.frames, fps: cape.fps } : null} walk spin showCape layers worn={worn} />
+        <div className={`st-panel relative overflow-hidden !bg-black${profile.plus ? " !border-[#e9b53a]/60 shadow-[0_0_40px_-12px_rgb(255_190_60/0.45)]" : ""}`}>
+          {profile.plus && (
+            <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-2 rounded-[7px] border border-[#ffd76a]/50 bg-black/70 py-1 pl-1.5 pr-2.5 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#ffd76a] backdrop-blur">
+              <PlusMark size={18} /> Native+ member
+            </span>
+          )}
+          <div className="relative h-full min-h-[460px] bg-black">
+            <LockerViewer zoom={0.56} skin={skin} model={model} cape={cape?.stillUrl ?? null} capeAnim={cape?.animated && cape.stripUrl ? { url: cape.stripUrl, frames: cape.frames, fps: cape.fps } : null} walk spin showCape layers worn={worn} />
           </div>
         </div>
         <div className="st-panel p-6">
@@ -84,9 +90,13 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
             <div className="min-w-0">
               <h1 className="truncate text-[clamp(2rem,4vw,2.9rem)] font-extrabold leading-none tracking-[-0.035em]">{profile.name}</h1>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                {profile.plus && <span className="st-tag is-inv"><Crown className="h-3 w-3" /> Native+</span>}
+                {profile.plus && (
+                  <span className="inline-flex items-center gap-1.5 rounded-[6px] bg-gradient-to-b from-[#ffe08a] to-[#e9a91c] px-2 py-[3px] text-[11px] font-black uppercase tracking-[0.08em] text-black shadow-[inset_0_-2px_0_rgb(0_0_0/0.18),0_0_18px_-4px_rgb(255_190_60/0.6)]">
+                    <Crown className="h-3.5 w-3.5" /> Native+
+                  </span>
+                )}
                 {profile.admin && <span className="st-tag">Team</span>}
-                {profile.badges.map((b) => <span key={b} className="st-tag">{b}</span>)}
+                {profile.badges.filter((b) => !(profile.plus && /^(native)?\s*\+?\s*plus$|^native\+$/i.test(b))).map((b) => <span key={b} className="st-tag">{b}</span>)}
                 <span className="text-[13px] text-dim">Joined {joined}</span>
               </div>
             </div>
@@ -104,6 +114,16 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
               </div>
             ))}
           </dl>
+          {profile.plus && (
+            <div className="mt-4 flex items-center gap-3 rounded-[10px] border-2 border-[#e9b53a]/40 bg-gradient-to-r from-[#e9a91c]/15 to-transparent p-3">
+              <PlusMark size={34} />
+              <div className="min-w-0">
+                <p className="text-[14px] font-extrabold">Native+ member</p>
+                <p className="text-[12.5px] text-dim">Has every paid cloak and cosmetic, and the Native+ badge in game.</p>
+              </div>
+              {!own && <Link href="/plus" className="pxb is-ghost ml-auto shrink-0"><span className="pxb-face">Get Native+</span></Link>}
+            </div>
+          )}
           {wornIds.size > 0 && (
             <div className="mt-6">
               <p className="text-[12px] font-semibold uppercase tracking-wider text-dim">Wearing now</p>
