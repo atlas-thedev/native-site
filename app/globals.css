@@ -1350,3 +1350,12 @@ a.st-card:active { transform: translateY(0); box-shadow: inset 0 2px 0 rgb(255 2
 .auth-submit:hover { opacity: 0.9; }
 .auth-submit:active { transform: scale(0.985); }
 .auth-submit:disabled { opacity: 0.6; }
+
+/* 3D viewer controls: same round buttons as the launcher locker */
+.viewer-actions { position: absolute; inset: auto 0 0 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 14px; }
+.viewer-actions > div { display: flex; gap: 6px; }
+.viewer-actions button { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 9999px; background: #0b0b0c; color: #8b8b95; cursor: pointer; transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease, transform 0.14s ease; }
+.viewer-actions button svg { width: 16px; height: 16px; }
+.viewer-actions button:hover:not(:disabled) { background: #1c1c20; color: #fff; }
+.viewer-actions button:active:not(:disabled) { transform: scale(0.92); }
+.viewer-actions button:disabled { opacity: 0.3; cursor: not-allowed; }

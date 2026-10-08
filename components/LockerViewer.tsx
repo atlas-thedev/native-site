@@ -7,7 +7,9 @@ import { fetchModel, type Worn } from "./cosmetics/CosmeticViewer";
 
 type Built = { update: (t: number, walk: number) => void; dispose: () => void };
 
-export type ViewerHandle = { reset: () => void; zoom: (factor: number) => void };
+export type ViewerHandle = { reset: () => void; zoom: (factor: number) => { in: boolean; out: boolean }; pause: (paused: boolean) => void };
+const ZMIN = 0.45;
+const ZMAX = 1.8;
 type Props = {
   skin: string;
   cape: string | null;
@@ -204,18 +206,46 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
   };
   useEffect(loadCosmetics, [wornKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Smooth camera zoom, like the launcher locker.
+  const tween = useRef(0);
+  const zoomTo = (target: number) => {
+    const sv = v.current;
+    if (!sv) return;
+    cancelAnimationFrame(tween.current);
+    const from = sv.zoom;
+    const start = performance.now();
+    const step = (now: number) => {
+      const k = Math.min(1, (now - start) / 260);
+      const e = 1 - Math.pow(1 - k, 3);
+      if (v.current) v.current.zoom = from + (target - from) * e;
+      if (k < 1) tween.current = requestAnimationFrame(step);
+    };
+    tween.current = requestAnimationFrame(step);
+  };
+  const target = useRef<number | null>(null);
   useImperativeHandle(ref, () => ({
     reset: () => {
       const sv = v.current;
       if (!sv) return;
       sv.controls.reset();
       sv.camera.rotation.x = -0.2;
-      sv.zoom = zoomRef.current;
+      target.current = zoomRef.current;
+      zoomTo(zoomRef.current);
     },
     /** Button zoom (the wheel is left to the page so scrolling never gets stuck on the preview). */
     zoom: (factor: number) => {
       const sv = v.current;
-      if (sv) sv.zoom = Math.min(1.8, Math.max(0.45, sv.zoom * factor));
+      const now = target.current ?? sv?.zoom ?? zoomRef.current;
+      const next = Math.min(ZMAX, Math.max(ZMIN, now * factor));
+      target.current = next;
+      zoomTo(next);
+      return { in: next < ZMAX - 0.001, out: next > ZMIN + 0.001 };
+    },
+    pause: (paused: boolean) => {
+      const sv = v.current;
+      if (!sv) return;
+      if (sv.animation) sv.animation.paused = paused;
+      sv.autoRotate = !paused && props.current.spin;
     },
   }));
 
