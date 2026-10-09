@@ -7,18 +7,21 @@ const MAX_AGE = 60 * 60 * 24 * 30;
 
 export type SiteAccount = { id: number | string; name: string; email: string; uuid?: string; model?: string };
 
-const opts = (maxAge: number) => ({
+/** maxAge undefined = browser-session cookie (gone when the browser closes). */
+const opts = (maxAge?: number) => ({
   httpOnly: true,
   sameSite: "lax" as const,
   secure: process.env.NODE_ENV === "production",
   path: "/",
-  maxAge,
+  ...(maxAge === undefined ? {} : { maxAge }),
 });
 
-export async function setSession(token: string, account: SiteAccount) {
+/** remember = stay signed in for 30 days; otherwise only until the browser is closed. */
+export async function setSession(token: string, account: SiteAccount, remember = true) {
   const jar = await cookies();
-  jar.set(TOKEN_COOKIE, token, opts(MAX_AGE));
-  jar.set(ACCOUNT_COOKIE, JSON.stringify({ id: account.id, name: account.name, email: account.email, uuid: account.uuid, model: account.model }), opts(MAX_AGE));
+  const age = remember ? MAX_AGE : undefined;
+  jar.set(TOKEN_COOKIE, token, opts(age));
+  jar.set(ACCOUNT_COOKIE, JSON.stringify({ id: account.id, name: account.name, email: account.email, uuid: account.uuid, model: account.model }), opts(age));
 }
 
 export async function clearSession() {

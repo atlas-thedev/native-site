@@ -89,7 +89,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ action: string
     if ((action === "login" || action === "verify") && typeof r.data.token === "string") {
       const a = (r.data.account ?? {}) as Record<string, unknown>;
       const account: SiteAccount = { id: a.id as number, name: str(a.name), email: str(a.email), uuid: a.uuid ? str(a.uuid) : undefined, model: a.model ? str(a.model) : undefined };
-      await setSession(r.data.token, account);
+      await setSession(r.data.token, account, action !== "login" || body.remember !== false);
       return json({ ok: true, account: { name: account.name } });
     }
     return json({ ok: true, message: str(r.data.message, 300) || undefined });

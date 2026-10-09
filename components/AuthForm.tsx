@@ -106,6 +106,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [code, setCode] = useState("");
   const [show, setShow] = useState(false);
   const [caps, setCaps] = useState(false);
@@ -154,7 +155,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     if (mode === "login") {
       if (!login.trim() || !password) return setErr("Enter your username or email and your password.");
       setBusy(true);
-      const res = await post("login", { login, password });
+      const res = await post("login", { login, password, remember });
       if (!res.ok) return fail(res.error);
       window.location.assign(nextPath());
       return;
@@ -288,6 +289,10 @@ export default function AuthForm({ mode }: { mode: Mode }) {
                       <input className="auth-input" value={login} onChange={(e) => setLogin(e.target.value)} autoComplete="username" autoFocus placeholder="Steve or steve@example.com" spellCheck={false} />
                     </Field>
                     {pwField("Password", "current-password")}
+                    <label className="flex w-fit cursor-pointer select-none items-center gap-2.5 text-[14px] font-medium text-mute">
+                      <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 cursor-pointer rounded accent-current" />
+                      Remember me
+                    </label>
                   </>
                 )}
                 {twoStep && step === 1 && (
