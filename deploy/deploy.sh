@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Build locally (the VPS has only ~1 GB RAM) and ship the standalone bundle.
-# Usage: VPS=ubuntu@158.178.247.161 KEY=~/.ssh/vps.pem ./deploy/deploy.sh
+# Build locally and ship the standalone bundle to the VPS.
+# Usage: ./deploy/deploy.sh   (defaults: VPS=ubuntu@3.106.132.147, KEY=~/.ssh/new.pem)
+#        VPS=ubuntu@<ip> KEY=<path to .pem> ./deploy/deploy.sh   to override
 # The site address comes from the backend (Admin → Domains → "Make main website").
 set -euo pipefail
-VPS=${VPS:-ubuntu@158.178.247.161}; KEY=${KEY:-$HOME/.ssh/vps.pem}
+VPS=${VPS:-ubuntu@3.106.132.147}; KEY=${KEY:-$HOME/.ssh/new.pem}
+[ -f "$KEY" ] || { echo "SSH key not found: $KEY (set KEY=/path/to/key.pem)"; exit 1; }
 if [ -z "${NEXT_PUBLIC_SITE_URL:-}" ]; then
   NEXT_PUBLIC_SITE_URL=$(curl -fsS --max-time 10 https://api.nativelaunch.xyz/v1/domains/primary 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(JSON.parse(s).site||"")}catch{}})' || true)
   NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://playnative.fun}
