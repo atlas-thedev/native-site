@@ -64,8 +64,10 @@ export default function LauncherOnly({ from = "store", skin, model = "default", 
         </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.9, delay: 0.1, ease }} className="card relative flex flex-col overflow-hidden">
-          <div className="dots relative min-h-[380px] flex-1 sm:min-h-[480px]">
-            <LockerViewer skin={skin || (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")} model={model} cape={cape} walk spin showCape layers elytra={false} />
+          <div className="dots relative h-[380px] sm:h-[480px]">
+            <div className="absolute inset-0">
+              <LockerViewer skin={skin || (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")} model={model} cape={cape} walk spin showCape layers elytra={false} />
+            </div>
             <span className="pointer-events-none absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full border border-line bg-bg/80 px-3 py-1.5 text-[12.5px] font-semibold backdrop-blur">
               <UserRound className="h-3.5 w-3.5" /> {skin ? "Your look" : "Preview"}
             </span>
