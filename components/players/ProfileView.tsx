@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Crown, EyeOff, Heart, Lock, Package, Pause, Play, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { Check, Copy, EyeOff, Heart, Lock, Package, Pause, Play, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import CapeStrip from "../CapeStrip";
@@ -11,6 +11,8 @@ import WornShot from "../cosmetics/WornShot";
 import { COSMETIC_SLOTS, SLOT_COLOR, SLOT_NAMES, isCosmetic, type PlayerProfile, type StoreItem } from "@/lib/store";
 import { storeActionRaw } from "../capes/actions";
 import PlusMark from "../plus/PlusMark";
+import ProfileBadges from "./ProfileBadges";
+import BundleChips, { type OwnedBundle } from "./BundleChips";
 
 type Tab = "locker" | "wishlist";
 type Filter = "all" | "capes" | (typeof COSMETIC_SLOTS)[number];
@@ -28,10 +30,14 @@ type Props = {
   joined: string;
   /** extra details under the header (UUID, views, bio, links) */
   meta?: React.ReactNode;
+  /** Minecraft (Microsoft) account connected */
+  premium?: boolean;
+  /** complete bundles in this locker */
+  bundles?: OwnedBundle[];
 };
 
 /** A player's page: 3D look, stats, their locker and their wishlist. */
-export default function ProfileView({ profile, items, skin, model, own, initialPrefs, joined, meta }: Props) {
+export default function ProfileView({ profile, items, skin, model, own, initialPrefs, joined, meta, premium = false, bundles = [] }: Props) {
   const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const [tab, setTab] = useState<Tab>("locker");
   const [filter, setFilter] = useState<Filter>("all");
@@ -114,13 +120,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
             <div className="min-w-0">
               <h1 className="truncate text-[clamp(2rem,4vw,2.9rem)] font-extrabold leading-none tracking-[-0.035em]">{profile.name}</h1>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                {profile.plus && (
-                  <span className="inline-flex items-center gap-1.5 rounded-[6px] bg-gradient-to-b from-[#ffe08a] to-[#e9a91c] px-2 py-[3px] text-[11px] font-black uppercase tracking-[0.08em] text-black shadow-[inset_0_-2px_0_rgb(0_0_0/0.18),0_0_18px_-4px_rgb(255_190_60/0.6)]">
-                    <Crown className="h-3.5 w-3.5" /> Native+
-                  </span>
-                )}
-                {profile.admin && <span className="st-tag">Team</span>}
-                {profile.badges.filter((b) => !(profile.plus && /^(native)?\s*\+?\s*plus$|^native\+$/i.test(b))).map((b) => <span key={b} className="st-tag">{b}</span>)}
+                <ProfileBadges badges={profile.badges} admin={profile.admin} plus={profile.plus} premium={premium} />
                 <span className="text-[13px] text-dim">Joined {joined}</span>
               </div>
             </div>
@@ -166,6 +166,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
               </ul>
             </div>
           )}
+          {bundles.length > 0 && !hiddenLocker && <BundleChips bundles={bundles} />}
           {own && (
             <div className="st-sep mt-6 pt-5">
               <p className="text-[12px] font-semibold uppercase tracking-wider text-dim">Privacy · only you see this</p>

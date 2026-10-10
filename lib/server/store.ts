@@ -160,3 +160,39 @@ export async function findPlayers(q: string): Promise<PlayerHit[]> {
     return [];
   }
 }
+
+/**
+ * The signed-in account's look exactly as the account page shows it: the real Minecraft skin for
+ * premium / merged (Microsoft) accounts, else the published Native skin. Never throws.
+ */
+export async function getAccountLook(token: string, name: string, uuid?: string | null, fallbackModel?: string): Promise<{ skin: string | null; model: "default" | "slim"; cape: string | null }> {
+  let premium = false;
+  let mcUuid = uuid ?? null;
+  try {
+    const r = await fetch(`${API_URL}/v1/account/minecraft`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: AbortSignal.timeout(6000) });
+    if (r.ok) {
+      const j = (await r.json()) as { account?: { type?: string }; profile?: { uuid?: string } };
+      premium = j?.account?.type === "premium" || j?.account?.type === "merged";
+      if (typeof j?.profile?.uuid === "string") mcUuid = j.profile.uuid;
+    }
+  } catch {}
+  if (premium && mcUuid) {
+    const real = await getMojangLook(mcUuid);
+    if (real.skin) return real;
+  }
+  const native = await getLook(name, fallbackModel, premium ? mcUuid : null);
+  return { ...native, cape: null };
+}
+
+type PublicBundle = { id: string; name: string; artUrl: string | null; accent: string | null; itemIds: string[]; hidden?: boolean };
+/** Store bundles (public list). Never throws. */
+export async function getBundles(): Promise<PublicBundle[]> {
+  try {
+    const r = await fetch(`${API_URL}/v1/store/bundles`, { next: { revalidate: 60 }, signal: AbortSignal.timeout(6000) });
+    if (!r.ok) return [];
+    const d = (await r.json()) as { bundles?: PublicBundle[] };
+    return (Array.isArray(d.bundles) ? d.bundles : []).filter((b) => b && b.id && Array.isArray(b.itemIds) && b.itemIds.length && !b.hidden).map((b) => ({ ...b, artUrl: toHttps(b.artUrl) }));
+  } catch {
+    return [];
+  }
+}

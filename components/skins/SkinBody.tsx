@@ -25,7 +25,21 @@ export default function SkinBody({ skin, model = "default", className = "", alt 
       const S = scale;
       ctx.imageSmoothingEnabled = false;
       ctx.clearRect(0, 0, c.width, c.height);
-      const arm = model === "slim" ? 3 : 4;
+      // a slim skin saved as classic: trust the pixels (the unused slim arm columns are empty)
+      let slim = model === "slim";
+      if (!slim && !legacy) {
+        try {
+          const t = document.createElement("canvas");
+          t.width = 64; t.height = 32;
+          const tc = t.getContext("2d")!;
+          tc.drawImage(img, 0, 0, img.width, img.height / 2, 0, 0, 64, 32);
+          const a = (x: number, y: number) => tc.getImageData(x, y, 1, 1).data[3];
+          slim = true;
+          for (let y = 20; y < 32 && slim; y++) if (a(54, y) || a(55, y)) slim = false;
+          for (let y = 16; y < 20 && slim; y++) if (a(50, y) || a(51, y)) slim = false;
+        } catch {}
+      }
+      const arm = slim ? 3 : 4;
       const part = (sx: number, sy: number, w: number, h: number, dx: number, dy: number, mirror = false) => {
         if (mirror) {
           ctx.save();

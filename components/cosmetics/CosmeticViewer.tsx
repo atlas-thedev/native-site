@@ -54,7 +54,7 @@ const CosmeticViewer = forwardRef<CosmeticViewerHandle, Props>(function Cosmetic
 
   // a skin that fails to load falls back to Steve/Alex so the stage is never empty
   const loadSkin = (sv: import("skinview3d").SkinViewer, src: string, m: "default" | "slim") =>
-    sv.loadSkin(src, { model: m }).catch(() => {
+    sv.loadSkin(src, { model: m === "slim" ? "slim" : "auto-detect" }).catch(() => {
       onError?.();
       sv.loadSkin(m === "slim" ? "/skins/alex.png" : "/skins/steve.png", { model: m }).catch(() => {});
     });

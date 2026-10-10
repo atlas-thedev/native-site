@@ -6,7 +6,7 @@ import ProfileMeta from "@/components/players/ProfileMeta";
 import ProfileHistory from "@/components/players/ProfileHistory";
 import McProfileView from "@/components/players/McProfileView";
 import { readSession } from "@/lib/server/session";
-import { getCatalog, getLook, getPlayer } from "@/lib/server/store";
+import { getBundles, getCatalog, getLook, getPlayer } from "@/lib/server/store";
 import { getPublicProfile } from "@/lib/server/profiles";
 import { pageMeta } from "@/lib/seo";
 
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function PlayerPage({ params }: Params) {
   const name = decodeURIComponent((await params).name);
-  const [p, pub, catalog, s] = await Promise.all([getPlayer(name), getPublicProfile(name), getCatalog(), readSession()]);
+  const [p, pub, catalog, s, allBundles] = await Promise.all([getPlayer(name), getPublicProfile(name), getCatalog(), readSession(), getBundles()]);
   if (!p && !pub) notFound();
 
   if (!p && pub) {
@@ -49,6 +49,8 @@ export default async function PlayerPage({ params }: Params) {
   const look = await getLook(player.name, player.model, player.uuid);
   const own = !!s && s.account.name.toLowerCase() === player.name.toLowerCase();
   const items = [...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])];
+  const ownedIds = new Set(player.owned.map((o) => o.id));
+  const bundles = allBundles.filter((b) => b.itemIds.every((id) => ownedIds.has(id))).map((b) => ({ id: b.id, name: b.name, artUrl: b.artUrl, accent: b.accent, count: b.itemIds.length }));
   const joined = player.joinedAt ? new Date(player.joinedAt).toLocaleDateString("en", { month: "long", year: "numeric" }) : "recently";
 
   return (
@@ -63,6 +65,8 @@ export default async function PlayerPage({ params }: Params) {
         initialPrefs={{ hideLocker: player.hidden.locker, hideWishlist: player.hidden.wishlist }}
         joined={joined}
         meta={pub ? <ProfileMeta profile={pub} /> : null}
+        premium={!!pub?.premium}
+        bundles={bundles}
       />
       {pub && <ProfileHistory profile={pub} />}
     </div>

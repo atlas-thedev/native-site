@@ -1359,3 +1359,8 @@ a.st-card:active { transform: translateY(0); box-shadow: inset 0 2px 0 rgb(255 2
 .viewer-actions button:hover:not(:disabled) { background: #1c1c20; color: #fff; }
 .viewer-actions button:active:not(:disabled) { transform: scale(0.92); }
 .viewer-actions button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* light mode: readable tags/badges (dark text on a light chip) */
+[data-theme="light"] .st-tag { background: color-mix(in srgb, var(--fg) 7%, #fff); border-color: color-mix(in srgb, var(--fg) 22%, transparent); color: var(--fg); }
+[data-theme="light"] .st-tag.is-inv { background: var(--inv); color: var(--inv-fg); border-color: transparent; }
+[data-theme="light"] .st-tag.is-slot { background: color-mix(in srgb, var(--tint) 18%, #fff); color: color-mix(in srgb, var(--tint) 70%, #000); border-color: color-mix(in srgb, var(--tint) 45%, transparent); }

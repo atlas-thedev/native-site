@@ -161,7 +161,7 @@ async function draw(item, asset, skinUrl, model) {
   const { viewer, THREE, ncm } = s;
   const wantSkin = `${tag(skinUrl)}|${model}`;
   if (s.skinKey !== wantSkin) {
-    try { await viewer.loadSkin(skinUrl, { model }); }
+    try { await viewer.loadSkin(skinUrl, { model: model === 'slim' ? 'slim' : 'auto-detect' }); }
     catch { await viewer.loadSkin(model === 'slim' ? '/skins/alex.png' : '/skins/steve.png', { model }); }
     viewer.loadCape(null);
     s.skinKey = wantSkin;

@@ -1,7 +1,7 @@
 import BetaProgram from "@/components/beta/BetaProgram";
 import { API_URL } from "@/lib/server/config";
 import { readSession } from "@/lib/server/session";
-import { getCatalog, getLook } from "@/lib/server/store";
+import { getCatalog, getAccountLook } from "@/lib/server/store";
 import { getSiteConfig } from "@/lib/server/siteConfig";
 import { pageMeta } from "@/lib/seo";
 import type { BetaApplication } from "@/lib/launch";
@@ -28,7 +28,7 @@ export default async function BetaPage() {
       }
     } catch {}
   }
-  const look = s ? await getLook(s.account.name, s.account.model, s.account.uuid) : { skin: null, model: "default" as const };
+  const look = s ? await getAccountLook(s.token, s.account.name, s.account.uuid, s.account.model) : { skin: null, model: "default" as const };
   const cape = catalog?.items.find((i) => i.id === "super-beta-tester") ?? null;
   return <BetaProgram signedIn={!!s} name={s?.account.name ?? null} open={open} initial={application} cape={cape} skin={look.skin} model={look.model} />;
 }

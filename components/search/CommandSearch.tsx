@@ -5,6 +5,9 @@ import { CornerDownLeft, Package, Search, Shirt, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SkinHead from "../SkinHead";
+import CapeStrip from "../CapeStrip";
+import WornShot from "../cosmetics/WornShot";
+import type { StoreItem } from "@/lib/store";
 import type { SearchHit } from "@/lib/profiles";
 
 type Row = { key: string; href: string; label: string; sub: string; icon: React.ReactNode };
@@ -48,11 +51,14 @@ export default function CommandSearch({ className = "" }: { className?: string }
 
   const rows = useMemo<Row[]>(() => {
     const term = q.trim();
-    const out: Row[] = hits.players.map((p) => ({ key: `p:${p.name}`, href: `/u/${encodeURIComponent(p.name)}`, label: p.name, sub: p.native ? "Native player" : "Minecraft player", icon: <SkinHead skin={null} name={p.name} size={26} className="rounded-[4px]" /> }));
+    const out: Row[] = hits.players.map((p) => ({ key: `p:${p.name}`, href: `/u/${encodeURIComponent(p.name)}`, label: p.name, sub: p.native ? "Native player" : "Minecraft player", icon: <SkinHead skin={p.skin ?? null} name={p.name} size={32} className="rounded-[5px] shadow-[0_2px_0_rgb(0_0_0/0.35)]" /> }));
     if (term && MC_NAME.test(term) && !hits.players.some((p) => p.name.toLowerCase() === term.toLowerCase())) {
       out.push({ key: "lookup", href: `/u/${encodeURIComponent(term)}`, label: `Look up “${term}”`, sub: "Any Minecraft Java player", icon: <User className="h-5 w-5" /> });
     }
-    for (const it of hits.items) out.push({ key: `i:${it.id}`, href: it.kind === "cosmetic" ? `/cosmetics/${encodeURIComponent(it.id)}` : `/cloaks/${encodeURIComponent(it.id)}`, label: it.name, sub: it.kind === "cosmetic" ? `Cosmetic${it.slot ? ` · ${it.slot}` : ""}` : "Cloak", icon: <Package className="h-5 w-5" /> });
+    for (const it of hits.items) out.push({ key: `i:${it.id}`, href: it.kind === "cosmetic" ? `/cosmetics/${encodeURIComponent(it.id)}` : `/cloaks/${encodeURIComponent(it.id)}`, label: it.name, sub: it.kind === "cosmetic" ? `Cosmetic${it.slot ? ` · ${it.slot}` : ""}` : "Cloak", icon: it.kind === "cosmetic" && it.modelUrl && it.textureUrl
+        ? <WornShot item={it as unknown as StoreItem} skin={null} model="default" className="h-11 w-11 object-contain" alt="" hideFallback={!it.stillUrl} />
+        : it.stillUrl ? <CapeStrip strip={it.animated ? it.stripUrl ?? null : null} still={it.stillUrl} frames={it.frames ?? 1} fps={it.fps ?? 1} width={24} label={it.name} />
+        : <Package className="h-5 w-5" /> });
     if (term) out.push({ key: "skins", href: `/skins?q=${encodeURIComponent(term)}`, label: `Skins worn by “${term}”`, sub: "Skin library", icon: <Shirt className="h-5 w-5" /> });
     return out;
   }, [hits, q]);
@@ -85,7 +91,7 @@ export default function CommandSearch({ className = "" }: { className?: string }
                 {rows.length ? rows.map((r, i) => (
                   <li key={r.key} role="option" aria-selected={i === active}>
                     <button type="button" onMouseEnter={() => setActive(i)} onClick={() => go(r)} className={`flex w-full items-center gap-3 rounded-[8px] px-3 py-2.5 text-left transition ${i === active ? "bg-inv text-inv-fg" : "hover:bg-surface-2"}`}>
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center">{r.icon}</span>
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[7px] bg-black/25">{r.icon}</span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[14.5px] font-bold">{r.label}</span>
                         <span className={`block truncate text-[12px] ${i === active ? "opacity-70" : "text-dim"}`}>{r.sub}</span>

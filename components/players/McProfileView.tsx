@@ -1,4 +1,4 @@
-import { BadgeCheck } from "lucide-react";
+import ProfileBadges from "./ProfileBadges";
 import SkinStage from "../skins/SkinStage";
 import ProfileMeta from "./ProfileMeta";
 import SkinDownload from "../skins/SkinDownload";
@@ -15,7 +15,7 @@ export default function McProfileView({ profile }: { profile: PublicProfile }) {
       <div className="st-panel p-6">
         <h1 className="truncate text-[clamp(2rem,4vw,2.9rem)] font-extrabold leading-none tracking-[-0.035em]">{profile.name}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="st-tag inline-flex items-center gap-1"><BadgeCheck className="h-3.5 w-3.5" /> Minecraft Java</span>
+          <ProfileBadges premium />
           {profile.mojangCape && <span className="st-tag">Has a Minecraft cape</span>}
           <span className="text-[13px] text-dim">Not on Native yet</span>
         </div>

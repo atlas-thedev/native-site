@@ -21,7 +21,8 @@ export type SkinWearer = { name: string; native: boolean; firstSeen: number; las
 export type SkinDetail = Omit<SkinEntry, "wearers"> & { wearers: SkinWearer[] };
 export type SkinSort = "trending" | "new" | "popular";
 export type SkinPage = { sort: SkinSort; total: number; more: boolean; skins: SkinEntry[] };
-export type SearchHit = { players: { name: string; uuid: string; native: boolean }[]; items: { id: string; name: string; kind: "cape" | "cosmetic"; slot: string | null }[] };
+export type SearchItem = { id: string; name: string; kind: "cape" | "cosmetic"; slot: string | null; stillUrl?: string | null; stripUrl?: string | null; frames?: number; fps?: number; animated?: boolean; modelUrl?: string | null; textureUrl?: string | null };
+export type SearchHit = { players: { name: string; uuid: string; native: boolean; skin?: string | null; model?: "default" | "slim" }[]; items: SearchItem[] };
 
 export const LINK_LABEL: Record<SocialLink["type"], string> = { youtube: "YouTube", twitch: "Twitch", tiktok: "TikTok", x: "X", instagram: "Instagram", discord: "Discord", github: "GitHub", website: "Website" };
 export const LINK_TYPES = Object.keys(LINK_LABEL) as SocialLink["type"][];

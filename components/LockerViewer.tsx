@@ -85,7 +85,7 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
       v.current = sv;
       const p = props.current;
       loadCosmetics();
-      sv.loadSkin(p.skin, { model: p.model }).catch(() => onError?.());
+      sv.loadSkin(p.skin, { model: p.model === "slim" ? "slim" : "auto-detect" }).catch(() => onError?.());
       if (p.cape && !p.capeAnim) sv.loadCape(p.cape, { backEquipment: p.elytra ? "elytra" : "cape" }).catch(() => {});
       apply();
       ro = new ResizeObserver(() => {
@@ -113,7 +113,7 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
   }, []);
 
   useEffect(() => {
-    v.current?.loadSkin(skin, { model }).catch(() => onError?.());
+    v.current?.loadSkin(skin, { model: model === "slim" ? "slim" : "auto-detect" }).catch(() => onError?.());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skin, model]);
   const animKey = capeAnim ? `${capeAnim.url}|${capeAnim.frames}|${capeAnim.fps}` : "";
