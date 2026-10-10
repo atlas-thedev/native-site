@@ -26,10 +26,12 @@ type Props = {
   own: boolean;
   initialPrefs: { hideLocker: boolean; hideWishlist: boolean };
   joined: string;
+  /** extra details under the header (UUID, views, bio, links) */
+  meta?: React.ReactNode;
 };
 
 /** A player's page: 3D look, stats, their locker and their wishlist. */
-export default function ProfileView({ profile, items, skin, model, own, initialPrefs, joined }: Props) {
+export default function ProfileView({ profile, items, skin, model, own, initialPrefs, joined, meta }: Props) {
   const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const [tab, setTab] = useState<Tab>("locker");
   const [filter, setFilter] = useState<Filter>("all");
@@ -124,6 +126,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
             </div>
             <button onClick={copy} className="pxb is-ghost"><span className="pxb-face">{copied ? <><Check /> Copied</> : <><Copy /> Share profile</>}</span></button>
           </div>
+          {meta}
           <dl className="mt-6 grid grid-cols-3 gap-3">
             {[
               ["In locker", hiddenLocker ? "Hidden" : profile.counts.owned.toLocaleString()],

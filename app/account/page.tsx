@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import BillingPanel from "@/components/BillingPanel";
 import AccountCard from "@/components/AccountCard";
+import AboutEditor from "@/components/players/AboutEditor";
 import LauncherOnly from "@/components/launcher/LauncherOnly";
 import { API_URL } from "@/lib/server/config";
 import { readSession } from "@/lib/server/session";
@@ -63,6 +64,7 @@ export default async function AccountPage() {
   return (
     <>
       <AccountCard name={s.account.name} email={s.account.email} premium={premium} skin={skin} />
+      <AboutEditor name={s.account.name} />
       {founder?.eligible && !founder.picked && (
         <div className="mx-auto max-w-[1240px] px-5 pt-6 sm:px-8">
           <Link href="/founder" className="dots flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-line p-5 transition hover:border-fg/40 sm:p-6">

@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ItemHead from "@/components/store/ItemHead";
 import ProfileView from "@/components/players/ProfileView";
+import ProfileMeta from "@/components/players/ProfileMeta";
+import ProfileHistory from "@/components/players/ProfileHistory";
+import McProfileView from "@/components/players/McProfileView";
 import { readSession } from "@/lib/server/session";
-import { getCatalog, getLook, getMine, getPlayer } from "@/lib/server/store";
+import { getCatalog, getLook, getPlayer } from "@/lib/server/store";
+import { getPublicProfile } from "@/lib/server/profiles";
 import { pageMeta } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -11,39 +15,56 @@ type Params = { params: Promise<{ name: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const name = decodeURIComponent((await params).name);
+  const path = `/u/${encodeURIComponent(name)}`;
   const p = await getPlayer(name);
-  if (!p) return pageMeta({ title: "Player not found", description: "No Native player with that name.", path: `/u/${encodeURIComponent(name)}`, noindex: true });
-  return pageMeta({
-    title: `${p.name}’s locker`,
-    description: `${p.name} has ${p.counts.owned} ${p.counts.owned === 1 ? "item" : "items"} in their Native locker and ${p.counts.wishlist} on their wishlist.`,
-    path: `/u/${encodeURIComponent(p.name)}`,
-    image: `/api/og/player/${encodeURIComponent(p.name)}`,
-  });
+  if (p) {
+    return pageMeta({
+      title: `${p.name}’s profile`,
+      description: `${p.name} on Native: skin and name history, ${p.counts.owned} ${p.counts.owned === 1 ? "item" : "items"} in their locker and ${p.counts.wishlist} on their wishlist.`,
+      path: `/u/${encodeURIComponent(p.name)}`,
+      image: `/api/og/player/${encodeURIComponent(p.name)}`,
+    });
+  }
+  const mc = await getPublicProfile(name);
+  if (!mc) return pageMeta({ title: "Player not found", description: "No Native or Minecraft player with that name.", path, noindex: true });
+  return pageMeta({ title: `${mc.name} · Minecraft profile`, description: `${mc.name}'s Minecraft skin, cape, UUID and skin history.`, path: `/u/${encodeURIComponent(mc.name)}` });
 }
 
 export default async function PlayerPage({ params }: Params) {
   const name = decodeURIComponent((await params).name);
-  const [p, catalog, s] = await Promise.all([getPlayer(name), getCatalog(), readSession()]);
-  if (!p) notFound();
-  const look = await getLook(p.name, p.model, p.uuid);
-  const own = !!s && s.account.name.toLowerCase() === p.name.toLowerCase();
-  const mine = own && s ? await getMine(s.token) : null;
+  const [p, pub, catalog, s] = await Promise.all([getPlayer(name), getPublicProfile(name), getCatalog(), readSession()]);
+  if (!p && !pub) notFound();
+
+  if (!p && pub) {
+    return (
+      <div className="mx-auto max-w-[1280px] px-5 pb-32 pt-8 sm:pt-10">
+        <ItemHead trail={[{ label: "Players", href: "/players" }, { label: pub.name }]} back="/players" />
+        <McProfileView profile={pub} />
+        <ProfileHistory profile={pub} />
+      </div>
+    );
+  }
+
+  const player = p!;
+  const look = await getLook(player.name, player.model, player.uuid);
+  const own = !!s && s.account.name.toLowerCase() === player.name.toLowerCase();
   const items = [...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])];
-  const joined = p.joinedAt ? new Date(p.joinedAt).toLocaleDateString("en", { month: "long", year: "numeric" }) : "recently";
-  void mine;
+  const joined = player.joinedAt ? new Date(player.joinedAt).toLocaleDateString("en", { month: "long", year: "numeric" }) : "recently";
 
   return (
     <div className="mx-auto max-w-[1280px] px-5 pb-32 pt-8 sm:pt-10">
-      <ItemHead trail={[{ label: "Players", href: "/players" }, { label: p.name }]} back="/players" />
+      <ItemHead trail={[{ label: "Players", href: "/players" }, { label: player.name }]} back="/players" />
       <ProfileView
-        profile={p}
+        profile={player}
         items={items}
-        skin={look.skin ?? (look.model === "slim" ? "/skins/alex.png" : "/skins/steve.png")}
+        skin={look.skin ?? pub?.current?.url ?? (look.model === "slim" ? "/skins/alex.png" : "/skins/steve.png")}
         model={look.model}
         own={own}
-        initialPrefs={{ hideLocker: p.hidden.locker, hideWishlist: p.hidden.wishlist }}
+        initialPrefs={{ hideLocker: player.hidden.locker, hideWishlist: player.hidden.wishlist }}
         joined={joined}
+        meta={pub ? <ProfileMeta profile={pub} /> : null}
       />
+      {pub && <ProfileHistory profile={pub} />}
     </div>
   );
 }

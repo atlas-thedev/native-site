@@ -11,10 +11,12 @@ import { site } from "@/lib/site";
 import { Apple, Discord, Linux, Windows } from "./icons";
 import ThemeToggle from "./ThemeToggle";
 import SkinHead from "./SkinHead";
+import CommandSearch from "./search/CommandSearch";
 
 const nav = [
   { href: "/", label: "Home" },
-  { href: "/#features", label: "Features" },
+  { href: "/store", label: "Store" },
+  { href: "/skins", label: "Skins" },
   { href: "/players", label: "Players" },
   { href: "/beta", label: "Beta" },
   { href: "/changes", label: "Changes" },
@@ -162,6 +164,7 @@ export default function Navbar() {
             </li>
           </ul>
 
+          <CommandSearch className="w-11 justify-center lg:w-auto" />
           <div className="hidden xl:block">
             {gift ? (
               <Link href={giftCta.href} className={`${primary} btn-shine gap-2.5 pl-1.5 pr-4`}>
