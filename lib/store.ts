@@ -133,5 +133,7 @@ export type PlayerProfile = {
   hidden: { locker: boolean; wishlist: boolean };
   owned: { id: string; acquiredAt: number }[];
   wishlist: { id: string; addedAt: number }[];
+  /** complete sets in the locker (from the API) */
+  bundles?: { id: string; name: string; tagline?: string; rarity?: string; accent: string | null; itemIds: string[]; inStore?: boolean; artPath: string | null }[];
 };
 export type PlayerHit = { name: string; uuid: string; model: "default" | "slim"; joinedAt: number; owned: number };

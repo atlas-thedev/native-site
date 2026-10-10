@@ -13,6 +13,7 @@ import { storeActionRaw } from "../capes/actions";
 import PlusMark from "../plus/PlusMark";
 import ProfileBadges from "./ProfileBadges";
 import BundleChips, { type OwnedBundle } from "./BundleChips";
+import BundleShowcase, { bundleColor } from "./BundleShowcase";
 
 type Tab = "locker" | "wishlist";
 type Filter = "all" | "capes" | (typeof COSMETIC_SLOTS)[number];
@@ -49,6 +50,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
   const [paused, setPaused] = useState(false);
   const zoomBy = (f: number) => { const r = viewer.current?.zoom(f); if (r) setZoomState(r); };
 
+  const setOf = useMemo(() => { const m = new Map<string, OwnedBundle>(); for (const b of bundles) for (const id of b.itemIds ?? []) if (!m.has(id)) m.set(id, b); return m; }, [bundles]);
   const wornIds = useMemo(() => new Set([profile.equipped, ...Object.values(profile.wearing)].filter(Boolean) as string[]), [profile]);
   const ownedItems = useMemo(() => profile.owned.map((o) => byId.get(o.id)).filter((i): i is StoreItem => !!i), [profile.owned, byId]);
   const wishItems = useMemo(() => profile.wishlist.map((o) => byId.get(o.id)).filter((i): i is StoreItem => !!i), [profile.wishlist, byId]);
@@ -197,6 +199,11 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
         </div>
       )}
 
+      {!hidden && tab === "locker" && filter === "all" && bundles.length > 0 && (
+        <BundleShowcase bundles={bundles} byId={byId} piece={(it) => isCosmetic(it)
+          ? <Shot it={it} skin={skin} model={model} alt={it.name} className="h-[72px] w-[72px] object-contain" />
+          : <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={34} label={`${it.name} cloak`} className="cutout-sm" />} />
+      )}
       {hidden ? (
         <div className="st-panel mt-6 flex flex-col items-center gap-2 p-12 text-center">
           <Lock className="h-6 w-6 text-dim" />
@@ -215,7 +222,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
                 art={isCosmetic(it)
                   ? <Shot it={it} skin={skin} model={model} alt={it.name} className="cutout-sm h-[150px] w-[150px] max-w-[78%] object-contain" />
                   : <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={72} label={`${it.name} cloak`} className="cutout-sm" />}
-                left={<>{it.animated || it.motion ? <span className="st-tag is-inv">{isCosmetic(it) ? "Moves" : "Animated"}</span> : null}{TAG(it)}</>}
+                left={<>{it.animated || it.motion ? <span className="st-tag is-inv">{isCosmetic(it) ? "Moves" : "Animated"}</span> : null}{TAG(it)}{tab === "locker" && setOf.get(it.id) ? <span className="st-tag" style={{ background: bundleColor(setOf.get(it.id)!), color: "#fff" }}>Set</span> : null}</>}
               />
             </li>
           ))}
