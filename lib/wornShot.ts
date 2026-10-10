@@ -8,7 +8,7 @@
  */
 
 const SIZE = 288;
-const VERSION = 'v5';
+const VERSION = 'v7';
 const memory = new Map<string, string>(); // key -> data URL
 const waiting = new Map<string, Promise<string | null>>(); // key -> Promise
 let chain: Promise<unknown> = Promise.resolve();
@@ -156,6 +156,69 @@ function frameShot(viewer, THREE, built) {
   if (viewer.controls) viewer.controls.target.copy(center);
 }
 
+/**
+ * Crops the render to what was actually drawn and centres it in a square with even padding, so every
+ * cosmetic (hats, back items, hand items, shoes) fills its card the same way.
+ */
+function contentBox(src: HTMLCanvasElement) {
+  const w = src.width, h = src.height;
+  const read = document.createElement('canvas');
+  read.width = w; read.height = h;
+  const rc = read.getContext('2d', { willReadFrequently: true })!;
+  rc.drawImage(src, 0, 0);
+  const d = rc.getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y += 1) for (let x = 0; x < w; x += 1) {
+    if (d[(y * w + x) * 4 + 3] > 8) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  return x1 < 0 ? null : { x0, y0, x1, y1, w, h, read };
+}
+
+/** Second pass: move the camera onto what was drawn and close in until it fills ~90% of the frame (sharp, not upscaled). */
+function refit(viewer, THREE) {
+  try {
+    const b = contentBox(viewer.canvas);
+    if (!b) return;
+    const cam = viewer.camera;
+    const target = viewer.controls ? viewer.controls.target.clone() : new THREE.Vector3();
+    const dir = cam.position.clone().sub(target);
+    const distance = dir.length();
+    dir.normalize();
+    const up = new THREE.Vector3(0, 1, 0);
+    const right = new THREE.Vector3().crossVectors(up, dir).normalize();
+    const trueUp = new THREE.Vector3().crossVectors(dir, right).normalize();
+    const viewH = 2 * distance * Math.tan((cam.fov / 2) * Math.PI / 180);
+    const viewW = viewH * (b.w / b.h);
+    const cx = (b.x0 + b.x1 + 1) / 2 / b.w - 0.5, cy = 0.5 - (b.y0 + b.y1 + 1) / 2 / b.h;
+    const center = target.clone().addScaledVector(right, cx * viewW).addScaledVector(trueUp, cy * viewH);
+    const fill = Math.max((b.x1 - b.x0 + 1) / b.w, (b.y1 - b.y0 + 1) / b.h) / 0.9;
+    const next = Math.max(4, distance * Math.min(1, Math.max(0.2, fill)));
+    cam.position.copy(center).addScaledVector(dir, next);
+    cam.lookAt(center);
+    if (viewer.controls) viewer.controls.target.copy(center);
+  } catch {}
+}
+
+function fitToContent(src: HTMLCanvasElement): string {
+  try {
+    const b = contentBox(src);
+    if (!b) return src.toDataURL('image/png');
+    const { x0, y0, x1, y1, read } = b;
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+    const side = Math.ceil(Math.max(bw, bh) * 1.1);
+    const out = document.createElement('canvas');
+    out.width = SIZE; out.height = SIZE;
+    const oc = out.getContext('2d')!;
+    oc.imageSmoothingEnabled = true;
+    oc.imageSmoothingQuality = 'high';
+    const k = SIZE / side;
+    oc.drawImage(read, x0, y0, bw, bh, (SIZE - bw * k) / 2, (SIZE - bh * k) / 2, bw * k, bh * k);
+    return out.toDataURL('image/png');
+  } catch {
+    return src.toDataURL('image/png');
+  }
+}
+
 async function draw(item, asset, skinUrl, model) {
   const s = await getStage();
   const { viewer, THREE, ncm } = s;
@@ -171,13 +234,33 @@ async function draw(item, asset, skinUrl, model) {
   // NCM cubes ship without normals; lit materials need them on this three.js build
   for (const r of made.roots) r.object.traverse((o) => { const g = o.geometry; if (g && !g.attributes.normal) g.computeVertexNormals(); });
   const built = ncm.attachToPlayer(made, viewer.playerObject.skin);
+  const hidden = [];
   try {
     built.update(0.35, 0);
     if (viewer.playerObject.cape) viewer.playerObject.cape.visible = false;
+    // only the body part(s) the piece sits on are drawn, so the piece itself fills the card (like shoes do)
+    const attached = new Set(built.roots.filter((r) => r.object.visible !== false).map((r) => r.attach));
+    const keep = new Set();
+    for (const name of attached) {
+      if (name === 'body') { keep.add('body'); keep.add('head'); }
+      else if (name === 'rightLeg' || name === 'leftLeg') { keep.add('rightLeg'); keep.add('leftLeg'); }
+      else keep.add(name);
+    }
+    const sk = viewer.playerObject.skin;
+    for (const name of ['head', 'body', 'rightArm', 'leftArm', 'rightLeg', 'leftLeg']) {
+      const part = sk[name];
+      if (!part) continue;
+      const show = keep.size === 0 || keep.has(name);
+      for (const layer of [part.innerLayer, part.outerLayer]) if (layer) { layer.userData.wsWas ??= layer.visible; layer.visible = show && layer.userData.wsWas; }
+      hidden.push(part);
+    }
     frameShot(viewer, THREE, built);
     viewer.render();
-    return viewer.canvas.toDataURL('image/png');
+    refit(viewer, THREE);
+    viewer.render();
+    return fitToContent(viewer.canvas);
   } finally {
+    for (const part of hidden) for (const layer of [part.innerLayer, part.outerLayer]) if (layer && layer.userData.wsWas !== undefined) { layer.visible = layer.userData.wsWas; delete layer.userData.wsWas; }
     built.dispose();
   }
 }
