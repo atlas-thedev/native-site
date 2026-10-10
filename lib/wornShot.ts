@@ -8,7 +8,7 @@
  */
 
 const SIZE = 288;
-const VERSION = 'v7';
+const VERSION = 'v8';
 const memory = new Map<string, string>(); // key -> data URL
 const waiting = new Map<string, Promise<string | null>>(); // key -> Promise
 let chain: Promise<unknown> = Promise.resolve();
@@ -199,9 +199,10 @@ function refit(viewer, THREE) {
   } catch {}
 }
 
-function fitToContent(src: HTMLCanvasElement): string {
+function fitToContent(src: HTMLCanvasElement, frame?: ReturnType<typeof contentBox>): string {
   try {
-    const b = contentBox(src);
+    const full = contentBox(src);
+    const b = frame && full ? { ...frame, read: full.read } : full;
     if (!b) return src.toDataURL('image/png');
     const { x0, y0, x1, y1, read } = b;
     const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
@@ -212,7 +213,23 @@ function fitToContent(src: HTMLCanvasElement): string {
     oc.imageSmoothingEnabled = true;
     oc.imageSmoothingQuality = 'high';
     const k = SIZE / side;
-    oc.drawImage(read, x0, y0, bw, bh, (SIZE - bw * k) / 2, (SIZE - bh * k) / 2, bw * k, bh * k);
+    if (!frame) {
+      oc.drawImage(read, x0, y0, bw, bh, (SIZE - bw * k) / 2, (SIZE - bh * k) / 2, bw * k, bh * k);
+      return out.toDataURL('image/png');
+    }
+    // a square around the piece; the rest of the player carries on to the edges and fades out softly
+    const cx = (x0 + x1 + 1) / 2, cy = (y0 + y1 + 1) / 2;
+    const pad = document.createElement('canvas');
+    pad.width = side; pad.height = side;
+    pad.getContext('2d')!.drawImage(read, side / 2 - cx, side / 2 - cy);
+    oc.drawImage(pad, 0, 0, side, side, 0, 0, SIZE, SIZE);
+    oc.globalCompositeOperation = 'destination-in';
+    for (const [ax, ay, bx, by] of [[0, 0, SIZE, 0], [0, 0, 0, SIZE]]) {
+      const g = oc.createLinearGradient(ax, ay, bx, by);
+      g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.07, 'rgba(0,0,0,1)'); g.addColorStop(0.93, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      oc.fillStyle = g; oc.fillRect(0, 0, SIZE, SIZE);
+    }
+    oc.globalCompositeOperation = 'source-over';
     return out.toDataURL('image/png');
   } catch {
     return src.toDataURL('image/png');
@@ -258,7 +275,11 @@ async function draw(item, asset, skinUrl, model) {
     viewer.render();
     refit(viewer, THREE);
     viewer.render();
-    return fitToContent(viewer.canvas);
+    // framing comes from the piece + the part it sits on; then the whole player is drawn back in for the picture
+    const frame = contentBox(viewer.canvas);
+    for (const part of hidden) for (const layer of [part.innerLayer, part.outerLayer]) if (layer && layer.userData.wsWas !== undefined) layer.visible = layer.userData.wsWas;
+    viewer.render();
+    return fitToContent(viewer.canvas, frame);
   } finally {
     for (const part of hidden) for (const layer of [part.innerLayer, part.outerLayer]) if (layer && layer.userData.wsWas !== undefined) { layer.visible = layer.userData.wsWas; delete layer.userData.wsWas; }
     built.dispose();
