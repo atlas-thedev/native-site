@@ -13,6 +13,8 @@ export type StoreItem = {
   hidden?: boolean;
   isNew?: boolean;
   owners?: number;
+  /** players with it on their wishlist */
+  wishes?: number;
   createdAt?: number;
   price: number;
   /** sold for money (or included with Native+) */

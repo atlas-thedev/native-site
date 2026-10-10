@@ -8,7 +8,7 @@
  */
 
 const SIZE = 288;
-const VERSION = 'v8';
+const VERSION = 'v9';
 const memory = new Map<string, string>(); // key -> data URL
 const waiting = new Map<string, Promise<string | null>>(); // key -> Promise
 let chain: Promise<unknown> = Promise.resolve();
@@ -218,7 +218,24 @@ function fitToContent(src: HTMLCanvasElement, frame?: ReturnType<typeof contentB
       return out.toDataURL('image/png');
     }
     // a square around the piece; the rest of the player carries on to the edges and fades out softly
-    const cx = (x0 + x1 + 1) / 2, cy = (y0 + y1 + 1) / 2;
+    // centre on everything that ends up inside the square (piece + the bit of player around it), so nothing sits off to one side
+    let cx = (x0 + x1 + 1) / 2, cy = (y0 + y1 + 1) / 2;
+    const data = read.getContext('2d')!.getImageData(0, 0, read.width, read.height).data;
+    for (let pass = 0; pass < 3; pass += 1) {
+      const lx = Math.max(0, Math.floor(cx - side / 2)), hx = Math.min(read.width - 1, Math.ceil(cx + side / 2));
+      const ly = Math.max(0, Math.floor(cy - side / 2)), hy = Math.min(read.height - 1, Math.ceil(cy + side / 2));
+      let ax = Infinity, bx = -1, ay = Infinity, by = -1;
+      for (let y = ly; y <= hy; y += 1) for (let x = lx; x <= hx; x += 1) {
+        if (data[(y * read.width + x) * 4 + 3] > 8) { if (x < ax) ax = x; if (x > bx) bx = x; if (y < ay) ay = y; if (y > by) by = y; }
+      }
+      if (bx < 0) break;
+      const nx = (ax + bx + 1) / 2, ny = (ay + by + 1) / 2;
+      // stay on the piece: never drift so far that it leaves the square
+      const limX = Math.max(0, (side - bw) / 2), limY = Math.max(0, (side - bh) / 2);
+      const px = (x0 + x1 + 1) / 2, py = (y0 + y1 + 1) / 2;
+      cx = Math.min(px + limX, Math.max(px - limX, nx));
+      cy = Math.min(py + limY, Math.max(py - limY, ny));
+    }
     const pad = document.createElement('canvas');
     pad.width = side; pad.height = side;
     pad.getContext('2d')!.drawImage(read, side / 2 - cx, side / 2 - cy);

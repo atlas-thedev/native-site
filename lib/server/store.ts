@@ -14,6 +14,7 @@ export async function getCatalog(): Promise<Catalog | null> {
         stillUrl: toHttps(it.stillUrl) ?? "",
         tags: Array.isArray(it.tags) ? it.tags : [],
         owners: Number(it.owners) || 0,
+        wishes: Number(it.wishes) || 0,
         createdAt: Number(it.createdAt) || 0,
         modelUrl: toHttps(it.modelUrl),
         textureUrl: toHttps(it.textureUrl),

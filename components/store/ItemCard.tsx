@@ -1,4 +1,4 @@
-import { Check, Users } from "lucide-react";
+import { Check, Heart, Users } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import WishHeart from "./WishHeart";
@@ -21,12 +21,14 @@ type Props = {
   aspect?: string;
   /** show how many players have it under the name */
   players?: boolean;
+  /** profile cards: full name, how many own it and how many want it, no price */
+  social?: boolean;
   /** show a wishlist heart (pass whether the visitor is signed in) */
   wish?: { signedIn: boolean };
 };
 
 /** One tile in the store: bevelled card, picture with badges, a footer with the name and the price. */
-export default function ItemCard({ item, href, art, left, right, bottom, own, worn, aspect = "aspect-square", players, wish }: Props) {
+export default function ItemCard({ item, href, art, left, right, bottom, own, worn, aspect = "aspect-square", players, wish, social }: Props) {
   return (
     <Link href={href} className={`st-card group flex h-full flex-col ${worn ? "is-on" : ""}`}>
       <div className={`st-art ${aspect}`}>
@@ -43,6 +45,17 @@ export default function ItemCard({ item, href, art, left, right, bottom, own, wo
           </span>
         )}
       </div>
+      {social ? (
+        <div className="st-foot !items-start">
+          <span className="min-w-0 flex-1">
+            <span className="block text-[14px] font-bold leading-snug tracking-tight [overflow-wrap:anywhere]">{item.name}</span>
+            <span className="mt-1 flex items-center gap-3 font-mono text-[11.5px] text-dim">
+              <span className="inline-flex items-center gap-1" title={`${(item.owners ?? 0).toLocaleString()} players have this`}><Users className="h-3 w-3" />{(item.owners ?? 0).toLocaleString()}</span>
+              <span className="inline-flex items-center gap-1" title={`On ${(item.wishes ?? 0).toLocaleString()} wishlists`}><Heart className="h-3 w-3" />{(item.wishes ?? 0).toLocaleString()}</span>
+            </span>
+          </span>
+        </div>
+      ) : (
       <div className="st-foot">
         <span className="min-w-0">
           <span className="block truncate text-[14.5px] font-bold tracking-tight">{item.name}</span>
@@ -50,6 +63,7 @@ export default function ItemCard({ item, href, art, left, right, bottom, own, wo
         </span>
         <span className="shrink-0 font-mono text-[12.5px] font-semibold text-mute">{priceOf(item)}</span>
       </div>
+      )}
     </Link>
   );
 }

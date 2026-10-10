@@ -217,12 +217,13 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
                 item={it}
                 href="/store"
                 aspect="aspect-[4/5]"
+                social
                 worn={wornIds.has(it.id)}
                 own={wornIds.has(it.id)}
                 art={isCosmetic(it)
                   ? <Shot it={it} skin={skin} model={model} alt={it.name} className="cutout-sm h-[150px] w-[150px] max-w-[78%] object-contain" />
                   : <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={72} label={`${it.name} cloak`} className="cutout-sm" />}
-                left={<>{it.animated || it.motion ? <span className="st-tag is-inv">{isCosmetic(it) ? "Moves" : "Animated"}</span> : null}{TAG(it)}{tab === "locker" && setOf.get(it.id) ? <span className="st-tag" style={{ background: bundleColor(setOf.get(it.id)!), color: "#fff" }}>Set</span> : null}</>}
+                left={<>{TAG(it)}{tab === "locker" && setOf.get(it.id) ? <span className="st-tag" style={{ background: bundleColor(setOf.get(it.id)!), color: "#fff" }}>Set</span> : null}</>}
               />
             </li>
           ))}
