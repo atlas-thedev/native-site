@@ -15,7 +15,7 @@ export default function PlusCapes({ items }: { items: StoreItem[] }) {
             <CapeStrip strip={it.stripUrl} still={it.stillUrl} frames={it.frames} fps={it.fps} width={88} label={`${it.name} cape`} className="cutout-sm" />
             <figcaption className="mt-4 w-full text-center">
               <p className="truncate text-[14.5px] font-bold tracking-tight">{it.name}</p>
-              <p className="mt-0.5 text-[12px] font-semibold uppercase tracking-wider text-dim">{it.animated ? "Animated" : "Classic"}</p>
+
             </figcaption>
           </figure>
         ))}

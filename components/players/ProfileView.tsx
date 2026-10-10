@@ -12,8 +12,8 @@ import { COSMETIC_SLOTS, SLOT_COLOR, SLOT_NAMES, isCosmetic, type PlayerProfile,
 import { storeActionRaw } from "../capes/actions";
 import PlusMark from "../plus/PlusMark";
 import ProfileBadges from "./ProfileBadges";
-import BundleChips, { type OwnedBundle } from "./BundleChips";
-import BundleShowcase, { bundleColor } from "./BundleShowcase";
+import type { OwnedBundle } from "./BundleChips";
+import { AnimatePresence, motion } from "motion/react";
 
 type Tab = "locker" | "wishlist";
 type Filter = "all" | "capes" | (typeof COSMETIC_SLOTS)[number];
@@ -38,10 +38,11 @@ type Props = {
 };
 
 /** A player's page: 3D look, stats, their locker and their wishlist. */
-export default function ProfileView({ profile, items, skin, model, own, initialPrefs, joined, meta, premium = false, bundles = [] }: Props) {
+export default function ProfileView({ profile, items, skin, model, own, initialPrefs, joined, meta, premium = false }: Props) {
   const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const [tab, setTab] = useState<Tab>("locker");
   const [filter, setFilter] = useState<Filter>("all");
+  const [dir, setDir] = useState(1);
   const [prefs, setPrefs] = useState(initialPrefs);
   const [copied, setCopied] = useState(false);
   const [prefsError, setPrefsError] = useState("");
@@ -50,7 +51,6 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
   const [paused, setPaused] = useState(false);
   const zoomBy = (f: number) => { const r = viewer.current?.zoom(f); if (r) setZoomState(r); };
 
-  const setOf = useMemo(() => { const m = new Map<string, OwnedBundle>(); for (const b of bundles) for (const id of b.itemIds ?? []) if (!m.has(id)) m.set(id, b); return m; }, [bundles]);
   const wornIds = useMemo(() => new Set([profile.equipped, ...Object.values(profile.wearing)].filter(Boolean) as string[]), [profile]);
   const ownedItems = useMemo(() => profile.owned.map((o) => byId.get(o.id)).filter((i): i is StoreItem => !!i), [profile.owned, byId]);
   const wishItems = useMemo(() => profile.wishlist.map((o) => byId.get(o.id)).filter((i): i is StoreItem => !!i), [profile.wishlist, byId]);
@@ -168,7 +168,6 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
               </ul>
             </div>
           )}
-          {bundles.length > 0 && !hiddenLocker && <BundleChips bundles={bundles} />}
           {own && (
             <div className="st-sep mt-6 pt-5">
               <p className="text-[12px] font-semibold uppercase tracking-wider text-dim">Privacy · only you see this</p>
@@ -183,27 +182,38 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
       </section>
 
       <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
-        <div className="st-seg" role="tablist" aria-label="Profile sections">
-          <button role="tab" aria-selected={tab === "locker"} className={tab === "locker" ? "is-on" : ""} onClick={() => { setTab("locker"); setFilter("all"); }}><Package /> Locker</button>
-          <button role="tab" aria-selected={tab === "wishlist"} className={tab === "wishlist" ? "is-on" : ""} onClick={() => { setTab("wishlist"); setFilter("all"); }}><Heart /> Wishlist</button>
+        <div className="st-seg is-glide" role="tablist" aria-label="Profile sections">
+          {([["locker", "Locker", Package], ["wishlist", "Wishlist", Heart]] as const).map(([id, label, Icon]) => (
+            <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? "is-on" : ""} onClick={() => { if (tab === id) return; setDir(id === "wishlist" ? 1 : -1); setTab(id); setFilter("all"); }}>
+              {tab === id && <motion.span layoutId="pf-seg-pill" className="glide-pill" transition={{ type: "spring", stiffness: 520, damping: 38 }} />}
+              <Icon /> {label}
+            </button>
+          ))}
         </div>
       </div>
       {privateNow && (
         <p className="mt-3 inline-flex items-center gap-2 text-[13px] text-dim"><EyeOff className="h-4 w-4" /> Hidden from other players. Only you can see this.</p>
       )}
       {!hidden && filters.length > 1 && (
-        <div className="st-tabs mt-3" role="tablist" aria-label="Filter items">
-          {filters.map(([id, label, n]) => (
-            <button key={id} role="tab" aria-selected={filter === id} className={`st-tab ${filter === id ? "is-on" : ""}`} onClick={() => setFilter(id)}>{label}<span className="n">{n}</span></button>
+        <div className="st-tabs is-glide mt-3" role="tablist" aria-label="Filter items">
+          {filters.map(([id, label, n], idx) => (
+            <button key={id} role="tab" aria-selected={filter === id} className={`st-tab ${filter === id ? "is-on" : ""}`} onClick={() => { if (filter === id) return; setDir(idx > filters.findIndex(([f]) => f === filter) ? 1 : -1); setFilter(id); }}>
+              {filter === id && <motion.span layoutId="pf-tab-pill" className="glide-pill" transition={{ type: "spring", stiffness: 520, damping: 38 }} />}
+              {label}<span className="n">{n}</span>
+            </button>
           ))}
         </div>
       )}
 
-      {!hidden && tab === "locker" && filter === "all" && bundles.length > 0 && (
-        <BundleShowcase bundles={bundles} byId={byId} piece={(it) => isCosmetic(it)
-          ? <Shot it={it} skin={skin} model={model} alt={it.name} className="h-[72px] w-[72px] object-contain" />
-          : <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={34} label={`${it.name} cloak`} className="cutout-sm" />} />
-      )}
+      <AnimatePresence mode="wait" initial={false} custom={dir}>
+        <motion.div
+          key={`${tab}:${filter}`}
+          custom={dir}
+          initial={{ opacity: 0, x: dir * 40, filter: "blur(8px)" }}
+          animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, x: dir * -40, filter: "blur(8px)" }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        >
       {hidden ? (
         <div className="st-panel mt-6 flex flex-col items-center gap-2 p-12 text-center">
           <Lock className="h-6 w-6 text-dim" />
@@ -211,8 +221,8 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
         </div>
       ) : list.length ? (
         <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
-          {list.map((it) => (
-            <li key={it.id}>
+          {list.map((it, i) => (
+            <motion.li key={it.id} initial={{ opacity: 0, y: 18, scale: 0.94, rotate: dir * 1.5 }} animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 380, damping: 28, delay: Math.min(i, 12) * 0.045 }}>
               <ItemCard
                 item={it}
                 href="/store"
@@ -223,14 +233,16 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
                 art={isCosmetic(it)
                   ? <Shot it={it} skin={skin} model={model} alt={it.name} className="cutout-sm h-[150px] w-[150px] max-w-[78%] object-contain" />
                   : <CapeStrip strip={it.animated ? it.stripUrl : null} still={it.stillUrl} frames={it.frames} fps={it.fps} width={72} label={`${it.name} cloak`} className="cutout-sm" />}
-                left={<>{TAG(it)}{tab === "locker" && setOf.get(it.id) ? <span className="st-tag" style={{ background: bundleColor(setOf.get(it.id)!), color: "#fff" }}>Set</span> : null}</>}
+                left={<>{TAG(it)}</>}
               />
-            </li>
+            </motion.li>
           ))}
         </ul>
       ) : (
         <div className="st-panel mt-6 p-12 text-center text-[15px] text-mute">{tab === "locker" ? "Nothing in this locker yet." : "Nothing on this wishlist yet."}</div>
       )}
+        </motion.div>
+      </AnimatePresence>
     </>
   );
 }
