@@ -134,4 +134,4 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 }
 
 /* Halloween is dark only: hide the light/dark switch. */
-body[data-halloween="on"] .flex { display: none !important; }
+body[data-halloween="on"] button[aria-label="Switch theme"] { display: none !important; }
