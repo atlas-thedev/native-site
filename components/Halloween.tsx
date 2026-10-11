@@ -90,12 +90,6 @@ export default function Halloween() {
         </div>
       )}
       {!off && (
-        <button type="button" className={`hw-spider${drop ? " is-down" : ""}`} onClick={() => setDrop((d) => !d)} aria-label="Spider">
-          <span className="hw-thread" />
-          <span className="hw-spider-body"><Spider /></span>
-        </button>
-      )}
-      {!off && (
         <div className="hw-pumpkins">
           {[0, 1].map((i) => (
             <button key={i} type="button" className={`hw-pumpkin hw-pumpkin-${i}`} onClick={pop} aria-label="Click the pumpkin">
