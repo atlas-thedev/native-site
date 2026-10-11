@@ -96,7 +96,7 @@ export function Highlights() {
     <section className="v-wrap">
       <Feature
         i={0}
-        k="(02) Relay chat"
+        k="Relay chat"
         t="Your friends. Right in the launcher."
         d="Chat with friends, start a group and invite people into your game without alt-tabbing to another app."
         img="/ui/win-relay.webp"
@@ -108,7 +108,7 @@ export function Highlights() {
       />
       <Feature
         i={1}
-        k="(03) Mods & crashes"
+        k="Mods & crashes"
         t="Mods without the mess."
         d="Search Modrinth and CurseForge, install in a click and let Native handle the rest. If a game crashes, Native reads the log and offers the fix."
         img="/ui/manager-mods.webp"
@@ -161,7 +161,7 @@ export function Explainer({ versions }: { versions: number }) {
     <section className="v-section v-wrap">
       <div className="grid gap-[clamp(28px,5vw,80px)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <Reveal>
-          <p className="v-label">(05) Good to know</p>
+          <p className="v-label">Good to know</p>
           <h2 className="v-display v-h2 mt-5">What is a Minecraft launcher?</h2>
         </Reveal>
         <Reveal>

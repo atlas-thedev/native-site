@@ -5,7 +5,7 @@ import DownloadCta from "@/components/home/DownloadCta";
 import FloatingWidgets from "@/components/home/FloatingWidgets";
 import DownloadGate from "@/components/launch/DownloadGate";
 import SectionHead from "@/components/v2/SectionHead";
-import HomeHero, { ShowReel } from "@/components/v2/home/HomeHero";
+import HomeHero from "@/components/v2/home/HomeHero";
 import { BigCta, GoFurther, Locker } from "@/components/v2/home/Sections";
 import { Explainer, Highlights, Included, LauncherGrid } from "@/components/v2/home/Laby";
 import { getAvailability } from "@/lib/server/releases";
@@ -53,7 +53,6 @@ export default async function Home() {
         }}
       />
       <HomeHero founder={founder} />
-      <ShowReel />
       <Included items={all.length} versions={versions} />
       <Highlights />
       <LauncherGrid />

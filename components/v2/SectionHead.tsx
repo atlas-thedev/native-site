@@ -5,7 +5,6 @@ export default function SectionHead({ index, label, title, sub, align = "left", 
   return (
     <header id={id} className={`v-head ${align === "center" ? "is-center" : ""}`}>
       <div className="v-head-rule">
-        <span>{index}</span>
         <span>{label}</span>
       </div>
       <SplitText as="h2" text={title} className="v-display v-h2" stagger={0.05} />

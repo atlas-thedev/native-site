@@ -12,7 +12,7 @@ export default function FAQ() {
   return (
     <section id="faq" className="v-wrap relative grid gap-10 pb-[clamp(84px,11vw,170px)] lg:grid-cols-[0.8fr_1.2fr]">
       <div>
-        <div className="v-head-rule"><span>(07)</span><span>FAQ</span></div>
+        <div className="v-head-rule"><span>FAQ</span></div>
         <SplitText as="h2" text="Good questions" className="v-display v-h2 lg:sticky lg:top-28" />
       </div>
       <div className="divide-y divide-line border-y border-line">

@@ -20,7 +20,6 @@ export function Statement({ items }: { items: number }) {
   return (
     <section id="statement" className="v-section v-wrap">
       <div className="v-head-rule">
-        <span>(01)</span>
         <span>Manifesto</span>
       </div>
       <ScrollWords
@@ -202,7 +201,7 @@ export function BigCta({ pre }: { pre: boolean }) {
   return (
     <section ref={ref} className="v-cta">
       <div className="v-wrap py-[clamp(80px,11vw,170px)]">
-        <p className="v-label">{pre ? "(06) Before launch" : "(06) Get Native"}</p>
+        <p className="v-label">{pre ? "Before launch" : "Get Native"}</p>
         <motion.h2 style={{ x }} className="v-display mt-6 whitespace-nowrap text-[clamp(3.4rem,13vw,13.5rem)]">
           {pre ? "Be there first" : "Download Native"}
         </motion.h2>

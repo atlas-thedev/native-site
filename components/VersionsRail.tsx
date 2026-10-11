@@ -53,7 +53,7 @@ export default function VersionsRail({ latest }: { latest: Latest }) {
   const rail = (
     <div ref={track} className="flex w-max items-center gap-5 pl-[max(1.5rem,calc((100vw-1240px)/2+2rem))] pr-24">
       <div className="mr-10 w-[min(520px,80vw)] shrink-0">
-        <p className="v-label">(04) Versions</p>
+        <p className="v-label">Versions</p>
         <h2 className="v-display mt-5 text-[clamp(3.6rem,8vw,7.6rem)]">
           Every version.
           <br />

@@ -90,21 +90,6 @@ export default function HomeHero({ founder = [] }: { founder?: StoreItem[] }) {
   return (
     <section ref={ref} className="v-hero">
       <motion.div style={{ y, opacity: fade }} className="v-wrap flex flex-1 flex-col">
-        <motion.div {...up(0)} className="v-hero-top">
-          <div className="v-hero-meta v-label">
-            <span><b>Native</b> — Minecraft launcher</span>
-            <span>Windows · macOS · Linux</span>
-          </div>
-          <div className="v-hero-meta v-label hidden text-center md:grid">
-            <span>{pre ? "Status" : "Latest"}</span>
-            <b>{pre ? "Early access open" : `v${version}`}</b>
-          </div>
-          <div className="v-hero-meta v-label text-right">
-            <span>{pre ? "Launching" : "Price"}</span>
-            <b suppressHydrationWarning>{pre ? when || "Soon" : "Free forever"}</b>
-          </div>
-        </motion.div>
-
         <Lines lines={lines} go={go} />
 
         {pre && (
