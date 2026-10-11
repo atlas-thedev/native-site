@@ -75,3 +75,10 @@
   .v-nav-link { padding: 0 8px; font-size: 13.5px; }
   .v-nav-plus { display: none; }
 }
+
+
+/* Native+ stays in the nav on mid widths too: tighter links make the room. */
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .v-nav-link { padding: 0 6px; font-size: 13px; }
+  .v-nav-plus { display: inline-flex; height: 32px; margin-left: 4px; padding: 0 11px; font-size: 11px; letter-spacing: 0.06em; }
+}
