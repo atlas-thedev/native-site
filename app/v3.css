@@ -1,0 +1,54 @@
+/* Native v3: calm, editorial agency layer (twks-style). Smaller type so the site no longer looks zoomed in.
+   Unlayered on purpose so it overrides the layered v2 rules and Tailwind utilities. */
+:root {
+  --font-display: var(--font-figtree), "Figtree", system-ui, sans-serif;
+  --v-max: 1320px;
+  --v-pad: clamp(20px, 4vw, 56px);
+}
+
+/* no grid lines, no grain, no custom cursor */
+.v-grid, .v-grain, .v-cursor, .v-foot-word { display: none !important; }
+
+/* display type: sans, sentence case, tight tracking */
+.v-display, .v-page-title, .v-marquee-item, .v-index-t, .v-stat-n, .v-count-n, .v-pod-name, .v-board-name, .v-menu-link, .v-pre-word, .v-pre-n, .st-h2 {
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: -0.045em;
+}
+.v-display { line-height: 0.98; }
+.v-h1 { font-size: clamp(2.6rem, 6vw, 6.2rem); }
+.v-h2 { font-size: clamp(2.1rem, 4.2vw, 4.2rem); }
+.v-h3 { font-size: clamp(1.6rem, 2.6vw, 2.5rem); line-height: 1.05; }
+.v-page-title { font-size: clamp(2.4rem, 5.2vw, 5rem); line-height: 1; }
+.v-page-sub, .v-head-sub, .v-hero-copy { font-size: clamp(15px, 1.15vw, 17px); }
+
+/* hero: content-height, generous top space, statement width */
+.v-hero { min-height: auto; }
+.v-hero-title { padding-top: clamp(70px, 11vw, 160px); max-width: 14ch; }
+.v-hero-title .line { padding-bottom: 0.08em; }
+.v-hero-row { border-top-color: transparent; }
+
+/* sections breathe, fewer rules */
+.v-section { padding-block: clamp(72px, 9vw, 140px); }
+.v-head-rule { border-top-color: transparent; padding-top: 0; }
+
+.v-marquee { border-block-color: transparent; }
+.v-marquee-item { font-size: clamp(1.4rem, 3vw, 2.6rem); }
+.v-index-t { font-size: clamp(1.5rem, 3vw, 2.8rem); line-height: 1.05; }
+.v-stat-n { font-size: clamp(2.4rem, 4.4vw, 4.2rem); }
+.v-count-n { font-size: clamp(2.4rem, 6vw, 5.6rem); }
+.v-cta .v-display { font-size: clamp(2.6rem, 7vw, 6.8rem) !important; white-space: normal; }
+.v-menu-link { font-size: clamp(2rem, 6vw, 3.6rem); }
+.v-pre-word { font-size: clamp(3rem, 12vw, 9rem); }
+
+/* players */
+.v-pod-rank { font-size: clamp(3rem, 5vw, 5rem); }
+.v-pod-name { font-size: clamp(1.4rem, 2.2vw, 2rem); }
+.v-board-name { font-size: clamp(1.2rem, 1.9vw, 1.7rem); }
+
+/* softer buttons + media */
+.v-btn { height: 48px; padding: 0 22px; font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; }
+.v-btn.is-lg { height: 56px; padding: 0 28px; font-size: 15px; }
+.v-btn.is-sm { height: 38px; font-size: 12.5px; }
+.v-shot { border-radius: 22px; }
+.v-nav-link { text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 600; }
