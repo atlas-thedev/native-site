@@ -13,7 +13,7 @@ export default function McProfileView({ profile }: { profile: PublicProfile }) {
         <SkinStage skin={skin} model={profile.current?.model ?? "default"} cape={profile.mojangCape} zoom={0.56} />
       </div>
       <div className="st-panel p-6">
-        <h1 className="v-display truncate pb-1 text-[clamp(2.8rem,6vw,5.2rem)] !leading-[0.9]">{profile.name}</h1>
+        <h1 className="v-display truncate pb-[0.14em] text-[clamp(2.8rem,6vw,5.2rem)] !leading-[1.02]">{profile.name}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <ProfileBadges premium />
           {profile.mojangCape && <span className="st-tag">Has a Minecraft cape</span>}
