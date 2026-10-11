@@ -4,10 +4,10 @@ import JsonLd from "@/components/JsonLd";
 import DownloadCta from "@/components/home/DownloadCta";
 import FloatingWidgets from "@/components/home/FloatingWidgets";
 import DownloadGate from "@/components/launch/DownloadGate";
-import Marquee from "@/components/v2/Marquee";
 import SectionHead from "@/components/v2/SectionHead";
 import HomeHero, { ShowReel } from "@/components/v2/home/HomeHero";
-import { BigCta, FeatureIndex, GoFurther, Locker, Spreads, Statement } from "@/components/v2/home/Sections";
+import { BigCta, GoFurther, Locker } from "@/components/v2/home/Sections";
+import { Explainer, Highlights, Included, LauncherGrid } from "@/components/v2/home/Laby";
 import { getAvailability } from "@/lib/server/releases";
 import { getLatestMinecraft } from "@/lib/server/mojang";
 import { faqs } from "@/lib/site";
@@ -16,12 +16,26 @@ import { getSiteConfig } from "@/lib/server/siteConfig";
 
 export const revalidate = 60;
 
+/** How many Minecraft releases exist (for the stats row). */
+async function releaseCount(): Promise<number> {
+  try {
+    const r = await fetch("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json", { next: { revalidate: 86400 } });
+    if (!r.ok) return 80;
+    const m = (await r.json()) as { versions: { type: string }[] };
+    const n = m.versions.filter((v) => v.type === "release").length;
+    return n > 0 ? Math.floor(n / 10) * 10 : 80;
+  } catch {
+    return 80;
+  }
+}
+
 export default async function Home() {
-  const [a, mc, cfg, catalog] = await Promise.all([
+  const [a, mc, cfg, catalog, versions] = await Promise.all([
     getAvailability(),
     getLatestMinecraft(),
     getSiteConfig(),
     getCatalog(),
+    releaseCount(),
   ]);
   const all = [...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])].filter((i) => !i.hidden);
   const byId = new Map(all.map((i) => [i.id, i]));
@@ -39,16 +53,13 @@ export default async function Home() {
         }}
       />
       <HomeHero founder={founder} />
-      <Marquee items={["Instances", "Mods", "Modpacks", "Skins", "Capes", "Relay chat", "Crash fixer", "Every version"]} />
-      <Statement items={all.length} />
       <ShowReel />
-      <FeatureIndex />
-      <Spreads />
-      <Marquee className="is-outline" reverse speed={46} items={["Wear something rare", "Animated capes", "Cosmetics", "3D locker"]} />
-      <div className="pt-[clamp(84px,11vw,170px)]">
-        <Locker items={showcase} />
-      </div>
+      <Included items={all.length} versions={versions} />
+      <Highlights />
+      <LauncherGrid />
+      <Locker items={showcase} />
       <VersionsRail latest={mc} />
+      <Explainer versions={versions} />
       <GoFurther />
       <section id="download" className="v-wrap pb-[clamp(80px,10vw,150px)]">
         <SectionHead index="(06)" label="Download" title="Get Native" />

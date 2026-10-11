@@ -17,6 +17,8 @@ type Props = {
   capeAnim?: { url: string; frames: number; fps: number } | null;
   /** Cosmetics the account wears, drawn on the 3D model. */
   worn?: Worn[];
+  /** Account name shown under the model. */
+  name?: string | null;
   /** Extra content under the steps (e.g. account details). */
   children?: ReactNode;
 };
@@ -37,7 +39,7 @@ const steps = [
 ];
 
 /** Shown where the web store and locker used to be: both live in the Native launcher now. */
-export default function LauncherOnly({ from = "store", skin, model = "default", cape = "/capes/founders.png", capeAnim = null, worn = [], children }: Props) {
+export default function LauncherOnly({ from = "store", skin, model = "default", cape = "/capes/founders.png", capeAnim = null, worn = [], name = null, children }: Props) {
   const title = from === "locker" ? "Your locker lives in the launcher." : "The store lives in the launcher.";
   return (
     <section className="relative mx-auto max-w-[1240px] px-5 pb-28 pt-12 sm:px-8 sm:pt-16">
@@ -68,14 +70,22 @@ export default function LauncherOnly({ from = "store", skin, model = "default", 
           </ol>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.9, delay: 0.1, ease }} className="card relative flex flex-col overflow-hidden">
-          <div className="dots relative h-[380px] sm:h-[480px]">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.1, ease }} className="v-pod is-1 !bg-transparent">
+          <span className="v-label">{skin ? "Your look" : "Preview"}</span>
+          <div className="v-pod-stage !h-[400px] sm:!h-[480px]">
+            <span aria-hidden className="absolute bottom-0 left-1/2 h-[18px] w-[60%] -translate-x-1/2 rounded-[50%] bg-fg/10 blur-[6px]" />
             <div className="absolute inset-0">
-              <LockerViewer skin={skin || (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")} model={model} cape={cape} capeAnim={capeAnim} walk spin showCape layers elytra={false} worn={worn} />
+              <LockerViewer zoom={0.62} skin={skin || (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")} model={model} cape={cape} capeAnim={capeAnim} walk spin showCape layers elytra={false} worn={worn} />
             </div>
-            <span className="pointer-events-none absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full border border-line bg-bg/80 px-3 py-1.5 text-[12.5px] font-semibold backdrop-blur">
-              <UserRound className="h-3.5 w-3.5" /> {skin ? (worn.length ? `Your look · ${worn.length} cosmetic${worn.length === 1 ? "" : "s"}` : "Your look") : "Preview"}
+          </div>
+          <div className="mt-4 flex items-end justify-between gap-3 border-t border-line pt-4">
+            <span className="min-w-0">
+              <span className="v-pod-name block">{name || "Steve"}</span>
+              <span className="mt-2 block font-mono text-[12px] text-dim">
+                {worn.length ? `wearing ${worn.length} cosmetic${worn.length === 1 ? "" : "s"}` : "no cosmetics yet"}{cape ? " · cloak on" : ""}
+              </span>
             </span>
+            <UserRound className="h-5 w-5 shrink-0 text-dim" />
           </div>
         </motion.div>
       </div>

@@ -1,6 +1,7 @@
 import LauncherOnly from "@/components/launcher/LauncherOnly";
 import { readSession } from "@/lib/server/session";
-import { getAccountLook } from "@/lib/server/store";
+import { getAccountLook, getCatalog, getMine } from "@/lib/server/store";
+import { outfitOf } from "@/lib/outfit";
 import { pageMeta } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +13,24 @@ export const metadata = pageMeta({
 
 export default async function StorePage() {
   const s = await readSession();
-  const look = s ? await getAccountLook(s.token, s.account.name, s.account.uuid, s.account.model).catch(() => null) : null;
-  return <LauncherOnly from="store" skin={look?.skin ?? null} model={look?.model ?? "default"} />;
+  if (!s) return <LauncherOnly from="store" skin={null} model="default" />;
+  const [look, catalog, mine] = await Promise.all([
+    getAccountLook(s.token, s.account.name, s.account.uuid, s.account.model).catch(() => null),
+    getCatalog(),
+    getMine(s.token),
+  ]);
+  const items = [...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])];
+  // Draw the visitor wearing their Native cloak and cosmetics, same as in game.
+  const outfit = outfitOf(mine, items);
+  return (
+    <LauncherOnly
+      from="store"
+      name={s.account.name}
+      skin={look?.skin ?? null}
+      model={look?.model ?? "default"}
+      cape={outfit.cape ?? look?.cape ?? null}
+      capeAnim={outfit.capeAnim}
+      worn={outfit.worn}
+    />
+  );
 }
