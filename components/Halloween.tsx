@@ -8,7 +8,7 @@ import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as RMo
  * Visitors can switch the effects off with the pill in the corner.
  */
 
-const BAT = `<svg viewBox="0 0 64 32" width="46" height="23"><path fill="#12081c" stroke="#ff7a18" stroke-opacity=".55" stroke-width="1" d="M32 10c-2-4-5-6-5-6s1 4 0 6c-4-3-10-4-16-2 3 1 5 3 5 6-4-2-9-2-13 0 5 1 9 4 11 8 2-3 6-4 9-2 2-3 6-4 9-4s7 1 9 4c3-2 7-1 9 2 2-4 6-7 11-8-4-2-9-2-13 0 0-3 2-5 5-6-6-2-12-1-16 2-1-2 0-6 0-6s-3 2-5 6z"/><circle cx="29.5" cy="13" r="1" fill="#ffd36b"/><circle cx="34.5" cy="13" r="1" fill="#ffd36b"/></svg>`;
+const BAT = `<svg viewBox="0 0 100 46" width="48" height="22"><path fill="#0b0512" d="M50 13C48 8 45 5 45 5l1 7C39 7 27 5 13 9c6 3 9 8 8 14-6-4-14-4-21-1 10 3 16 9 18 17 4-6 12-8 18-4 2-6 8-9 14-8 6-1 12 2 14 8 6-4 14-2 18 4 2-8 8-14 18-17-7-3-15-3-21 1-1-6 2-11 8-14-14-4-26-2-33 3l1-7s-3 3-5 8z"/><circle cx="47" cy="16" r="1.3" fill="#ffb347"/><circle cx="53" cy="16" r="1.3" fill="#ffb347"/></svg>`;
 
 const CANDY = ["🍬", "🍭", "👻", "🦇", "🎃", "🕷️"];
 
@@ -95,20 +95,20 @@ export default function Halloween() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const W = () => window.innerWidth;
     const H = () => window.innerHeight;
-    const count = reduce ? 0 : W() < 700 ? 5 : 11;
+    const count = reduce ? 0 : W() < 700 ? 4 : 7;
     const bats: Bat[] = Array.from({ length: count }, () => ({
       x: Math.random() * W(),
       y: 90 + Math.random() * H() * 0.55,
       vx: (Math.random() < 0.5 ? -1 : 1) * (0.7 + Math.random() * 1.3),
       vy: (Math.random() - 0.5) * 0.6,
-      s: 0.55 + Math.random() * 0.8,
+      s: 0.5 + Math.random() * 0.45,
       phase: Math.random() * 100,
       el: null,
     }));
     for (const b of bats) {
       const d = document.createElement("div");
       d.className = "hw-bat";
-      d.style.setProperty("--flap", `${0.18 + Math.random() * 0.14}s`);
+      d.style.setProperty("--flap", `${0.26 + Math.random() * 0.14}s`);
       d.innerHTML = BAT;
       host.appendChild(d);
       b.el = d;
@@ -156,11 +156,6 @@ export default function Halloween() {
     setBursts((list) => [...list, { id, x: e.clientX, y: e.clientY }]);
     window.setTimeout(() => setBursts((list) => list.filter((b) => b.id !== id)), 1300);
   };
-  const toggle = () => {
-    const next = !off;
-    setOff(next);
-    try { localStorage.setItem("native.halloween.off", next ? "1" : "0"); } catch { /* private mode */ }
-  };
 
   return (
     <>
@@ -196,9 +191,6 @@ export default function Halloween() {
           ))}
         </div>
       ))}
-      <button type="button" className={`hw-toggle${off ? " is-off" : ""}`} onClick={toggle} title={off ? "Turn the Halloween effects on" : "Turn the Halloween effects off"}>
-        <span>🎃</span>{off ? "Effects off" : "Happy Halloween"}
-      </button>
     </>
   );
 }

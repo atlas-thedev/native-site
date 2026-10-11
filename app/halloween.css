@@ -16,13 +16,10 @@ body[data-halloween="on"] {
 body[data-halloween="on"] ::selection { background: var(--hw-orange); color: #12081c; }
 
 /* colourised type */
-body[data-halloween="on"] .v-display:not(.v-outline),
-body[data-halloween="on"] .v-display:not(.v-outline) span {
-  background-image: linear-gradient(180deg, #ffd27a 0%, var(--hw-orange) 48%, #c2410c 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+/* Only the colour changes: headings with layered/animated letters keep working. */
+body[data-halloween="on"] .v-display:not(.v-outline) {
+  color: #ff8a2b;
+  filter: drop-shadow(0 0 18px rgba(255, 122, 24, 0.28));
 }
 body[data-halloween="on"] .v-outline { -webkit-text-stroke-color: var(--hw-purple); }
 body[data-halloween="on"] .v-label { color: var(--hw-amber); }
@@ -76,9 +73,9 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 .hw-web-r { right: 0; transform: scaleX(-1); }
 
 .hw-bats { position: absolute; inset: 0; }
-.hw-bat { position: absolute; left: 0; top: 0; margin: -12px 0 0 -23px; will-change: transform; filter: drop-shadow(0 0 6px rgba(255, 122, 24, 0.35)); }
+.hw-bat { position: absolute; left: 0; top: 0; margin: -11px 0 0 -24px; will-change: transform; opacity: 0.9; filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.45)); }
 .hw-bat svg { display: block; animation: hw-flap var(--flap, 0.22s) ease-in-out infinite alternate; transform-origin: 50% 40%; }
-@keyframes hw-flap { from { transform: scaleY(1); } to { transform: scaleY(0.35); } }
+@keyframes hw-flap { from { transform: scaleY(1); } to { transform: scaleY(0.62) translateY(2px); } }
 
 .hw-ghost { position: absolute; left: 0; top: 0; margin: -32px 0 0 -27px; opacity: 0.85; will-change: transform; filter: drop-shadow(0 0 14px rgba(200, 190, 255, 0.55)); }
 
@@ -95,7 +92,7 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 @keyframes hw-sway { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
 
 /* pumpkins: click for candy */
-.hw-pumpkins { position: fixed; left: 18px; bottom: 64px; z-index: 60; display: flex; align-items: flex-end; gap: 6px; }
+.hw-pumpkins { position: fixed; left: 18px; bottom: 18px; z-index: 60; display: flex; align-items: flex-end; gap: 6px; }
 .hw-pumpkin { width: 58px; height: 54px; padding: 0; border: 0; background: none; cursor: pointer; filter: drop-shadow(0 6px 16px rgba(255, 122, 24, 0.4)); transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .hw-pumpkin-1 { width: 44px; height: 41px; }
 .hw-pumpkin:hover { transform: translateY(-4px) rotate(-6deg) scale(1.08); }
@@ -131,7 +128,6 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 @media (max-width: 700px) {
   .hw-web { width: 110px; }
   .hw-spider, .hw-ghost { display: none; }
-  .hw-pumpkins { bottom: 62px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hw-fog i, .hw-light, .hw-spider-body, .hw-face, .hw-bat svg { animation: none; }
