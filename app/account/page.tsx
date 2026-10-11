@@ -81,7 +81,7 @@ export default async function AccountPage() {
           </Link>
         </div>
       )}
-      <LauncherOnly from="locker" skin={skin} model={model} cape={outfit.cape ?? cape} capeAnim={outfit.capeAnim} worn={outfit.worn} />
+      <LauncherOnly from="locker" name={s.account.name} skin={skin} model={model} cape={outfit.cape ?? cape} capeAnim={outfit.capeAnim} worn={outfit.worn} />
       <BillingPanel names={names} />
     </>
   );
