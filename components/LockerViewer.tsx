@@ -26,10 +26,12 @@ type Props = {
   onError?: () => void;
   /** Camera zoom; lower shows more headroom for tall hats. */
   zoom?: number;
+  /** A fixed pose instead of walk/idle: "wave" says hi with the right arm. */
+  pose?: "wave";
 };
 
 /** Responsive, transparent skinview3d canvas used by the account locker. */
-const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ skin, cape, model, walk, spin, showCape: showCapeIn, layers, elytra, capeAnim, worn = [], onError, zoom = 0.7 }, ref) {
+const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ skin, cape, model, walk, spin, showCape: showCapeIn, layers, elytra, capeAnim, worn = [], onError, zoom = 0.7, pose }, ref) {
   const showCape = showCapeIn && !worn.some((w) => w.slot === "back");
   const built = useRef<Built[]>([]);
   const zoomRef = useRef(zoom);
@@ -40,8 +42,8 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
   const canvas = useRef<HTMLCanvasElement>(null);
   const v = useRef<import("skinview3d").SkinViewer | null>(null);
   const lib = useRef<typeof import("skinview3d") | null>(null);
-  const props = useRef<Props>({ skin, cape, model, walk, spin, showCape, layers, elytra, capeAnim });
-  props.current = { skin, cape, model, walk, spin, showCape, layers, elytra, capeAnim };
+  const props = useRef<Props>({ skin, cape, model, walk, spin, showCape, layers, elytra, capeAnim, pose });
+  props.current = { skin, cape, model, walk, spin, showCape, layers, elytra, capeAnim, pose };
 
   const apply = () => {
     const sv = v.current;
@@ -50,7 +52,21 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
     const p = props.current;
     sv.autoRotate = p.spin;
     sv.autoRotateSpeed = 0.9;
-    if (p.walk) {
+    if (p.pose === "wave") {
+      if (!(sv.animation instanceof l.FunctionAnimation)) {
+        // Friendly hi: right arm up and waving, head tilted, the rest relaxed.
+        sv.animation = new l.FunctionAnimation((pl, t) => {
+          const s = pl.skin;
+          const b = Math.sin(t * 1.6);
+          pl.rotation.y = 0.3;
+          s.rightArm.rotation.set(0, 0, -Math.PI * 0.8 + Math.sin(t * 6) * 0.28);
+          s.leftArm.rotation.set(b * 0.04, 0, Math.PI * 0.04 + b * 0.02);
+          s.head.rotation.set(0.05 + b * 0.02, -0.2, 0.12 + Math.sin(t * 3) * 0.04);
+          s.leftLeg.rotation.set(-0.08, 0, 0.03);
+          s.rightLeg.rotation.set(0.08, 0, -0.03);
+        });
+      }
+    } else if (p.walk) {
       if (!(sv.animation instanceof l.WalkingAnimation)) {
         sv.animation = new l.WalkingAnimation();
         sv.animation.speed = 0.6;
@@ -166,7 +182,7 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cape, elytra, animKey]);
-  useEffect(apply, [walk, spin, showCape, layers, cape, elytra]);
+  useEffect(apply, [walk, spin, showCape, layers, cape, elytra, pose]);
 
   // Native 3D cosmetics (NCM v1)
   const wornKey = worn.map((w) => `${w.id}|${w.modelUrl}|${w.textureUrl}|${w.side ?? ""}`).join(",");

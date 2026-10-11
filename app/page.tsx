@@ -12,6 +12,8 @@ import { getAvailability } from "@/lib/server/releases";
 import { getLatestMinecraft } from "@/lib/server/mojang";
 import { faqs } from "@/lib/site";
 import { getCatalog } from "@/lib/server/store";
+import { outfitOf } from "@/lib/outfit";
+import type { Wearing } from "@/lib/store";
 import { getSiteConfig } from "@/lib/server/siteConfig";
 
 export const revalidate = 60;
@@ -39,7 +41,7 @@ export default async function Home() {
   ]);
   const all = [...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])].filter((i) => !i.hidden);
   const byId = new Map(all.map((i) => [i.id, i]));
-  const founder = cfg.launch.founderCapes.map((id) => byId.get(id)).filter((i) => !!i);
+  const mascot = outfitOf({ wearing: { hats: "cyber-hood", hand: "witch-broom", shoes: "street-sneakers" } as Wearing }, all).worn;
   const capes = (catalog?.items ?? []).filter((i) => !i.hidden);
   const showcase = [...capes.filter((i) => i.featured), ...capes.filter((i) => !i.featured)];
   const pre = cfg.launch.prelaunch;
@@ -52,7 +54,7 @@ export default async function Home() {
           mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
         }}
       />
-      <HomeHero founder={founder} />
+      <HomeHero mascot={mascot} />
       <Included items={all.length} versions={versions} />
       <Highlights />
       <LauncherGrid />
