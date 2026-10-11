@@ -77,7 +77,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={`${figtree.variable} ${jb.variable} ${anton.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: config.theme?.halloween ? "document.documentElement.removeAttribute('data-theme')" : themeScript }} />
         <JsonLd data={graph} />
       </head>
       <body data-halloween={config.theme?.halloween ? "on" : undefined}>

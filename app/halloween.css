@@ -132,3 +132,6 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 @media (prefers-reduced-motion: reduce) {
   .hw-fog i, .hw-light, .hw-spider-body, .hw-face, .hw-bat svg { animation: none; }
 }
+
+/* Halloween is dark only: hide the light/dark switch. */
+body[data-halloween="on"] .flex { display: none !important; }

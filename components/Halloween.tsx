@@ -50,6 +50,16 @@ export default function Halloween() {
     try { setOff(localStorage.getItem("native.halloween.off") === "1"); } catch { /* private mode */ }
   }, []);
 
+  // Halloween mode is always dark: drop light mode and keep it off while the theme is on.
+  useEffect(() => {
+    const root = document.documentElement;
+    const force = () => { if (root.getAttribute("data-theme") === "light") root.removeAttribute("data-theme"); };
+    force();
+    const watch = new MutationObserver(force);
+    watch.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => watch.disconnect();
+  }, []);
+
   useEffect(() => {
     document.documentElement.toggleAttribute("data-halloween-fx", !off);
     return () => document.documentElement.removeAttribute("data-halloween-fx");
