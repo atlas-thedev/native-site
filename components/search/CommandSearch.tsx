@@ -73,10 +73,10 @@ export default function CommandSearch({ className = "" }: { className?: string }
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} aria-label="Search" className={`nx-box inline-flex h-11 items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 text-[13px] font-bold text-dim transition hover:bg-surface-2 hover:text-fg ${className}`}>
+      <button type="button" onClick={() => setOpen(true)} aria-label="Search" className={`nx-box inline-flex h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-[10px] border border-line bg-surface px-3 text-[13px] font-bold text-dim transition hover:bg-surface-2 hover:text-fg ${className}`}>
         <Search className="h-4 w-4" />
         <span className="hidden 2xl:inline">Search</span>
-        <kbd className="hidden rounded-[5px] border border-line px-1.5 py-0.5 font-mono text-[11px] lg:inline">{mac ? "⌘" : "Ctrl"} K</kbd>
+        <kbd className="hidden whitespace-nowrap rounded-[6px] border border-line bg-bg px-1.5 py-0.5 font-mono text-[11px] leading-none lg:inline-flex">{mac ? "⌘" : "Ctrl"} K</kbd>
       </button>
       <AnimatePresence>
         {open && (

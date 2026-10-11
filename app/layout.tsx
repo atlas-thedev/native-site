@@ -14,7 +14,6 @@ import { site } from "@/lib/site";
 import { getSiteConfig } from "@/lib/server/siteConfig";
 import { LaunchProvider } from "@/components/launch/LaunchContext";
 import MaintenanceGate from "@/components/launch/MaintenanceGate";
-import Preloader from "@/components/v2/Preloader";
 
 const figtree = localFont({ src: "../public/fonts/Figtree-Variable.ttf", variable: "--font-figtree", display: "swap", weight: "300 900" });
 const jb = localFont({ src: "../public/fonts/JetBrainsMonoVariable.ttf", variable: "--font-jb", display: "swap", weight: "100 800" });
@@ -84,7 +83,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <VersionProvider version={version}>
           <LaunchProvider config={config}>
           <MaintenanceGate />
-          <Preloader />
           <SmoothScroll>
             <Announcement />
             <Navbar />
