@@ -52,3 +52,13 @@
 .v-btn.is-sm { height: 38px; font-size: 12.5px; }
 .v-shot { border-radius: 22px; }
 .v-nav-link { text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 600; }
+
+/* Nav: logo left, everything else grouped on the right. */
+@media (min-width: 1280px) {
+  .v-nav-links { margin-inline: auto 0; }
+  .v-nav-right { margin-left: 8px; }
+}
+
+/* Hero: keep the copy, founder capes and buttons inside the first screen. */
+.v-hero-title { padding-top: clamp(36px, 5.5vw, 88px); }
+.v-hero-row { padding-block: clamp(20px, 2.4vw, 32px); margin-top: clamp(14px, 1.6vw, 24px); }

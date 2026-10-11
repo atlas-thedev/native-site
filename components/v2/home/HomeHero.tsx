@@ -75,7 +75,6 @@ export default function HomeHero({ founder = [] }: { founder?: StoreItem[] }) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-  const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0.2]);
   const [when, setWhen] = useState("");
   useEffect(() => {
     const d = new Date(launch.at);
@@ -89,7 +88,7 @@ export default function HomeHero({ founder = [] }: { founder?: StoreItem[] }) {
 
   return (
     <section ref={ref} className="v-hero">
-      <motion.div style={{ y, opacity: fade }} className="v-wrap flex flex-1 flex-col">
+      <motion.div style={{ y }} className="v-wrap flex flex-1 flex-col">
         <Lines lines={lines} go={go} />
 
         {pre && (
