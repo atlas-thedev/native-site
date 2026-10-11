@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useVersion } from "../VersionContext";
 import { useLaunch } from "../launch/LaunchContext";
+import { Discord } from "../icons";
+import { site } from "@/lib/site";
 
 const KEY = "native:toast-dismissed";
 
@@ -61,12 +63,23 @@ export default function FloatingWidgets() {
           </motion.div>
         )}
       </AnimatePresence>
-      <Link
-        href="/support"
-        className="nx-float bottom-5 right-5 inline-flex h-11 items-center gap-2 rounded-full px-4 text-[14px] font-semibold text-mute transition hover:text-fg"
-      >
-        <LifeBuoy className="h-4 w-4" /> Support
-      </Link>
+      <div className="fixed bottom-5 right-5 z-40 flex items-center gap-2">
+        <a
+          href={site.discord}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Join our Discord"
+          className="nx-float !static inline-flex h-11 items-center gap-2 rounded-full px-4 text-[14px] font-semibold text-mute transition hover:text-fg"
+        >
+          <Discord className="h-4 w-4" /> Discord
+        </a>
+        <Link
+          href="/support"
+          className="nx-float !static inline-flex h-11 items-center gap-2 rounded-full px-4 text-[14px] font-semibold text-mute transition hover:text-fg"
+        >
+          <LifeBuoy className="h-4 w-4" /> Support
+        </Link>
+      </div>
     </>
   );
 }

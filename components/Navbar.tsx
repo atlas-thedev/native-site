@@ -213,9 +213,6 @@ export default function Navbar() {
                 <ThemeToggle />
               </div>
             </div>
-            <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className={`${box} hidden w-11 2xl:inline-flex`}>
-              <Discord className="h-[17px] w-[17px]" />
-            </a>
             {account}
             <button
               data-claim-target
