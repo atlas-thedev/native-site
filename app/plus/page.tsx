@@ -128,7 +128,7 @@ export default async function PlusPage() {
         <div className="relative mx-auto grid max-w-[1180px] items-end gap-12 px-5 pt-20 sm:pt-28 lg:grid-cols-[1fr_auto]">
           <div className="pb-36 lg:pb-44">
             <p className="eyebrow">Membership</p>
-            <h1 className="mt-5 text-[clamp(3.2rem,8vw,6.4rem)] font-extrabold leading-[0.92] tracking-[-0.05em]">
+            <h1 className="v-display !leading-[0.9] mt-5 text-[clamp(3.2rem,8vw,6.4rem)] ">
               Native<span className="text-gold">+</span>
             </h1>
             <p className="mt-6 max-w-[440px] text-[19px] leading-relaxed text-mute">

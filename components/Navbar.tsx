@@ -1,10 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, Crown, Gift, Menu, X } from "lucide-react";
+import { ChevronDown, Crown, Gift } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import "../app/redesign.css";
+import Roll from "./v2/Roll";
+import Magnetic from "./v2/Magnetic";
+import { usePathname } from "next/navigation";
 import { useAccount } from "./useAccount";
 import { useLaunch } from "./launch/LaunchContext";
 import { site } from "@/lib/site";
@@ -110,124 +113,161 @@ export default function Navbar() {
   const name = me === undefined ? undefined : (me?.name ?? null);
   const { launch } = useLaunch();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const path = usePathname();
+
+  useEffect(() => setOpen(false), [path]);
+  useEffect(() => {
+    let last = window.scrollY;
+    const on = () => {
+      const y = window.scrollY;
+      setScrolled(y > 12);
+      setHidden(y > 240 && y > last + 2);
+      if (y < last - 2) setHidden(false);
+      last = y;
+    };
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
+  useEffect(() => {
+    const l = (window as unknown as { __lenis?: { stop: () => void; start: () => void } }).__lenis;
+    document.documentElement.classList.toggle("v-menu-open", open);
+    if (open) l?.stop();
+    else l?.start();
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    if (open) document.addEventListener("keydown", esc);
+    return () => document.removeEventListener("keydown", esc);
+  }, [open]);
 
   const gift = launch.lockDownloads;
   const giftCta = {
     href: name ? "/founder" : "/register?next=/founder",
     label: name ? "Claim free cape" : "Join early",
   };
+  const isOn = (href: string) => (href === "/" ? path === "/" : path?.startsWith(href));
 
   const account = name ? (
-    <Link
-      href="/account"
-      data-claim-target
-      title="Your account"
-      className="group hidden h-11 items-center gap-2.5 rounded-full border border-line bg-surface py-1 pl-1 pr-4 text-[14px] font-semibold transition hover:border-fg/30 hover:bg-surface-2 sm:inline-flex"
-    >
-      <SkinHead skin={me?.skin ?? null} name={name} size={34} className="!rounded-full ring-1 ring-line" />
+    <Link href="/account" data-claim-target title="Your account" className="v-nav-acct hidden sm:inline-flex">
+      <SkinHead skin={me?.skin ?? null} name={name} size={30} className="!rounded-[8px]" />
       <span className="max-w-[8rem] truncate">{name}</span>
     </Link>
   ) : (
-    <Link
-      href="/login"
-      className={`hidden h-11 items-center rounded-full px-4 text-[14.5px] font-semibold text-mute transition hover:bg-surface-2 hover:text-fg sm:inline-flex ${name === undefined ? "opacity-0" : ""}`}
-    >
-      Sign in
+    <Link href="/login" className={`v-nav-link hidden sm:inline-flex ${name === undefined ? "opacity-0" : ""}`}>
+      <Roll>Sign in</Roll>
     </Link>
   );
 
-  return (
-    <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-xl">
-      <nav aria-label="Main" className="flex h-[72px] w-full items-center gap-6 px-5 lg:px-8">
-        <Link href="/" className="flex shrink-0 items-center gap-3" aria-label={`${site.name} home`}>
-          <img src="/brand/icon.png" alt="" width={32} height={32} className="logo-img h-8 w-8" aria-hidden />
-          <span className="text-[20px] font-extrabold uppercase tracking-tight">native</span>
-        </Link>
+  const menuLinks = [
+    ...nav,
+    { href: "/plus", label: "Native+" },
+    { href: "/cloaks", label: "Cloaks" },
+    { href: "/cosmetics", label: "Cosmetics" },
+    { href: "/vote", label: "Vote" },
+  ];
 
-        <div className="ml-auto flex items-center gap-2">
-          <ul className="mr-1 hidden items-center gap-0.5 xl:flex">
+  return (
+    <>
+      <header className={`v-nav ${scrolled ? "is-scrolled" : ""} ${hidden && !open ? "is-hidden" : ""} ${open ? "is-open" : ""}`}>
+        <nav aria-label="Main" className="v-nav-inner">
+          <Link href="/" className="v-nav-brand" aria-label={`${site.name} home`}>
+            <img src="/brand/icon.png" alt="" width={30} height={30} className="logo-img h-[30px] w-[30px]" aria-hidden />
+            <span>native</span>
+          </Link>
+
+          <ul className="v-nav-links">
             {nav.map((l) => (
               <li key={l.href}>
-                <Link
-                  href={l.href}
-                  className="rounded-[10px] px-3.5 py-3 text-[13px] font-extrabold uppercase tracking-[0.04em] transition-colors hover:text-mute"
-                >
-                  {l.label}
+                <Link href={l.href} className={`v-nav-link ${isOn(l.href) ? "is-on" : ""}`}>
+                  <Roll>{l.label}</Roll>
                 </Link>
               </li>
             ))}
             <li>
-              <Link href="/plus" className="nx-plus ml-2 inline-flex h-11 items-center gap-2 rounded-[10px] px-4 text-[13px] font-extrabold uppercase tracking-[0.04em]">
-                <Crown className="nx-plus-icon h-4 w-4" />
+              <Link href="/plus" className="nx-plus v-nav-plus">
+                <Crown className="nx-plus-icon h-3.5 w-3.5" />
                 Native+
               </Link>
             </li>
           </ul>
 
-          <CommandSearch className="w-11 justify-center lg:w-auto" />
-          <div className="hidden xl:block">
-            {gift ? (
-              <Link href={giftCta.href} className={`${primary} btn-shine gap-2.5 pl-1.5 pr-4`}>
-                <span className="grid h-8 w-8 place-items-center rounded-[7px] bg-inv-fg/10">
-                  <Gift className="h-4 w-4 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />
-                </span>
-                <span className="whitespace-nowrap">{giftCta.label}</span>
-              </Link>
-            ) : (
-              <DownloadMenu />
-            )}
-          </div>
-
-          <div className="hidden xl:block">
-            <div className={`${box} w-11`}>
-              <ThemeToggle />
+          <div className="v-nav-right">
+            <CommandSearch className="w-11 justify-center lg:w-auto" />
+            <div className="hidden xl:block">
+              {gift ? (
+                <Magnetic>
+                  <Link href={giftCta.href} className={`${primary} btn-shine gap-2.5 pl-1.5 pr-4`}>
+                    <span className="grid h-8 w-8 place-items-center rounded-[7px] bg-inv-fg/10">
+                      <Gift className="h-4 w-4 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />
+                    </span>
+                    <span className="whitespace-nowrap">{giftCta.label}</span>
+                  </Link>
+                </Magnetic>
+              ) : (
+                <DownloadMenu />
+              )}
             </div>
+            <div className="hidden xl:block">
+              <div className={`${box} w-11`}>
+                <ThemeToggle />
+              </div>
+            </div>
+            <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className={`${box} hidden w-11 2xl:inline-flex`}>
+              <Discord className="h-[17px] w-[17px]" />
+            </a>
+            {account}
+            <button
+              data-claim-target
+              onClick={() => setOpen((v) => !v)}
+              aria-label={open ? "Close menu" : "Open menu"}
+              aria-expanded={open}
+              className="v-burger xl:hidden"
+            >
+              <span className="v-burger-txt">{open ? "Close" : "Menu"}</span>
+              <span className="v-burger-lines" aria-hidden><i /><i /></span>
+            </button>
           </div>
-          <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className={`${box} hidden w-11 2xl:inline-flex`}>
-            <Discord className="h-[17px] w-[17px]" />
-          </a>
-          {account}
-          <button
-            data-claim-target
-            onClick={() => setOpen((v) => !v)}
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            className={`${box} w-11 xl:hidden`}
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-      </nav>
+        </nav>
+      </header>
+      <div className="v-nav-spacer" aria-hidden />
+
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden border-t border-line xl:hidden"
+            className="v-menu xl:hidden"
+            initial={{ clipPath: "inset(0% 0% 100% 0%)" }}
+            animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
+            exit={{ clipPath: "inset(0% 0% 100% 0%)" }}
+            transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
           >
-            <ul className="space-y-1 px-5 py-4 lg:px-8">
-              {[
-                ...nav,
-                { href: "/plus", label: "Native+" },
-                { href: gift ? giftCta.href : "/download", label: gift ? giftCta.label : "Download" },
-                name ? { href: "/account", label: "Account" } : { href: "/login", label: "Sign in" },
-              ].map((l) => (
-                <li key={l.href + l.label}>
-                  <Link
-                    href={l.href}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-[10px] px-4 py-3 text-[15px] font-extrabold uppercase tracking-[0.04em] hover:bg-surface-2"
-                  >
-                    {l.label}
-                  </Link>
+            <ul className="v-menu-list">
+              {menuLinks.map((l, i) => (
+                <li key={l.href + l.label} className="overflow-hidden">
+                  <motion.div initial={{ y: "110%" }} animate={{ y: "0%" }} exit={{ y: "110%" }} transition={{ duration: 0.7, delay: 0.15 + i * 0.04, ease: [0.16, 1, 0.3, 1] }}>
+                    <Link href={l.href} onClick={() => setOpen(false)} className={`v-menu-link ${isOn(l.href) ? "is-on" : ""}`}>
+                      <span className="v-menu-i">{String(i + 1).padStart(2, "0")}</span>
+                      {l.label}
+                    </Link>
+                  </motion.div>
                 </li>
               ))}
             </ul>
+            <motion.div className="v-menu-foot" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.6, delay: 0.5 }}>
+              <Link href={gift ? giftCta.href : "/download"} onClick={() => setOpen(false)} className="v-btn is-solid">
+                {gift ? giftCta.label : "Download"}
+              </Link>
+              <Link href={name ? "/account" : "/login"} onClick={() => setOpen(false)} className="v-btn">
+                {name ? "Your account" : "Sign in"}
+              </Link>
+              <div className="ml-auto flex items-center gap-2">
+                <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className={`${box} w-11`}><Discord className="h-[17px] w-[17px]" /></a>
+                <div className={`${box} w-11`}><ThemeToggle /></div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </>
   );
 }

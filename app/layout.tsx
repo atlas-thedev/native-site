@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import "./v2.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import Announcement from "@/components/Announcement";
 import Navbar from "@/components/Navbar";
@@ -12,9 +13,13 @@ import { site } from "@/lib/site";
 import { getSiteConfig } from "@/lib/server/siteConfig";
 import { LaunchProvider } from "@/components/launch/LaunchContext";
 import MaintenanceGate from "@/components/launch/MaintenanceGate";
+import Preloader from "@/components/v2/Preloader";
+import Cursor from "@/components/v2/Cursor";
 
 const figtree = localFont({ src: "../public/fonts/Figtree-Variable.ttf", variable: "--font-figtree", display: "swap", weight: "300 900" });
 const jb = localFont({ src: "../public/fonts/JetBrainsMonoVariable.ttf", variable: "--font-jb", display: "swap", weight: "100 800" });
+
+const anton = localFont({ src: "../public/fonts/Anton-Regular.ttf", variable: "--font-anton", display: "swap", weight: "400" });
 
 const title = `${site.name} · ${site.tagline}`;
 
@@ -69,7 +74,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     ],
   };
   return (
-    <html lang="en" className={`${figtree.variable} ${jb.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${figtree.variable} ${jb.variable} ${anton.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <JsonLd data={graph} />
@@ -79,6 +84,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <VersionProvider version={version}>
           <LaunchProvider config={config}>
           <MaintenanceGate />
+          <Preloader />
+          <Cursor />
+          <div className="v-grid" aria-hidden><div><i /><i /><i /><i /><i /></div></div>
+          <div className="v-grain" aria-hidden />
           <SmoothScroll>
             <Announcement />
             <Navbar />

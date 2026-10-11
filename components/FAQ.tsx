@@ -10,14 +10,12 @@ import { faqs } from "@/lib/site";
 export default function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <section id="faq" className="relative mx-auto max-w-[920px] px-5 py-32 sm:px-8">
-      <div className="mb-14 text-center">
-        <Reveal>
-          <p className="eyebrow">FAQ</p>
-        </Reveal>
-        <SplitText text="Good questions." className="mt-5 text-[clamp(2.4rem,5.4vw,4.4rem)] font-extrabold leading-[1.02] tracking-[-0.04em]" />
+    <section id="faq" className="v-wrap relative grid gap-10 pb-[clamp(84px,11vw,170px)] lg:grid-cols-[0.8fr_1.2fr]">
+      <div>
+        <div className="v-head-rule"><span>(07)</span><span>FAQ</span></div>
+        <SplitText as="h2" text="Good questions" className="v-display v-h2 lg:sticky lg:top-28" />
       </div>
-      <div className="divide-y divide-line overflow-hidden rounded-[24px] border border-line bg-surface">
+      <div className="divide-y divide-line border-y border-line">
         {faqs.map((f, i) => {
           const on = open === i;
           return (
@@ -25,7 +23,7 @@ export default function FAQ() {
               <button
                 onClick={() => setOpen(on ? null : i)}
                 aria-expanded={on}
-                className="flex w-full items-center justify-between gap-6 px-7 py-6 text-left transition-colors hover:bg-surface"
+                className="flex w-full items-center justify-between gap-6 py-6 text-left transition-[padding] duration-500 hover:pl-3"
               >
                 <span className="text-[18px] font-semibold tracking-tight">{f.q}</span>
                 <motion.span animate={{ rotate: on ? 135 : 0 }} transition={{ type: "spring", stiffness: 300, damping: 22 }} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line">
@@ -41,7 +39,7 @@ export default function FAQ() {
                     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                     className="overflow-hidden"
                   >
-                    <p className="px-7 pb-7 pr-16 text-[16px] leading-relaxed text-mute">{f.a}</p>
+                    <p className="pb-7 pr-16 text-[16px] leading-relaxed text-mute">{f.a}</p>
                   </motion.div>
                 )}
               </AnimatePresence>

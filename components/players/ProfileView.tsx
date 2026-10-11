@@ -120,7 +120,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
         <div className="st-panel p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
-              <h1 className="truncate text-[clamp(2rem,4vw,2.9rem)] font-extrabold leading-none tracking-[-0.035em]">{profile.name}</h1>
+              <h1 className="v-display truncate pb-1 text-[clamp(2.8rem,6vw,5.2rem)] !leading-[0.9]">{profile.name}</h1>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <ProfileBadges badges={profile.badges} admin={profile.admin} plus={profile.plus} premium={premium} />
                 <span className="text-[13px] text-dim">Joined {joined}</span>
@@ -137,7 +137,7 @@ export default function ProfileView({ profile, items, skin, model, own, initialP
             ].map(([k, v]) => (
               <div key={k} className="rounded-[8px] border-2 border-line bg-black/20 p-3 shadow-[inset_0_2px_0_rgb(0_0_0/0.3)]">
                 <dt className="text-[11.5px] font-semibold uppercase tracking-wider text-dim">{k}</dt>
-                <dd className="mt-1 text-[24px] font-extrabold leading-none tracking-tight">{v}</dd>
+                <dd className="mt-2 font-[family-name:var(--font-display)] text-[34px] leading-none">{v}</dd>
               </div>
             ))}
           </dl>

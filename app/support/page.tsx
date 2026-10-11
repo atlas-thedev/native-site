@@ -47,7 +47,7 @@ export default function SupportPage() {
       <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: topics.map((t) => ({ "@type": "Question", name: t.q, acceptedAnswer: { "@type": "Answer", text: t.a.join(" ") } })) }} />
       <div className="mb-14 text-center">
         <Reveal><p className="eyebrow">Support</p></Reveal>
-        <SplitText as="h1" text="How can we help?" className="mt-5 text-[clamp(2.8rem,7vw,5.6rem)] font-extrabold leading-[1] tracking-[-0.045em]" />
+        <SplitText as="h1" text="How can we help?" className="v-display !leading-[0.9] mt-5 text-[clamp(2.8rem,7vw,5.6rem)] " />
         <Reveal delay={0.2}><p className="mx-auto mt-6 max-w-[520px] text-lg text-mute">Quick fixes for the most common problems, and real people in our community when you need more.</p></Reveal>
         <Reveal delay={0.3} className="mt-8"><StatusPill /></Reveal>
       </div>

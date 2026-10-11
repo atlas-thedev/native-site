@@ -1,5 +1,5 @@
 /** seconds the intro overlay holds before page content animates in */
-export const INTRO = 0.9;
+export const INTRO = 0.15;
 
 export const site = {
   name: "Native Client",

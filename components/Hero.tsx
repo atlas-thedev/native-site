@@ -37,7 +37,7 @@ function LaunchedHero() {
             accent={["launched", "beautifully"]}
             accentClassName="text-mute"
             delay={0.1 + INTRO}
-            className="text-balance text-[clamp(3rem,8.4vw,7.4rem)] font-extrabold leading-[0.94] tracking-[-0.055em]"
+            className="v-display !leading-[0.9] text-balance text-[clamp(3rem,8.4vw,7.4rem)] "
           />
 
           <motion.div

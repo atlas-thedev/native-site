@@ -2,7 +2,7 @@ import { REPO, ghHeaders } from "./config";
 import { site } from "../site";
 import { rebrand } from "./brand";
 
-export type Asset = { name: string; url: string; size: number };
+export type Asset = { name: string; url: string; size: number; sha256?: string | null };
 export type Release = {
   tag: string;
   version: string;
@@ -20,7 +20,7 @@ type GhRelease = {
   draft: boolean;
   prerelease: boolean;
   published_at: string | null;
-  assets: { name: string; browser_download_url: string; size: number }[];
+  assets: { name: string; browser_download_url: string; size: number; digest?: string | null }[];
 };
 
 /** Last list GitHub gave us, so a rate limit or outage never makes the site fall back to an old version. */
@@ -41,7 +41,7 @@ export async function getReleases(): Promise<Release[]> {
         notes: rebrand(x.body || ""),
         date: x.published_at as string,
         prerelease: x.prerelease,
-        assets: x.assets.map((a) => ({ name: a.name, url: a.browser_download_url, size: a.size })),
+        assets: x.assets.map((a) => ({ name: a.name, url: a.browser_download_url, size: a.size, sha256: typeof a.digest === "string" && a.digest.startsWith("sha256:") ? a.digest.slice(7) : null })),
       }))
       .sort((a, b) => +new Date(b.date) - +new Date(a.date));
     if (out.length) lastGood = out;
@@ -113,4 +113,13 @@ export async function getAvailability(): Promise<{ version: string; date: string
     out[p] = a ? { name: a.name, size: a.size } : null;
   });
   return { version: rel?.version ?? (await getSiteVersion()), date: rel?.date ?? null, platforms: out };
+}
+
+/** Every installable file of the latest release with its SHA-256 (GitHub computes these on upload). */
+export async function getChecksums(): Promise<{ version: string; files: { name: string; size: number; sha256: string }[] }> {
+  const rel = await getLatestRelease();
+  const files = (rel?.assets ?? [])
+    .filter((a) => !/\.blockmap$|\.ya?ml$/i.test(a.name) && a.sha256)
+    .map((a) => ({ name: a.name, size: a.size, sha256: a.sha256 as string }));
+  return { version: rel?.version ?? "", files };
 }

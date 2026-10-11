@@ -69,7 +69,7 @@ export default function CheckoutClient() {
       {phase === "done" ? (
         <>
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-inv text-inv-fg"><Check className="h-7 w-7" /></span>
-          <h1 className={`mt-6 ${h1}`}>Thanks, you’re all set.</h1>
+          <h1 className={`v-display !leading-[0.9] mt-6 ${h1}`}>Thanks, you’re all set.</h1>
           <p className="mx-auto mt-4 max-w-[480px] text-[17px] text-mute">
             Your purchase unlocks on your Native account in a few seconds. If you bought from the launcher, head back to it and it’ll update by itself. A receipt from Tebex is on its way to your email.
           </p>
@@ -91,7 +91,7 @@ export default function CheckoutClient() {
       ) : phase === "loading" ? (
         <>
           <Loader2 className="mx-auto h-8 w-8 animate-spin text-mute" />
-          <h1 className={`mt-6 ${h1}`}>Secure checkout</h1>
+          <h1 className={`v-display !leading-[0.9] mt-6 ${h1}`}>Secure checkout</h1>
           <p className="mx-auto mt-4 max-w-[440px] text-[16px] text-mute">Opening the payment form…</p>
         </>
       ) : (
