@@ -134,10 +134,10 @@ export default function HomeHero({ mascot = [] }: { mascot?: Worn[] }) {
 
           {mascot.length > 0 && (
             <motion.div {...up(0.5)} className="hidden lg:block">
-              <div className="relative h-[440px] w-[360px]">
-                <span aria-hidden className="absolute bottom-3 left-1/2 h-[18px] w-[55%] -translate-x-1/2 rounded-[50%] bg-fg/10 blur-[6px]" />
-                <div className="absolute inset-0">
-                  <LockerViewer zoom={0.66} skin={MASCOT_SKIN} model="slim" cape={null} walk={false} spin={false} showCape={false} layers worn={mascot} pose="wave" />
+              <div className="relative h-[520px] w-[400px]">
+                <span aria-hidden className="absolute bottom-[34px] left-1/2 h-[18px] w-[50%] -translate-x-1/2 rounded-[50%] bg-fg/10 blur-[6px]" />
+                <div className="absolute inset-x-0 top-[70px] -bottom-[40px]">
+                  <LockerViewer zoom={0.8} skin={MASCOT_SKIN} model="slim" cape={null} walk={false} spin={false} showCape={false} layers worn={mascot} pose="wave" />
                 </div>
               </div>
             </motion.div>

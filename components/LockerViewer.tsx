@@ -58,10 +58,10 @@ const LockerViewer = forwardRef<ViewerHandle, Props>(function LockerViewer({ ski
         sv.animation = new l.FunctionAnimation((pl, t) => {
           const s = pl.skin;
           const b = Math.sin(t * 1.6);
-          pl.rotation.y = 0.3;
-          s.rightArm.rotation.set(0, 0, -Math.PI * 0.8 + Math.sin(t * 6) * 0.28);
-          s.leftArm.rotation.set(b * 0.04, 0, Math.PI * 0.04 + b * 0.02);
-          s.head.rotation.set(0.05 + b * 0.02, -0.2, 0.12 + Math.sin(t * 3) * 0.04);
+          pl.rotation.y = -0.3;
+          s.leftArm.rotation.set(0, 0, Math.PI * 0.8 + Math.sin(t * 6) * 0.28);
+          s.rightArm.rotation.set(-0.12 + b * 0.04, 0, -Math.PI * 0.04 - b * 0.02);
+          s.head.rotation.set(0.05 + b * 0.02, 0.2, -0.12 - Math.sin(t * 3) * 0.04);
           s.leftLeg.rotation.set(-0.08, 0, 0.03);
           s.rightLeg.rotation.set(0.08, 0, -0.03);
         });
