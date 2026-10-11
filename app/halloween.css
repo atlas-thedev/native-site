@@ -1,0 +1,138 @@
+/* ==========================================================================
+   Halloween mode (body[data-halloween="on"], toggled from the launcher admin).
+   ========================================================================== */
+body[data-halloween="on"] {
+  --hw-orange: #ff7a18;
+  --hw-amber: #ffb347;
+  --hw-purple: #8b5cf6;
+  --hw-slime: #9cff57;
+  background:
+    radial-gradient(1100px 620px at 8% -8%, rgba(139, 92, 246, 0.2), transparent 62%),
+    radial-gradient(900px 520px at 100% 0%, rgba(255, 122, 24, 0.16), transparent 60%),
+    radial-gradient(1000px 600px at 50% 110%, rgba(156, 255, 87, 0.06), transparent 60%),
+    #07040b !important;
+  background-attachment: fixed !important;
+}
+body[data-halloween="on"] ::selection { background: var(--hw-orange); color: #12081c; }
+
+/* colourised type */
+body[data-halloween="on"] .v-display:not(.v-outline),
+body[data-halloween="on"] .v-display:not(.v-outline) span {
+  background-image: linear-gradient(180deg, #ffd27a 0%, var(--hw-orange) 48%, #c2410c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+body[data-halloween="on"] .v-outline { -webkit-text-stroke-color: var(--hw-purple); }
+body[data-halloween="on"] .v-label { color: var(--hw-amber); }
+body[data-halloween="on"] .v-hi { background: var(--hw-orange); color: #12081c; }
+body[data-halloween="on"] .v-grid i { background: color-mix(in srgb, var(--hw-purple) 16%, transparent); }
+body[data-halloween="on"] .v-rule,
+body[data-halloween="on"] .v-hero-row { border-color: color-mix(in srgb, var(--hw-purple) 30%, transparent); }
+
+/* buttons */
+body[data-halloween="on"] .v-btn { border-color: color-mix(in srgb, var(--hw-orange) 60%, transparent); }
+body[data-halloween="on"] .v-btn::before { background: linear-gradient(90deg, var(--hw-orange), #ff4d00); }
+body[data-halloween="on"] .v-btn:hover { color: #12081c; border-color: var(--hw-orange); box-shadow: 0 0 28px rgba(255, 122, 24, 0.35); }
+
+/* nav + footer */
+body[data-halloween="on"] .v-nav-brand span { color: var(--hw-orange); }
+body[data-halloween="on"] .v-nav-link.is-on,
+body[data-halloween="on"] .v-nav-link:hover { color: var(--hw-amber); }
+body[data-halloween="on"] .v-nav.is-scrolled { background: rgba(10, 5, 16, 0.82) !important; border-color: rgba(139, 92, 246, 0.25) !important; }
+body[data-halloween="on"] .logo-img { filter: drop-shadow(0 0 10px rgba(255, 122, 24, 0.55)); }
+body[data-halloween="on"] footer { border-top-color: rgba(139, 92, 246, 0.3); }
+
+/* the custom cursor glows orange */
+body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !important; box-shadow: 0 0 22px rgba(255, 122, 24, 0.7); }
+
+/* ---------- effects layer ---------- */
+.hw-layer { position: fixed; inset: 0; z-index: 40; pointer-events: none; overflow: hidden; }
+.hw-light {
+  position: absolute; inset: 0;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 35%), rgba(255, 150, 50, 0.13), transparent 70%);
+  mix-blend-mode: screen;
+  animation: hw-flicker 3.2s infinite steps(1);
+}
+@keyframes hw-flicker { 0%, 100% { opacity: 1; } 42% { opacity: 0.86; } 44% { opacity: 1; } 71% { opacity: 0.92; } }
+
+.hw-fog { position: absolute; inset: auto 0 0; height: 34vh; }
+.hw-fog i {
+  position: absolute; inset: 0 -50%;
+  background:
+    radial-gradient(40% 60% at 20% 100%, rgba(190, 170, 255, 0.10), transparent 70%),
+    radial-gradient(35% 55% at 60% 100%, rgba(190, 170, 255, 0.08), transparent 70%),
+    radial-gradient(30% 50% at 90% 100%, rgba(255, 170, 110, 0.06), transparent 70%);
+  filter: blur(14px);
+  animation: hw-fog 38s linear infinite;
+}
+.hw-fog i:last-child { animation-duration: 56s; animation-direction: reverse; opacity: 0.8; }
+@keyframes hw-fog { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
+
+.hw-web { position: absolute; top: 64px; width: clamp(140px, 16vw, 240px); height: auto; opacity: 0.55; }
+.hw-web path { fill: none; stroke: rgba(230, 220, 255, 0.28); stroke-width: 1; }
+.hw-web-l { left: 0; }
+.hw-web-r { right: 0; transform: scaleX(-1); }
+
+.hw-bats { position: absolute; inset: 0; }
+.hw-bat { position: absolute; left: 0; top: 0; margin: -12px 0 0 -23px; will-change: transform; filter: drop-shadow(0 0 6px rgba(255, 122, 24, 0.35)); }
+.hw-bat svg { display: block; animation: hw-flap var(--flap, 0.22s) ease-in-out infinite alternate; transform-origin: 50% 40%; }
+@keyframes hw-flap { from { transform: scaleY(1); } to { transform: scaleY(0.35); } }
+
+.hw-ghost { position: absolute; left: 0; top: 0; margin: -32px 0 0 -27px; opacity: 0.85; will-change: transform; filter: drop-shadow(0 0 14px rgba(200, 190, 255, 0.55)); }
+
+/* spider: click to drop it / pull it back up */
+.hw-spider {
+  position: fixed; top: 64px; right: 18%; z-index: 41;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0; border: 0; background: none; cursor: pointer;
+}
+.hw-thread { width: 1px; height: 46px; background: rgba(230, 220, 255, 0.5); transition: height 0.9s cubic-bezier(0.34, 1.4, 0.64, 1); }
+.hw-spider.is-down .hw-thread { height: 300px; }
+.hw-spider-body { display: block; animation: hw-sway 2.6s ease-in-out infinite; transform-origin: 50% -40px; }
+.hw-spider:hover .hw-spider-body { animation-duration: 0.5s; }
+@keyframes hw-sway { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+
+/* pumpkins: click for candy */
+.hw-pumpkins { position: fixed; left: 18px; bottom: 64px; z-index: 60; display: flex; align-items: flex-end; gap: 6px; }
+.hw-pumpkin { width: 58px; height: 54px; padding: 0; border: 0; background: none; cursor: pointer; filter: drop-shadow(0 6px 16px rgba(255, 122, 24, 0.4)); transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.hw-pumpkin-1 { width: 44px; height: 41px; }
+.hw-pumpkin:hover { transform: translateY(-4px) rotate(-6deg) scale(1.08); }
+.hw-pumpkin:active { transform: scale(0.9); }
+.hw-face { animation: hw-glow 1.8s ease-in-out infinite alternate; }
+.hw-pumpkin-1 .hw-face { animation-delay: -0.9s; }
+@keyframes hw-glow { from { fill: #ffb347; filter: none; } to { fill: #fff2a8; filter: drop-shadow(0 0 4px #ffd36b); } }
+
+.hw-burst { position: fixed; z-index: 70; width: 0; height: 0; pointer-events: none; }
+.hw-burst i {
+  position: absolute; left: -10px; top: -10px; font-size: 20px; font-style: normal;
+  animation: hw-pop 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes hw-pop {
+  0% { transform: rotate(var(--a)) translateY(0) scale(0.4); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(1.1); opacity: 0; }
+}
+
+.hw-toggle {
+  position: fixed; left: 18px; bottom: 18px; z-index: 60;
+  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 10px;
+  border: 1px solid rgba(255, 122, 24, 0.5); border-radius: 999px;
+  background: rgba(18, 8, 28, 0.9); color: #ffd9b0; backdrop-filter: blur(8px);
+  font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
+  box-shadow: 0 0 22px rgba(255, 122, 24, 0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.hw-toggle:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(255, 122, 24, 0.45); }
+.hw-toggle span { font-size: 16px; }
+.hw-toggle.is-off { opacity: 0.6; border-color: rgba(255, 255, 255, 0.15); box-shadow: none; }
+
+@media (max-width: 700px) {
+  .hw-web { width: 110px; }
+  .hw-spider, .hw-ghost { display: none; }
+  .hw-pumpkins { bottom: 62px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hw-fog i, .hw-light, .hw-spider-body, .hw-face, .hw-bat svg { animation: none; }
+}

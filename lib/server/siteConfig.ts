@@ -13,6 +13,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       maintenance: { ...FALLBACK_CONFIG.maintenance, ...(d.maintenance ?? {}) },
       announcement: { ...FALLBACK_CONFIG.announcement, ...(d.announcement ?? {}) },
       beta: { ...FALLBACK_CONFIG.beta, ...(d.beta ?? {}) },
+      theme: { halloween: Boolean(d.theme?.halloween) },
       offers: Array.isArray(d.offers) ? d.offers : [],
     };
   } catch {

@@ -17,6 +17,7 @@ export type SiteConfig = {
   maintenance: { enabled: boolean; message: string; until: number | null };
   announcement: { enabled: boolean; text: string; href: string; cta: string };
   beta: { open: boolean; closesAt: number | null };
+  theme: { halloween: boolean };
   offers: Offer[];
 };
 
@@ -50,6 +51,7 @@ export const FALLBACK_CONFIG: SiteConfig = {
   maintenance: { enabled: false, message: "", until: null },
   announcement: { enabled: false, text: "", href: "", cta: "" },
   beta: { open: true, closesAt: null },
+  theme: { halloween: false },
   offers: [],
 };
 

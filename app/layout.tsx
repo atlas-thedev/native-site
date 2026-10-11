@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import "./v2.css";
 import "./v3.css";
+import "./halloween.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import Announcement from "@/components/Announcement";
 import Navbar from "@/components/Navbar";
@@ -14,6 +15,7 @@ import { site } from "@/lib/site";
 import { getSiteConfig } from "@/lib/server/siteConfig";
 import { LaunchProvider } from "@/components/launch/LaunchContext";
 import MaintenanceGate from "@/components/launch/MaintenanceGate";
+import Halloween from "@/components/Halloween";
 
 const figtree = localFont({ src: "../public/fonts/Figtree-Variable.ttf", variable: "--font-figtree", display: "swap", weight: "300 900" });
 const jb = localFont({ src: "../public/fonts/JetBrainsMonoVariable.ttf", variable: "--font-jb", display: "swap", weight: "100 800" });
@@ -78,7 +80,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <JsonLd data={graph} />
       </head>
-      <body>
+      <body data-halloween={config.theme?.halloween ? "on" : undefined}>
         <a href="#main" className="skip-link">Skip to content</a>
         <VersionProvider version={version}>
           <LaunchProvider config={config}>
@@ -89,6 +91,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <main id="main">{children}</main>
             <Footer />
           </SmoothScroll>
+          {config.theme?.halloween && <Halloween />}
           </LaunchProvider>
         </VersionProvider>
       </body>
