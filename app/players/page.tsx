@@ -7,7 +7,8 @@ import Podium from "@/components/players/Podium";
 import SkinHead from "@/components/SkinHead";
 import Marquee from "@/components/v2/Marquee";
 import SplitText from "@/components/SplitText";
-import { findPlayers, getLook } from "@/lib/server/store";
+import { findPlayers, getCatalog, getLook, getPlayer } from "@/lib/server/store";
+import { outfitOf } from "@/lib/outfit";
 import { pageMeta } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -25,9 +26,19 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
   const players = await findPlayers(q);
   const exact = q && players.find((p) => p.name.toLowerCase() === q.toLowerCase());
   if (exact) redirect(`/u/${encodeURIComponent(exact.name)}`);
-  const looks = await Promise.all(players.map((p) => getLook(p.name, p.model, p.uuid)));
-  const rows = players.map((p, i) => ({ player: p, skin: looks[i].skin }));
-  const podium = !q ? rows.slice(0, 3) : [];
+  const top = !q ? players.slice(0, 3) : [];
+  const [looks, catalog, profiles] = await Promise.all([
+    Promise.all(players.map((p) => getLook(p.name, p.model, p.uuid))),
+    top.length ? getCatalog() : Promise.resolve(null),
+    Promise.all(top.map((p) => getPlayer(p.name))),
+  ]);
+  const items = [...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])];
+  const rows = players.map((p, i) => ({ player: p, skin: looks[i].skin, model: looks[i].model }));
+  // Podium players wear what they wear in game: cloak + cosmetics.
+  const podium = top.map((_, i) => {
+    const pr = profiles[i];
+    return { ...rows[i], outfit: outfitOf(pr && !pr.hidden.locker ? pr : pr ? { equipped: pr.equipped, wearing: pr.wearing, sides: pr.sides } : null, items) };
+  });
   const list = !q ? rows.slice(3) : rows;
   const owned = players.reduce((n, p) => n + p.owned, 0);
   const javaName = q && /^[A-Za-z0-9_]{3,16}$/.test(q);
@@ -59,7 +70,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
         <section className="v-wrap mt-6">
           <Link href={`/u/${encodeURIComponent(q)}`} data-cursor="Look up" className="group flex items-center justify-between gap-6 rounded-[16px] bg-fg px-6 py-6 text-bg sm:px-9">
             <span>
-              <span className="block font-[family-name:var(--font-display)] text-[clamp(1.8rem,3.4vw,3rem)] uppercase leading-none">Look up “{q}” on Minecraft</span>
+              <span className="block font-[family-name:var(--font-display)] text-[clamp(1.6rem,2.8vw,2.4rem)] font-semibold leading-none tracking-[-0.04em]">Look up “{q}” on Minecraft</span>
               <span className="mt-2 block text-[14px] opacity-65">Real skin, cape, UUID and skin history of any Java player, even if they aren’t on Native.</span>
             </span>
             <ArrowUpRight className="h-7 w-7 shrink-0 transition group-hover:-translate-y-1 group-hover:translate-x-1" />

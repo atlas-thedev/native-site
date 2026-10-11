@@ -6,7 +6,8 @@ import LauncherOnly from "@/components/launcher/LauncherOnly";
 import { API_URL } from "@/lib/server/config";
 import { readSession } from "@/lib/server/session";
 import { pageMeta } from "@/lib/seo";
-import { getCatalog, getMojangLook } from "@/lib/server/store";
+import { getCatalog, getMine, getMojangLook } from "@/lib/server/store";
+import { outfitOf } from "@/lib/outfit";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -54,13 +55,17 @@ export default async function AccountPage() {
     if (!cape && real.cape) cape = real.cape;
   }
 
-  const [catalog, founder] = await Promise.all([
+  const [catalog, founder, mine] = await Promise.all([
     getCatalog(),
     fetch(`${API_URL}/v1/site/founder`, { headers: { Authorization: `Bearer ${s.token}` }, cache: "no-store", signal: AbortSignal.timeout(6000) })
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null) as Promise<{ eligible?: boolean; picked?: string | null } | null>,
+    getMine(s.token),
   ]);
-  const names = Object.fromEntries([...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])].map((i) => [i.id, i.name]));
+  const items = [...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])];
+  const names = Object.fromEntries(items.map((i) => [i.id, i.name]));
+  // Draw the account wearing its Native cloak and cosmetics, same as in game.
+  const outfit = outfitOf(mine, items);
   return (
     <>
       <AccountCard name={s.account.name} email={s.account.email} premium={premium} skin={skin} />
@@ -76,7 +81,7 @@ export default async function AccountPage() {
           </Link>
         </div>
       )}
-      <LauncherOnly from="locker" skin={skin} model={model} cape={cape} />
+      <LauncherOnly from="locker" skin={skin} model={model} cape={outfit.cape ?? cape} capeAnim={outfit.capeAnim} worn={outfit.worn} />
       <BillingPanel names={names} />
     </>
   );

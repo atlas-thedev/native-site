@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./v2.css";
+import "./v3.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import Announcement from "@/components/Announcement";
 import Navbar from "@/components/Navbar";
@@ -14,7 +15,6 @@ import { getSiteConfig } from "@/lib/server/siteConfig";
 import { LaunchProvider } from "@/components/launch/LaunchContext";
 import MaintenanceGate from "@/components/launch/MaintenanceGate";
 import Preloader from "@/components/v2/Preloader";
-import Cursor from "@/components/v2/Cursor";
 
 const figtree = localFont({ src: "../public/fonts/Figtree-Variable.ttf", variable: "--font-figtree", display: "swap", weight: "300 900" });
 const jb = localFont({ src: "../public/fonts/JetBrainsMonoVariable.ttf", variable: "--font-jb", display: "swap", weight: "100 800" });
@@ -85,9 +85,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <LaunchProvider config={config}>
           <MaintenanceGate />
           <Preloader />
-          <Cursor />
-          <div className="v-grid" aria-hidden><div><i /><i /><i /><i /><i /></div></div>
-          <div className="v-grain" aria-hidden />
           <SmoothScroll>
             <Announcement />
             <Navbar />

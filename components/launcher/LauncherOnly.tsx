@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import LockerViewer from "../LockerViewer";
+import type { Worn } from "../cosmetics/CosmeticViewer";
 
 type Props = {
   /** Which page sent the visitor here; tunes the heading. */
@@ -12,6 +13,10 @@ type Props = {
   skin?: string | null;
   model?: "default" | "slim";
   cape?: string | null;
+  /** Animated cloak strip, when the equipped cloak is animated. */
+  capeAnim?: { url: string; frames: number; fps: number } | null;
+  /** Cosmetics the account wears, drawn on the 3D model. */
+  worn?: Worn[];
   /** Extra content under the steps (e.g. account details). */
   children?: ReactNode;
 };
@@ -32,14 +37,14 @@ const steps = [
 ];
 
 /** Shown where the web store and locker used to be: both live in the Native launcher now. */
-export default function LauncherOnly({ from = "store", skin, model = "default", cape = "/capes/founders.png", children }: Props) {
+export default function LauncherOnly({ from = "store", skin, model = "default", cape = "/capes/founders.png", capeAnim = null, worn = [], children }: Props) {
   const title = from === "locker" ? "Your locker lives in the launcher." : "The store lives in the launcher.";
   return (
     <section className="relative mx-auto max-w-[1240px] px-5 pb-28 pt-12 sm:px-8 sm:pt-16">
       <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease }}>
           <p className="eyebrow">Launcher only</p>
-          <h1 className="v-display !leading-[0.9] mt-5 text-[clamp(2.4rem,5.6vw,4.4rem)] ">{title}</h1>
+          <h1 className="v-display !leading-[0.98] mt-5 text-[clamp(2.2rem,4.4vw,3.6rem)] ">{title}</h1>
           <p className="mt-5 max-w-[560px] text-[17px] leading-relaxed text-mute">
             Browse, try on and wear every cloak and cosmetic inside Native. It is faster, it shows your real in-game look, and your outfit syncs straight to the game.
           </p>
@@ -66,10 +71,10 @@ export default function LauncherOnly({ from = "store", skin, model = "default", 
         <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.9, delay: 0.1, ease }} className="card relative flex flex-col overflow-hidden">
           <div className="dots relative h-[380px] sm:h-[480px]">
             <div className="absolute inset-0">
-              <LockerViewer skin={skin || (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")} model={model} cape={cape} walk spin showCape layers elytra={false} />
+              <LockerViewer skin={skin || (model === "slim" ? "/skins/alex.png" : "/skins/steve.png")} model={model} cape={cape} capeAnim={capeAnim} walk spin showCape layers elytra={false} worn={worn} />
             </div>
             <span className="pointer-events-none absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full border border-line bg-bg/80 px-3 py-1.5 text-[12.5px] font-semibold backdrop-blur">
-              <UserRound className="h-3.5 w-3.5" /> {skin ? "Your look" : "Preview"}
+              <UserRound className="h-3.5 w-3.5" /> {skin ? (worn.length ? `Your look · ${worn.length} cosmetic${worn.length === 1 ? "" : "s"}` : "Your look") : "Preview"}
             </span>
           </div>
         </motion.div>
