@@ -32,7 +32,7 @@ export default async function ChangesPage() {
       <JsonLd data={breadcrumb([{ name: "What’s new", path: "/changes" }])} />
       <div className="mb-14 text-center">
         <Reveal><p className="eyebrow">Change log</p></Reveal>
-        <SplitText as="h1" text="What’s new." className="mt-5 text-[clamp(2.8rem,7vw,5.6rem)] font-extrabold leading-[1] tracking-[-0.045em]" />
+        <SplitText as="h1" text="What’s new." className="v-display !leading-[0.9] mt-5 text-[clamp(2.8rem,7vw,5.6rem)] " />
         <Reveal delay={0.2}><p className="mx-auto mt-6 max-w-[540px] text-lg text-mute">Every release and every change to Native Client, updated live. Minecraft versions come straight from Mojang.</p></Reveal>
       </div>
 

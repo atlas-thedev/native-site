@@ -266,7 +266,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-[32px] font-extrabold leading-tight tracking-[-0.04em]">{step === 2 ? "Check your email" : c.title}</h1>
+              <h1 className="v-display !leading-[0.9] text-[32px] leading-tight ">{step === 2 ? "Check your email" : c.title}</h1>
               <p className="mt-1.5 text-[15px] text-mute">{step === 2 ? <>Enter the code we sent to <b className="font-semibold text-fg">{email}</b>.</> : c.sub}</p>
             </div>
             {twoStep && (

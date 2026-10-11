@@ -364,7 +364,7 @@ export default function BetaProgram({
               <span className={`h-2 w-2 rounded-full ${open ? "bg-beta [animation:pulse-soft_1.4s_ease-in-out_infinite]" : "bg-dim"}`} />
               {open ? "Applications open" : "Applications closed"}
             </p>
-            <h1 className="mt-5 text-[clamp(3.2rem,8vw,6.4rem)] font-extrabold leading-[0.92] tracking-[-0.05em]">
+            <h1 className="v-display !leading-[0.9] mt-5 text-[clamp(3.2rem,8vw,6.4rem)] ">
               Super Beta<span className="text-beta">.</span>
             </h1>
             <p className="mt-6 max-w-[470px] text-[19px] leading-relaxed text-mute">

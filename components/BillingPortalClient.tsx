@@ -36,7 +36,7 @@ export default function BillingPortalClient() {
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-[640px] flex-col justify-center px-5 py-24 text-center">
       <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-surface-2"><Receipt className="h-6 w-6" /></span>
-      <h1 className="mt-6 text-[clamp(2.2rem,5vw,3.4rem)] font-extrabold leading-[1.02] tracking-[-0.04em]">Billing</h1>
+      <h1 className="v-display !leading-[0.9] mt-6 text-[clamp(2.2rem,5vw,3.4rem)] ">Billing</h1>
       <p className="mx-auto mt-4 max-w-[480px] text-[17px] text-mute">
         Payments are handled by Tebex, our merchant of record. In the payment portal you can see receipts and manage or cancel Native+. Sign in there with the email you paid with.
       </p>

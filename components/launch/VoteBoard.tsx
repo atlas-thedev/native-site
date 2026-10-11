@@ -254,7 +254,7 @@ export default function VoteBoard({ initial, signedIn }: { initial: Poll[]; sign
         <Sky />
         <div className="relative mx-auto max-w-[1180px] px-5 pb-36 pt-20 sm:pt-28 lg:pb-44">
           <p className="eyebrow">Community vote</p>
-          <h1 className="mt-5 max-w-[760px] text-[clamp(3rem,7.4vw,6rem)] font-extrabold leading-[0.92] tracking-[-0.05em]">You pick what’s next.</h1>
+          <h1 className="v-display !leading-[0.9] mt-5 max-w-[760px] text-[clamp(3rem,7.4vw,6rem)] ">You pick what’s next.</h1>
           <p className="mt-6 max-w-[480px] text-[19px] leading-relaxed text-mute">New cloaks, cosmetics and features go to a vote. Whatever wins is what we make next.</p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <span className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-bg/70 px-4 text-[14px] font-semibold backdrop-blur">

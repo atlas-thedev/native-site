@@ -53,11 +53,11 @@ export default function VersionsRail({ latest }: { latest: Latest }) {
   const rail = (
     <div ref={track} className="flex w-max items-center gap-5 pl-[max(1.5rem,calc((100vw-1240px)/2+2rem))] pr-24">
       <div className="mr-10 w-[min(520px,80vw)] shrink-0">
-        <p className="eyebrow">Versions</p>
-        <h2 className="mt-5 text-balance text-[clamp(2.6rem,5.6vw,5rem)] font-extrabold leading-[0.98] tracking-[-0.045em]">
+        <p className="v-label">(04) Versions</p>
+        <h2 className="v-display mt-5 text-[clamp(3.6rem,8vw,7.6rem)]">
           Every version.
           <br />
-          <span className="text-mute">Every era.</span>
+          <span className="v-outline">Every era.</span>
         </h2>
         <p className="mt-6 max-w-[420px] text-lg leading-relaxed text-mute">
           From the combat update classics to the newest releases and snapshots, straight from Mojang. Create an instance for any release and Native sets up the loader and Java.

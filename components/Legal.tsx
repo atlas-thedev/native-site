@@ -9,7 +9,7 @@ export default function Legal({ title, path, updated, intro, sections }: { title
       <JsonLd data={breadcrumb([{ name: title, path }])} />
       <header className="mb-14">
         <p className="eyebrow">Legal · Updated {updated}</p>
-        <h1 className="mt-5 text-[clamp(2.6rem,6vw,4.8rem)] font-extrabold leading-[1] tracking-[-0.045em]">{title}</h1>
+        <h1 className="v-display !leading-[0.9] mt-5 text-[clamp(2.6rem,6vw,4.8rem)] ">{title}</h1>
         <p className="mt-6 max-w-[680px] text-lg leading-relaxed text-mute">{intro}</p>
       </header>
       <div className="grid gap-12 lg:grid-cols-[220px_1fr]">

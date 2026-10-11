@@ -42,7 +42,7 @@ export default function MaintenanceGate() {
       <div className="relative flex flex-col items-center">
         <span className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-surface"><Wrench className="h-7 w-7 [animation:float-y_2.4s_ease-in-out_infinite]" /></span>
         <p className="eyebrow mt-8">Maintenance</p>
-        <h1 id="mt-title" className="mt-4 max-w-[640px] text-balance text-[clamp(2.2rem,5vw,3.6rem)] font-extrabold leading-[1] tracking-[-0.04em]">{maintenance.message || "We’ll be right back."}</h1>
+        <h1 id="mt-title" className="v-display !leading-[0.9] mt-4 max-w-[640px] text-balance text-[clamp(2.2rem,5vw,3.6rem)] ">{maintenance.message || "We’ll be right back."}</h1>
         {maintenance.until && maintenance.until > Date.now() && (
           <>
             <p className="mt-8 text-[13px] font-semibold uppercase tracking-wider text-dim">Back in about</p>

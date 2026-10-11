@@ -66,7 +66,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
   if (!item) {
     return (
       <div className="mx-auto max-w-[640px] px-5 py-32 text-center">
-        <h1 className="text-[40px] font-extrabold tracking-tight">Founder gifts are on their way.</h1>
+        <h1 className="v-display !leading-[0.9] text-[40px] ">Founder gifts are on their way.</h1>
         <p className="mt-4 text-mute">Check back soon. Your free pick is saved for you.</p>
       </div>
     );
@@ -79,7 +79,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
         <Sparkle className="toon-twinkle absolute left-[12%] top-2 hidden w-5 sm:block" />
         <Sparkle className="toon-twinkle absolute right-[14%] top-10 hidden w-4 sm:block [animation-delay:-1s]" />
         <p className="eyebrow">{welcome ? `Welcome to Native, ${name}` : "Founder reward"}</p>
-        <h1 className="mt-4 text-balance text-[clamp(2.4rem,5.6vw,4.4rem)] font-extrabold leading-[1] tracking-[-0.045em]">
+        <h1 className="v-display !leading-[0.9] mt-4 text-balance text-[clamp(2.4rem,5.6vw,4.4rem)] ">
           {done ? `Your founder ${noun} is yours.` : `Pick your free founder ${noun}.`}
         </h1>
         <p className="mx-auto mt-5 max-w-[560px] text-[17px] text-mute">
