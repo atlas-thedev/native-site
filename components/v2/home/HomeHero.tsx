@@ -89,60 +89,69 @@ export default function HomeHero({ founder = [] }: { founder?: StoreItem[] }) {
   return (
     <section ref={ref} className="v-hero">
       <motion.div style={{ y }} className="v-wrap flex flex-1 flex-col">
-        <Lines lines={lines} go={go} />
+        <div className="grid items-start gap-[clamp(28px,4vw,64px)] lg:grid-cols-[minmax(0,1fr)_auto]">
+          <div>
+            <Lines lines={lines} go={go} />
 
-        {pre && (
-          <motion.div {...up(0.35)} className="mt-[clamp(18px,2.4vw,34px)]">
-            <Count at={launch.at} />
-          </motion.div>
-        )}
+            {pre && (
+              <motion.div {...up(0.35)} className="mt-[clamp(18px,2.4vw,34px)]">
+                <Count at={launch.at} />
+              </motion.div>
+            )}
 
-        <div className={`v-hero-row ${pre ? "!mt-0 !border-t-0" : ""}`}>
-          <motion.p {...up(0.45)} className="v-hero-copy">
-            {pre
-              ? launch.subline || "Create your free account before launch and pick one exclusive cape on us."
-              : "Instances, mods, modpacks, a 3D skin locker, friends chat and a crash analyzer that fixes things for you. One fast launcher, free for everyone."}
-          </motion.p>
+            <motion.p {...up(0.45)} className="v-hero-copy mt-6">
+              {pre
+                ? launch.subline || "Create your free account before launch and pick one exclusive cape on us."
+                : "Instances, mods, modpacks, a 3D skin locker, friends chat and a crash analyzer that fixes things for you. One fast launcher, free for everyone."}
+            </motion.p>
 
-          <motion.div {...up(0.55)} className="flex justify-start lg:justify-center">
-            {pre && launch.founderPick && founder.length > 0 ? (
-              <Link href={me ? "/founder" : "/register?next=/founder"} data-cursor="Pick one" className="group flex items-end gap-4">
-                {founder.map((it, i) => (
-                  <span key={it.id} className="flex flex-col items-center gap-2 transition duration-500 group-hover:-translate-y-1" style={{ transitionDelay: `${i * 50}ms` }}>
-                    <span className="[animation:float-y_4s_ease-in-out_infinite]" style={{ animationDelay: `${i * 0.5}s` }}>
-                      <ItemArt item={it} width={42} className="cutout-sm" />
+            <motion.div {...up(0.55)} className="v-hero-ctas mt-7 !justify-start pb-[clamp(40px,6vw,90px)]">
+              {pre ? (
+                <>
+                  <Magnetic>
+                    <Link href={me ? "/founder" : "/register?next=/founder"} className="v-btn is-solid is-lg">
+                      {me ? <Gift /> : <UserPlus />} {me ? "Pick your free cape" : "Create free account"}
+                    </Link>
+                  </Magnetic>
+                  <Link href="#features" className="v-btn is-lg">See what’s coming <ArrowDown /></Link>
+                </>
+              ) : (
+                <>
+                  <Magnetic>
+                    <Link href="/download" className="v-btn is-solid is-lg">
+                      <OsIcon /> Download for {platforms[os].label}
+                    </Link>
+                  </Magnetic>
+                  <Link href="/download" className="v-btn is-lg">Other platforms <ArrowUpRight /></Link>
+                </>
+              )}
+            </motion.div>
+          </div>
+
+          {pre && launch.founderPick && founder.length > 0 && (
+            <motion.div {...up(0.5)} className="lg:pt-[clamp(70px,8vw,130px)]">
+              <Link href={me ? "/founder" : "/register?next=/founder"} data-cursor="Pick one" className="group block w-full rounded-[20px] border border-line bg-surface p-6 transition hover:bg-surface-2 lg:w-[360px]">
+                <span className="flex items-center justify-between">
+                  <span className="v-label">Free founder cape</span>
+                  <Gift className="h-4 w-4 text-dim transition group-hover:text-fg" />
+                </span>
+                <span className="mt-6 flex items-end justify-between gap-3">
+                  {founder.map((it, i) => (
+                    <span key={it.id} className="flex flex-1 flex-col items-center gap-2 transition duration-500 group-hover:-translate-y-1" style={{ transitionDelay: `${i * 50}ms` }}>
+                      <span className="[animation:float-y_4s_ease-in-out_infinite]" style={{ animationDelay: `${i * 0.5}s` }}>
+                        <ItemArt item={it} width={52} className="cutout-sm" />
+                      </span>
+                      <span className="v-label !text-[10px] text-center">{it.name}</span>
                     </span>
-                    <span className="v-label !text-[10px]">{it.name}</span>
-                  </span>
-                ))}
-                <span className="v-label hidden max-w-[110px] pb-6 text-left !leading-relaxed sm:block">Free founder cape — pick one</span>
+                  ))}
+                </span>
+                <span className="mt-6 flex items-center justify-between border-t border-line pt-4 text-[14px] font-semibold">
+                  {me ? "Pick yours now" : "Create an account, pick one"}
+                  <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
               </Link>
-            ) : (
-              <a href="#statement" className="v-scrollhint v-label"><i />Scroll</a>
-            )}
-          </motion.div>
-
-          <motion.div {...up(0.65)} className="v-hero-ctas">
-            {pre ? (
-              <>
-                <Magnetic>
-                  <Link href={me ? "/founder" : "/register?next=/founder"} className="v-btn is-solid is-lg">
-                    {me ? <Gift /> : <UserPlus />} {me ? "Pick your free cape" : "Create free account"}
-                  </Link>
-                </Magnetic>
-                <Link href="#features" className="v-btn is-lg">See what’s coming <ArrowDown /></Link>
-              </>
-            ) : (
-              <>
-                <Magnetic>
-                  <Link href="/download" className="v-btn is-solid is-lg">
-                    <OsIcon /> Download for {platforms[os].label}
-                  </Link>
-                </Magnetic>
-                <Link href="/download" className="v-btn is-lg">Other platforms <ArrowUpRight /></Link>
-              </>
-            )}
-          </motion.div>
+            </motion.div>
+          )}
         </div>
       </motion.div>
     </section>

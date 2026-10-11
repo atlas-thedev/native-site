@@ -62,3 +62,16 @@
 /* Hero: keep the copy, founder capes and buttons inside the first screen. */
 .v-hero-title { padding-top: clamp(36px, 5.5vw, 88px); }
 .v-hero-row { padding-block: clamp(20px, 2.4vw, 32px); margin-top: clamp(14px, 1.6vw, 24px); }
+
+/* Nav: one clean row, never wraps. */
+.v-nav-inner { flex-wrap: nowrap; }
+.v-nav-brand, .v-nav-right { flex-shrink: 0; }
+.v-nav-link { white-space: nowrap; padding: 0 10px; }
+@media (min-width: 1280px) {
+  .v-nav-links { margin-left: auto; margin-right: 0; gap: 0; }
+  .v-nav-right { margin-left: 6px; }
+}
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .v-nav-link { padding: 0 8px; font-size: 13.5px; }
+  .v-nav-plus { display: none; }
+}
