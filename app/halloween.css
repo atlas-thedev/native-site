@@ -81,10 +81,10 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 
 /* Interactive edge spiders: narrow bodies leave page links usable. */
 .hw-spider { position: absolute; top: 100%; z-index: 41; display: flex; flex-direction: column; align-items: center; width: 44px; pointer-events: none; transition: transform 0.6s var(--v-ease), opacity 0.6s var(--v-ease); }
-.hw-spider-left { left: max(8px, env(safe-area-inset-left)); }
-.hw-spider-right { right: max(8px, env(safe-area-inset-right)); }
+.hw-spider-left { left: max(18px, env(safe-area-inset-left)); --hw-hang: 84px; }
+.hw-spider-right { right: max(54px, env(safe-area-inset-right)); --hw-hang: 42px; }
 .v-nav.is-hidden .hw-spider, .v-nav.is-open .hw-spider { transform: translateY(-100%); opacity: 0; }
-.hw-thread { width: 1px; height: 38px; background: rgba(230, 220, 255, 0.55); transition: height 0.8s cubic-bezier(0.34, 1.25, 0.64, 1); }
+.hw-thread { width: 1px; height: var(--hw-hang, 38px); background: rgba(230, 220, 255, 0.55); transition: height 0.8s cubic-bezier(0.34, 1.25, 0.64, 1); }
 .hw-spider.is-down .hw-thread { height: min(280px, 45vh); }
 .hw-spider-body { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; pointer-events: auto; transform: translateX(var(--peek, 0px)); transition: transform 0.12s ease, background 0.2s ease; }
 .hw-spider-body svg { display: block; animation: hw-sway 2.6s ease-in-out infinite; transform-origin: 50% 0; filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.7)); }
@@ -96,12 +96,35 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 /* pumpkins: click for candy */
 .hw-pumpkins { position: fixed; left: 18px; bottom: 18px; z-index: 60; display: flex; align-items: flex-end; gap: 6px; }
 .hw-pumpkin { width: 58px; height: 54px; padding: 0; border: 0; background: none; cursor: pointer; filter: drop-shadow(0 6px 16px rgba(255, 122, 24, 0.4)); transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.hw-pumpkin-1 { width: 44px; height: 41px; }
+.hw-pumpkin-1 { width: 58px; height: 58px; position: relative; }
+.hw-pumpkin svg { overflow: visible; }
+.hw-pumpkin-opening { opacity: 0; }
 .hw-pumpkin:hover { transform: translateY(-4px) rotate(-6deg) scale(1.08); }
 .hw-pumpkin:active { transform: scale(0.9); }
 .hw-face { animation: hw-glow 1.8s ease-in-out infinite alternate; }
 .hw-pumpkin-1 .hw-face { animation-delay: -0.9s; }
 @keyframes hw-glow { from { fill: #ffb347; filter: none; } to { fill: #fff2a8; filter: drop-shadow(0 0 4px #ffd36b); } }
+
+
+/* Right-hand welcome pumpkin: a single playful turn, then its lid lifts. */
+.hw-welcome-pumpkin { position: fixed; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 60; }
+.hw-pumpkin-shell { display: block; width: 100%; height: 100%; transform-origin: 50% 55%; }
+.hw-welcome-pumpkin .hw-pumpkin:hover { transform: translateY(-3px); }
+.hw-welcome-pumpkin .hw-pumpkin:focus-visible { outline: 2px solid #ffb347; outline-offset: 5px; border-radius: 12px; }
+.hw-welcome-pumpkin.is-spinning .hw-pumpkin-shell { animation: hw-pumpkin-spin 760ms cubic-bezier(.34,1.15,.64,1) both; }
+@keyframes hw-pumpkin-spin { 0% { transform: rotate(0) scale(1); } 45% { transform: rotate(180deg) scale(1.12); } 100% { transform: rotate(360deg) scale(1); } }
+.hw-pumpkin-lid { transform-box: fill-box; transform-origin: 15% 90%; transition: transform 350ms cubic-bezier(.34,1.4,.64,1); }
+.hw-welcome-pumpkin.is-open .hw-pumpkin-lid { transform: translate(-2px,-10px) rotate(-24deg); }
+.hw-welcome-pumpkin.is-open .hw-pumpkin-opening { opacity: 1; }
+.hw-welcome-pumpkin.is-open .hw-pumpkin { filter: drop-shadow(0 0 18px rgba(255,165,65,.65)); }
+.hw-pumpkin-welcome { position: absolute; right: 0; bottom: calc(100% + 24px); display: flex; align-items: center; gap: 8px; width: max-content; max-width: min(240px, calc(100vw - 36px)); padding: 10px 14px; border: 1px solid rgba(255,179,71,.45); border-radius: 12px; background: #1b101f; color: #fff2dc; font-size: 14px; font-weight: 600; line-height: 1.4; box-shadow: 0 8px 28px rgba(0,0,0,.3); pointer-events: none; opacity: 0; transform: translateY(5px); transition: opacity 200ms ease, transform 200ms ease; }
+.hw-pumpkin-welcome::after { content: ''; position: absolute; right: 22px; top: 100%; border: 6px solid transparent; border-top-color: #ffb347; }
+.hw-pumpkin-welcome > span { color: #ffb347; }
+.hw-welcome-pumpkin.is-open .hw-pumpkin-welcome { opacity: 1; transform: translateY(0); }
+.hw-pumpkin-sparks { position: absolute; inset: 0; pointer-events: none; }
+.hw-pumpkin-sparks i { position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; border-radius: 50%; background: #ffcc70; opacity: 0; box-shadow: 0 0 7px #ff7a18; }
+.hw-welcome-pumpkin.is-spinning .hw-pumpkin-sparks i { animation: hw-pumpkin-spark 760ms ease-out both; }
+@keyframes hw-pumpkin-spark { 0% { opacity: 0; transform: rotate(var(--a)) translateY(-12px) scale(.4); } 35% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-50px) scale(.1); } }
 
 .hw-burst { position: fixed; z-index: 70; width: 0; height: 0; pointer-events: none; }
 .hw-burst i {
@@ -116,12 +139,14 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 
 @media (max-width: 700px) {
   .hw-web { width: 110px; }
-  .hw-spider-right, .hw-ghost { display: none; }
+  .hw-ghost { display: none; }
+  .hw-spider-left { left: max(8px, env(safe-area-inset-left)); --hw-hang: 64px; }
+  .hw-spider-right { right: max(8px, env(safe-area-inset-right)); --hw-hang: 32px; }
   .hw-spider.is-down .hw-thread { height: min(180px, 35vh); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hw-fog i, .hw-light, .hw-spider-body svg, .hw-face, .hw-bat svg { animation: none; }
-  .hw-spider, .hw-thread, .hw-spider-body, .hw-pumpkin { transition: none; }
+  .hw-fog i, .hw-light, .hw-spider-body svg, .hw-face, .hw-bat svg, .hw-welcome-pumpkin.is-spinning .hw-pumpkin-shell, .hw-welcome-pumpkin.is-spinning .hw-pumpkin-sparks i { animation: none; }
+  .hw-spider, .hw-thread, .hw-spider-body, .hw-pumpkin, .hw-pumpkin-lid, .hw-pumpkin-welcome { transition: none; }
   .hw-burst i { animation: none; opacity: 0; }
 }
 
