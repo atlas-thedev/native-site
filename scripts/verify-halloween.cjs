@@ -27,13 +27,28 @@ const assert=require('node:assert/strict');
   const pumpkin=page.locator('.hw-pumpkin').first();await pumpkin.focus();await pumpkin.press('Enter');assert.equal(await page.locator('.hw-burst i').count(),16);
   const burst=await page.locator('.hw-burst').evaluate(e=>({x:parseFloat(e.style.left),y:parseFloat(e.style.top)}));assert.ok(burst.x>0&&burst.y>0);await page.waitForTimeout(1400);assert.equal(await page.locator('.hw-burst').count(),0);
   await page.mouse.move(700,700);
+  const anchor = () => page.evaluate(() => ({
+    navBottom: document.querySelector('.v-nav').getBoundingClientRect().bottom,
+    threadTop: document.querySelector('.hw-spider-left .hw-thread').getBoundingClientRect().top
+  }));
+  let position = await anchor();assert.ok(Math.abs(position.navBottom-position.threadTop)<=1, 'thread attaches directly to navbar');
+  // A dropped spider must fully leave the viewport, not hang below a hidden bar.
+  await left.click();await page.waitForTimeout(850);
+  await page.evaluate(()=>window.scrollTo(0,600));await page.locator('.v-nav.is-hidden').waitFor();await page.waitForFunction(()=>getComputedStyle(document.querySelector('.hw-spider-left')).opacity==='0');
+  assert.equal(await page.locator('.hw-spiders').getAttribute('inert'), '');
+  assert.equal(await left.evaluate(e=>getComputedStyle(e.closest('.hw-spider')).opacity), '0');
+  assert.ok((await left.boundingBox()).y+(await left.boundingBox()).height<=1, 'spider retracts fully above viewport');
+  await page.evaluate(()=>window.scrollTo(0,200));await page.waitForFunction(()=>!document.querySelector('.v-nav').classList.contains('is-hidden'));await page.waitForTimeout(700);
+  position = await anchor();assert.ok(Math.abs(position.navBottom-position.threadTop)<=1, 'thread stays anchored when navbar returns');
+  await left.press('Escape');await page.waitForTimeout(850);await page.evaluate(()=>window.scrollTo(0,0));await page.waitForTimeout(700);
   await page.setViewportSize({width:390,height:844});assert.equal(await left.isVisible(),true);assert.equal(await right.isVisible(),false);const touchBox=await left.boundingBox();assert.ok(touchBox.width>=44&&touchBox.height>=44);
-  await page.getByRole('button',{name:'Open menu',exact:true}).click();assert.equal(await page.locator('[data-theme-control]').count(),0);await page.getByRole('button',{name:'Close menu',exact:true}).click();await page.waitForTimeout(750);
+  position = await anchor();assert.ok(Math.abs(position.navBottom-position.threadTop)<=1, 'mobile thread attaches to navbar');
+  await page.getByRole('button',{name:'Open menu',exact:true}).click();assert.equal(await page.locator('.hw-spiders').getAttribute('inert'), '');assert.equal(await page.locator('[data-theme-control]').count(),0);await page.getByRole('button',{name:'Close menu',exact:true}).click();await page.waitForTimeout(750);
   enabled=false;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.waitForFunction(()=>!document.body.hasAttribute('data-halloween'));assert.equal(await page.locator('.hw-spider').count(),0);assert.equal(await page.locator('html').getAttribute('data-theme'),'light');
   await page.setViewportSize({width:1440,height:1000});assert.equal(await page.locator('.v-nav').getByRole('button',{name:'Switch theme'}).isVisible(),true);
   enabled=true;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await left.waitFor();assert.equal(await page.locator('[data-theme-control]').count(),0);
   await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await left.locator('svg').evaluate(e=>getComputedStyle(e).animationName),'none');assert.equal(await page.locator('.hw-spider-left .hw-thread').evaluate(e=>getComputedStyle(e).transitionDuration),'0s');
   await left.click();assert.equal(await left.getAttribute('aria-pressed'),'true');await left.click();assert.equal(await left.getAttribute('aria-pressed'),'false');
-  assert.deepEqual(errors,[]);console.log('PASS: no empty theme boxes; still nav hovers; desktop/mobile spiders; click, Space, Escape and hover reactions; keyboard candy bursts; live theme on/off; light theme restoration; reduced-motion behavior.');
+  assert.deepEqual(errors,[]);console.log('PASS: no empty theme boxes; still nav hovers; desktop/mobile spiders; click, Space, Escape and hover reactions; keyboard candy bursts; live theme on/off; light theme restoration; reduced-motion behavior; navbar-anchored threads and scroll hide/show.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1)});

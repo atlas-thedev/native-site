@@ -80,9 +80,10 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 .hw-ghost { position: absolute; left: 0; top: 0; margin: -32px 0 0 -27px; opacity: 0.85; will-change: transform; filter: drop-shadow(0 0 14px rgba(200, 190, 255, 0.55)); }
 
 /* Interactive edge spiders: narrow bodies leave page links usable. */
-.hw-spider { position: fixed; top: 100px; z-index: 41; display: flex; flex-direction: column; align-items: center; width: 44px; pointer-events: none; }
+.hw-spider { position: absolute; top: 100%; z-index: 41; display: flex; flex-direction: column; align-items: center; width: 44px; pointer-events: none; transition: transform 0.6s var(--v-ease), opacity 0.6s var(--v-ease); }
 .hw-spider-left { left: max(8px, env(safe-area-inset-left)); }
 .hw-spider-right { right: max(8px, env(safe-area-inset-right)); }
+.v-nav.is-hidden .hw-spider, .v-nav.is-open .hw-spider { transform: translateY(-100%); opacity: 0; }
 .hw-thread { width: 1px; height: 38px; background: rgba(230, 220, 255, 0.55); transition: height 0.8s cubic-bezier(0.34, 1.25, 0.64, 1); }
 .hw-spider.is-down .hw-thread { height: min(280px, 45vh); }
 .hw-spider-body { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; pointer-events: auto; transform: translateX(var(--peek, 0px)); transition: transform 0.12s ease, background 0.2s ease; }
@@ -116,12 +117,11 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 @media (max-width: 700px) {
   .hw-web { width: 110px; }
   .hw-spider-right, .hw-ghost { display: none; }
-  .hw-spider { top: 88px; }
   .hw-spider.is-down .hw-thread { height: min(180px, 35vh); }
 }
 @media (prefers-reduced-motion: reduce) {
   .hw-fog i, .hw-light, .hw-spider-body svg, .hw-face, .hw-bat svg { animation: none; }
-  .hw-thread, .hw-spider-body, .hw-pumpkin { transition: none; }
+  .hw-spider, .hw-thread, .hw-spider-body, .hw-pumpkin { transition: none; }
   .hw-burst i { animation: none; opacity: 0; }
 }
 
