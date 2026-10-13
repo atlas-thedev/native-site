@@ -51,7 +51,7 @@ export default async function PlayerPage({ params }: Params) {
   const items = [...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])];
   const ownedIds = new Set(player.owned.map((o) => o.id));
   const bundles = player.bundles
-    ? player.bundles.map((b) => ({ id: b.id, name: b.name, tagline: b.tagline, rarity: b.rarity, inStore: b.inStore, artUrl: b.artPath ? `https://api.playnative.fun${b.artPath}` : null, accent: b.accent, count: b.itemIds.length, itemIds: b.itemIds }))
+    ? player.bundles.map((b) => ({ id: b.id, name: b.name, tagline: b.tagline, rarity: b.rarity, inStore: b.inStore, artUrl: b.artPath ? `https://api.playnative.net${b.artPath}` : null, accent: b.accent, count: b.itemIds.length, itemIds: b.itemIds }))
     : allBundles.filter((b) => b.itemIds.every((id) => ownedIds.has(id))).map((b) => ({ id: b.id, name: b.name, artUrl: b.artUrl, accent: b.accent, count: b.itemIds.length, itemIds: b.itemIds }));
   const joined = player.joinedAt ? new Date(player.joinedAt).toLocaleDateString("en", { month: "long", year: "numeric" }) : "recently";
 

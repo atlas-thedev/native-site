@@ -7,8 +7,8 @@ set -euo pipefail
 VPS=${VPS:-ubuntu@3.106.132.147}; KEY=${KEY:-$HOME/.ssh/new.pem}
 [ -f "$KEY" ] || { echo "SSH key not found: $KEY (set KEY=/path/to/key.pem)"; exit 1; }
 if [ -z "${NEXT_PUBLIC_SITE_URL:-}" ]; then
-  NEXT_PUBLIC_SITE_URL=$(curl -fsS --max-time 10 https://api.playnative.fun/v1/domains/primary 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(JSON.parse(s).site||"")}catch{}})' || true)
-  NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://playnative.fun}
+  NEXT_PUBLIC_SITE_URL=$(curl -fsS --max-time 10 https://api.playnative.net/v1/domains/primary 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(JSON.parse(s).site||"")}catch{}})' || true)
+  NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://playnative.net}
 fi
 echo "Building for $NEXT_PUBLIC_SITE_URL"
 NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL npm run build
