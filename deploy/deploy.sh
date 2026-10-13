@@ -17,5 +17,6 @@ cp -r .next/standalone/. /tmp/native-pkg/ && mkdir -p /tmp/native-pkg/.next
 cp -r .next/static /tmp/native-pkg/.next/static && cp -r public /tmp/native-pkg/public
 tar czf /tmp/native-site.tgz -C /tmp/native-pkg .
 scp -i "$KEY" /tmp/native-site.tgz "$VPS":/tmp/
+# Generated route/fetch caches must not survive a new build (e.g. old sitemap domains).
 # ecosystem.config.cjs (holds NATIVE_SITE_KEY) stays on the server and is not overwritten.
-ssh -i "$KEY" "$VPS" 'cd ~/native-site && tar xzf /tmp/native-site.tgz && pm2 reload native-site --update-env'
+ssh -i "$KEY" "$VPS" 'cd ~/native-site && tar xzf /tmp/native-site.tgz && rm -rf .next/server/route-cache .next/cache && pm2 reload ecosystem.config.cjs --only native-site --update-env'
