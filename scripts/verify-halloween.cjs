@@ -16,6 +16,7 @@ const assert=require('node:assert/strict');
   await page.locator('body[data-halloween="on"]').waitFor();
   const left=page.locator('.hw-spider-left button'),right=page.locator('.hw-spider-right button');
   await left.waitFor();assert.equal(await page.locator('.hw-spider').count(),2);
+  await page.waitForFunction(() => document.querySelectorAll('[data-theme-control]').length === 0);
   assert.equal(await page.locator('[data-theme-control]').count(),0);assert.equal(await page.getByRole('button',{name:'Switch theme'}).count(),0);
   assert.equal(await page.locator('.v-nav .v-roll, .v-nav .v-magnetic').count(),0);
   await page.locator('.v-nav-plus').hover();assert.equal(await page.locator('.v-nav-plus .nx-plus-icon').evaluate(e=>getComputedStyle(e).transform),'none');

@@ -36,8 +36,8 @@ export const metadata: Metadata = {
   category: "games",
   alternates: { canonical: "/" },
   formatDetection: { email: false, address: false, telephone: false },
-  openGraph: { title, description: site.description, siteName: site.name, type: "website", url: "/", locale: "en_US", images: [{ url: "/og-native.png", width: 1200, height: 630, alt: site.name }] },
-  twitter: { card: "summary_large_image", title, description: site.description, images: ["/og-native.png"] },
+  openGraph: { title, description: site.description, siteName: site.name, type: "website", url: "/", locale: "en_US", images: [{ url: "/og-playnative-net.png", width: 1200, height: 630, alt: site.name }] },
+  twitter: { card: "summary_large_image", title, description: site.description, images: ["/og-playnative-net.png"] },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
 };
 
@@ -68,7 +68,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         description: site.description,
         url: site.url,
         downloadUrl: `${site.url}/download`,
-        image: `${site.url}/og-native.png`,
+        image: `${site.url}/og-playnative-net.png`,
         offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
         publisher: { "@id": `${site.url}/#org` },
       },
