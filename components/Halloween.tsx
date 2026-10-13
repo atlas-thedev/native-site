@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as RMouseEvent, type PointerEvent as RPointerEvent } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type MouseEvent as RMouseEvent, type PointerEvent as RPointerEvent } from "react";
 import { useLaunch } from "./launch/LaunchContext";
 
 /**
@@ -15,10 +15,14 @@ const CANDY = ["🍬", "🍭", "👻", "🦇", "🎃", "🕷️"];
 function Pumpkin() {
   return (
     <svg viewBox="0 0 64 60" width="100%" height="100%">
-      <path d="M31 12c0-5 3-9 8-9" stroke="#4d7c23" strokeWidth="4" fill="none" strokeLinecap="round" />
       <ellipse cx="20" cy="37" rx="14" ry="20" fill="#d9560b" />
       <ellipse cx="44" cy="37" rx="14" ry="20" fill="#d9560b" />
       <ellipse cx="32" cy="37" rx="15" ry="22" fill="#ff7a18" />
+      <ellipse className="hw-pumpkin-opening" cx="32" cy="21" rx="22" ry="6" fill="#301009" />
+      <g className="hw-pumpkin-lid">
+        <path d="M10 22C14 8 50 8 54 22Q32 17 10 22" fill="#ff8a2b" stroke="#d9560b" strokeWidth="1" />
+        <path d="M31 12c0-5 3-9 8-9" stroke="#4d7c23" strokeWidth="4" fill="none" strokeLinecap="round" />
+      </g>
       <path className="hw-face" d="M19 31l7-7 4 8zM45 31l-7-7-4 8zM17 42c6 7 24 7 30 0l-4 3-3-3-4 4-4-4-4 4-4-4-3 3z" fill="#ffd36b" />
     </svg>
   );
@@ -40,9 +44,15 @@ function Spider() {
 }
 
 /** Decorative threads never intercept links; only the spider itself is clickable. */
-function HangingSpider({ side }: { side: "left" | "right" }) {
+function HangingSpider({ side, inactive }: { side: "left" | "right"; inactive: boolean }) {
   const [down, setDown] = useState(false);
   const body = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!down) return;
+    const timer = window.setTimeout(() => setDown(false), 1800);
+    return () => window.clearTimeout(timer);
+  }, [down]);
+  useEffect(() => { if (inactive) setDown(false); }, [inactive]);
   const move = (event: RPointerEvent<HTMLButtonElement>) => {
     if (event.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const rect = event.currentTarget.getBoundingClientRect();
@@ -54,7 +64,7 @@ function HangingSpider({ side }: { side: "left" | "right" }) {
       <span className="hw-thread" aria-hidden />
       <button ref={body} type="button" className="hw-spider-body" aria-pressed={down}
         aria-label={`${down ? "Retract" : "Drop"} the ${side} Halloween spider`}
-        title={down ? "Click to pull me up" : "Click to drop me down"}
+        title={down ? "I’ll climb back up in a moment" : "Click to drop me down"}
         onClick={() => setDown((value) => !value)} onPointerMove={move}
         onPointerLeave={() => body.current?.style.removeProperty("--peek")}
         onKeyDown={(event) => { if (event.key === "Escape") setDown(false); }}>
@@ -71,8 +81,68 @@ export function HalloweenSpiders({ hidden, menuOpen }: { hidden: boolean; menuOp
   const inactive = hidden || menuOpen;
   return (
     <div className="hw-spiders" inert={inactive} aria-hidden={inactive || undefined}>
-      <HangingSpider side="left" />
-      <HangingSpider side="right" />
+      <HangingSpider side="left" inactive={inactive} />
+      <HangingSpider side="right" inactive={inactive} />
+    </div>
+  );
+}
+
+function WelcomePumpkin({ pop }: { pop: (event: RMouseEvent<HTMLButtonElement>) => void }) {
+  const [phase, setPhase] = useState<"idle" | "spinning" | "open">("idle");
+  const current = useRef(phase);
+  const spinTimer = useRef<number | null>(null);
+  const closeTimer = useRef<number | null>(null);
+  const inside = useRef(false);
+  const messageId = useId();
+  const reset = () => {
+    if (spinTimer.current !== null) window.clearTimeout(spinTimer.current);
+    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+    spinTimer.current = closeTimer.current = null;
+    current.current = "idle";
+    setPhase("idle");
+  };
+  const closeAfter = (delay: number) => {
+    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(reset, delay);
+  };
+  const greet = () => {
+    inside.current = true;
+    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+    if (current.current === "spinning") return;
+    if (current.current === "open") { closeAfter(4000); return; }
+    current.current = "spinning";
+    setPhase("spinning");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    spinTimer.current = window.setTimeout(() => {
+      spinTimer.current = null;
+      current.current = "open";
+      setPhase("open");
+      closeAfter(inside.current ? 4000 : 1000);
+    }, reduced ? 0 : 760);
+  };
+  const leave = () => {
+    inside.current = false;
+    if (current.current === "open") closeAfter(800);
+  };
+  useEffect(() => () => {
+    if (spinTimer.current !== null) window.clearTimeout(spinTimer.current);
+    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+  }, []);
+  return (
+    <div className={`hw-welcome-pumpkin is-${phase}`}>
+      <div id={messageId} role="tooltip" className="hw-pumpkin-welcome" aria-hidden={phase !== "open"}>
+        <span aria-hidden><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 0l1.7 4.3L12 6l-4.3 1.7L6 12 4.3 7.7 0 6l4.3-1.7z" /></svg></span> Welcome to Native 🎃
+      </div>
+      <button type="button" className="hw-pumpkin hw-pumpkin-1" aria-label="Spin and open the welcome pumpkin"
+        aria-expanded={phase === "open"} aria-describedby={phase === "open" ? messageId : undefined}
+        onPointerEnter={(event) => { if (event.pointerType === "mouse") greet(); }} onPointerLeave={leave}
+        onFocus={greet} onBlur={leave} onClick={(event) => { greet(); pop(event); }}
+        onKeyDown={(event) => { if (event.key === "Escape") reset(); }}>
+        <span className="hw-pumpkin-shell"><Pumpkin /></span>
+        <span className="hw-pumpkin-sparks" aria-hidden>
+          {Array.from({ length: 8 }, (_, i) => <i key={i} style={{ "--a": `${i * 45}deg` } as CSSProperties} />)}
+        </span>
+      </button>
     </div>
   );
 }
@@ -148,12 +218,11 @@ function HalloweenEffects() {
         <div className="hw-fog"><i /><i /></div>
       </div>
       <div className="hw-pumpkins">
-        {[0, 1].map((i) => (
-          <button key={i} type="button" className={`hw-pumpkin hw-pumpkin-${i}`} onClick={pop} aria-label="Click the pumpkin">
-            <Pumpkin />
-          </button>
-        ))}
+        <button type="button" className="hw-pumpkin hw-pumpkin-0" onClick={pop} aria-label="Click the pumpkin">
+          <Pumpkin />
+        </button>
       </div>
+      <WelcomePumpkin pop={pop} />
       {bursts.map((burst) => (
         <div key={burst.id} className="hw-burst" style={{ left: burst.x, top: burst.y }} aria-hidden>
           {burst.particles.map((particle, i) => (

@@ -4,6 +4,8 @@
  */
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
+const screenshotDir=process.env.NATIVE_SITE_SCREENSHOTS_DIR;
+if(screenshotDir) require('node:fs').mkdirSync(screenshotDir,{recursive:true});
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH || undefined,headless:true,args:['--no-sandbox']});
  try{
@@ -20,8 +22,11 @@ const assert=require('node:assert/strict');
   assert.equal(await page.locator('[data-theme-control]').count(),0);assert.equal(await page.getByRole('button',{name:'Switch theme'}).count(),0);
   assert.equal(await page.locator('.v-nav .v-roll, .v-nav .v-magnetic').count(),0);
   await page.locator('.v-nav-plus').hover();assert.equal(await page.locator('.v-nav-plus .nx-plus-icon').evaluate(e=>getComputedStyle(e).transform),'none');
+  const anchors = await page.locator('.hw-spider').evaluateAll(es => es.map(e => ({x:e.getBoundingClientRect().x, thread:e.querySelector('.hw-thread').getBoundingClientRect().height})));
+  assert.ok(Math.abs(anchors[0].x - anchors[1].x) > 500);assert.notEqual(anchors[0].thread, anchors[1].thread);
   await left.click();assert.equal(await left.getAttribute('aria-pressed'),'true');await page.waitForTimeout(850);
   const thread=await page.locator('.hw-spider-left .hw-thread').evaluate(e=>e.getBoundingClientRect().height);assert.ok(thread>150);
+  await page.waitForFunction(() => document.querySelector('.hw-spider-left button').getAttribute('aria-pressed') === 'false');
   await left.press('Escape');assert.equal(await left.getAttribute('aria-pressed'),'false');await page.waitForTimeout(850);
   await right.focus();await right.press('Space');assert.equal(await right.getAttribute('aria-pressed'),'true');await right.press('Space');assert.equal(await right.getAttribute('aria-pressed'),'false');
   const rect=await left.boundingBox();await page.mouse.move(rect.x+rect.width/2+10,rect.y+rect.height/2);await page.waitForTimeout(50);assert.notEqual(await left.evaluate(e=>e.style.getPropertyValue('--peek')),'');
@@ -42,14 +47,41 @@ const assert=require('node:assert/strict');
   await page.evaluate(()=>window.scrollTo(0,200));await page.waitForFunction(()=>!document.querySelector('.v-nav').classList.contains('is-hidden'));await page.waitForTimeout(700);
   position = await anchor();assert.ok(Math.abs(position.navBottom-position.threadTop)<=1, 'thread stays anchored when navbar returns');
   await left.press('Escape');await page.waitForTimeout(850);await page.evaluate(()=>window.scrollTo(0,0));await page.waitForTimeout(700);
-  await page.setViewportSize({width:390,height:844});assert.equal(await left.isVisible(),true);assert.equal(await right.isVisible(),false);const touchBox=await left.boundingBox();assert.ok(touchBox.width>=44&&touchBox.height>=44);
+  await page.setViewportSize({width:390,height:844});assert.equal(await left.isVisible(),true);assert.equal(await right.isVisible(),true);const touchBox=await left.boundingBox();assert.ok(touchBox.width>=44&&touchBox.height>=44);
   position = await anchor();assert.ok(Math.abs(position.navBottom-position.threadTop)<=1, 'mobile thread attaches to navbar');
   await page.getByRole('button',{name:'Open menu',exact:true}).click();assert.equal(await page.locator('.hw-spiders').getAttribute('inert'), '');assert.equal(await page.locator('[data-theme-control]').count(),0);await page.getByRole('button',{name:'Close menu',exact:true}).click();await page.waitForTimeout(750);
+  const welcome=page.getByRole('button',{name:'Spin and open the welcome pumpkin'});
+  await page.setViewportSize({width:1440,height:1000});await welcome.hover();
+  await page.locator('.hw-welcome-pumpkin.is-spinning').waitFor();
+  const frames=await page.locator('.hw-pumpkin-shell').evaluate(e => e.getAnimations()[0].effect.getKeyframes());assert.ok(frames.some(f => String(f.transform).includes('360deg')));
+  await page.locator('.hw-welcome-pumpkin.is-open').waitFor();
+  assert.equal(await welcome.getAttribute('aria-expanded'),'true');
+  assert.ok(await page.getByRole('tooltip').isVisible());assert.match(await page.getByRole('tooltip').innerText(),/Welcome to Native/);
+  assert.notEqual(await welcome.locator('.hw-pumpkin-lid').evaluate(e=>getComputedStyle(e).transform),'none');
+  await page.waitForTimeout(400);if(screenshotDir) await page.screenshot({path:require('node:path').join(screenshotDir,'desktop-welcome.png')});
+  await page.mouse.move(700,500);await page.locator('.hw-welcome-pumpkin.is-idle').waitFor();
+  await welcome.focus();await page.locator('.hw-welcome-pumpkin.is-open').waitFor();await welcome.press('Escape');await page.locator('.hw-welcome-pumpkin.is-idle').waitFor();
+  await page.setViewportSize({width:390,height:844});await welcome.click();await page.locator('.hw-welcome-pumpkin.is-open').waitFor();
+  const bubble=await page.getByRole('tooltip').boundingBox();assert.ok(bubble.x>=0 && bubble.x+bubble.width<=390);
+
+  await welcome.press('Escape');
   enabled=false;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.waitForFunction(()=>!document.body.hasAttribute('data-halloween'));assert.equal(await page.locator('.hw-spider').count(),0);assert.equal(await page.locator('html').getAttribute('data-theme'),'light');
   await page.setViewportSize({width:1440,height:1000});assert.equal(await page.locator('.v-nav').getByRole('button',{name:'Switch theme'}).isVisible(),true);
   enabled=true;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await left.waitFor();assert.equal(await page.locator('[data-theme-control]').count(),0);
   await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await left.locator('svg').evaluate(e=>getComputedStyle(e).animationName),'none');assert.equal(await page.locator('.hw-spider-left .hw-thread').evaluate(e=>getComputedStyle(e).transitionDuration),'0s');
   await left.click();assert.equal(await left.getAttribute('aria-pressed'),'true');await left.click();assert.equal(await left.getAttribute('aria-pressed'),'false');
-  assert.deepEqual(errors,[]);console.log('PASS: no empty theme boxes; still nav hovers; desktop/mobile spiders; click, Space, Escape and hover reactions; keyboard candy bursts; live theme on/off; light theme restoration; reduced-motion behavior; navbar-anchored threads and scroll hide/show.');
+  await welcome.click();await page.locator('.hw-welcome-pumpkin.is-open').waitFor();assert.equal(await page.locator('.hw-pumpkin-shell').evaluate(e=>getComputedStyle(e).animationName),'none');await welcome.press('Escape');
+  const touchContext=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const touchPage=await touchContext.newPage();touchPage.on('pageerror',e=>errors.push(e.message));
+  await touchPage.route('**/api/site',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({...cfg,theme:{halloween:true}})}));
+  await touchPage.goto(`${process.env.NATIVE_SITE_TEST_URL || 'http://127.0.0.1:3011'}/support`,{waitUntil:'domcontentloaded'});
+  const touchPumpkin=touchPage.getByRole('button',{name:'Spin and open the welcome pumpkin'});
+  await touchPumpkin.tap();await touchPage.locator('.hw-welcome-pumpkin.is-open').waitFor();await touchPage.waitForTimeout(400);
+  assert.equal(await touchPumpkin.getAttribute('aria-expanded'),'true');assert.ok(await touchPage.getByRole('tooltip').isVisible());
+  assert.ok(await touchPage.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
+  if(screenshotDir) await touchPage.screenshot({path:require('node:path').join(screenshotDir,'mobile-welcome.png')});
+  await touchPage.locator('.hw-welcome-pumpkin.is-idle').waitFor();assert.equal(await touchPumpkin.getAttribute('aria-expanded'),'false');
+  await touchContext.close();
+  assert.deepEqual(errors,[]);console.log('PASS: no empty theme boxes; still nav hovers; desktop/mobile spiders; click, Space, Escape and hover reactions; keyboard candy bursts; live theme on/off; light theme restoration; reduced-motion behavior; distinct spider anchors and auto-retract; navbar scroll hide/show; welcome pumpkin 360 spin, opening lid, popup, keyboard/touch and reduced motion.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1)});
