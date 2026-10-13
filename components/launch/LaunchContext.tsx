@@ -27,12 +27,13 @@ export function LaunchProvider({ config, children }: { config: SiteConfig; child
           maintenance: { ...c.maintenance, ...(d.maintenance ?? {}) },
           announcement: { ...c.announcement, ...(d.announcement ?? {}) },
           beta: { ...c.beta, ...(d.beta ?? {}) },
+          theme: { ...c.theme, ...(d.theme ?? {}) },
           offers: Array.isArray(d.offers) ? d.offers : c.offers,
         }));
       } catch {}
     };
     pull();
-    const t = setInterval(pull, 60000);
+    const t = setInterval(pull, 15000);
     window.addEventListener("focus", pull);
     return () => {
       dead = true;

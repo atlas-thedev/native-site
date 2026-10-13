@@ -79,16 +79,17 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 
 .hw-ghost { position: absolute; left: 0; top: 0; margin: -32px 0 0 -27px; opacity: 0.85; will-change: transform; filter: drop-shadow(0 0 14px rgba(200, 190, 255, 0.55)); }
 
-/* spider: click to drop it / pull it back up */
-.hw-spider {
-  position: fixed; top: 64px; right: 18%; z-index: 41;
-  display: flex; flex-direction: column; align-items: center;
-  padding: 0; border: 0; background: none; cursor: pointer;
-}
-.hw-thread { width: 1px; height: 46px; background: rgba(230, 220, 255, 0.5); transition: height 0.9s cubic-bezier(0.34, 1.4, 0.64, 1); }
-.hw-spider.is-down .hw-thread { height: 300px; }
-.hw-spider-body { display: block; animation: hw-sway 2.6s ease-in-out infinite; transform-origin: 50% -40px; }
-.hw-spider:hover .hw-spider-body { animation-duration: 0.5s; }
+/* Interactive edge spiders: narrow bodies leave page links usable. */
+.hw-spider { position: fixed; top: 100px; z-index: 41; display: flex; flex-direction: column; align-items: center; width: 44px; pointer-events: none; }
+.hw-spider-left { left: max(8px, env(safe-area-inset-left)); }
+.hw-spider-right { right: max(8px, env(safe-area-inset-right)); }
+.hw-thread { width: 1px; height: 38px; background: rgba(230, 220, 255, 0.55); transition: height 0.8s cubic-bezier(0.34, 1.25, 0.64, 1); }
+.hw-spider.is-down .hw-thread { height: min(280px, 45vh); }
+.hw-spider-body { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; pointer-events: auto; transform: translateX(var(--peek, 0px)); transition: transform 0.12s ease, background 0.2s ease; }
+.hw-spider-body svg { display: block; animation: hw-sway 2.6s ease-in-out infinite; transform-origin: 50% 0; filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.7)); }
+.hw-spider-body:hover, .hw-spider-body:focus-visible { background: rgba(139, 92, 246, 0.14); }
+.hw-spider-body:focus-visible { outline: 2px solid var(--hw-orange, #ff7a18); outline-offset: 2px; }
+.hw-spider-body:hover svg { animation-duration: 0.45s; }
 @keyframes hw-sway { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
 
 /* pumpkins: click for candy */
@@ -112,29 +113,18 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
   100% { transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(1.1); opacity: 0; }
 }
 
-.hw-toggle {
-  position: fixed; left: 18px; bottom: 18px; z-index: 60;
-  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 10px;
-  border: 1px solid rgba(255, 122, 24, 0.5); border-radius: 999px;
-  background: rgba(18, 8, 28, 0.9); color: #ffd9b0; backdrop-filter: blur(8px);
-  font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
-  box-shadow: 0 0 22px rgba(255, 122, 24, 0.25);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.hw-toggle:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(255, 122, 24, 0.45); }
-.hw-toggle span { font-size: 16px; }
-.hw-toggle.is-off { opacity: 0.6; border-color: rgba(255, 255, 255, 0.15); box-shadow: none; }
-
 @media (max-width: 700px) {
   .hw-web { width: 110px; }
-  .hw-spider, .hw-ghost { display: none; }
+  .hw-spider-right, .hw-ghost { display: none; }
+  .hw-spider { top: 88px; }
+  .hw-spider.is-down .hw-thread { height: min(180px, 35vh); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hw-fog i, .hw-light, .hw-spider-body, .hw-face, .hw-bat svg { animation: none; }
+  .hw-fog i, .hw-light, .hw-spider-body svg, .hw-face, .hw-bat svg { animation: none; }
+  .hw-thread, .hw-spider-body, .hw-pumpkin { transition: none; }
+  .hw-burst i { animation: none; opacity: 0; }
 }
 
 /* Halloween is dark only: hide the light/dark switch. */
+body[data-halloween="on"] [data-theme-control],
 body[data-halloween="on"] button[aria-label="Switch theme"] { display: none !important; }
-
-/* spider removed */
-.hw-spider { display: none !important; }

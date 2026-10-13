@@ -184,3 +184,6 @@ html {
   background: linear-gradient(180deg, rgba(255, 224, 138, 0.35), rgba(242, 182, 50, 0.12));
 }
 [data-theme="light"] .nx-plus:hover { color: #1b1405; border-color: transparent; background: linear-gradient(180deg, #ffe08a, #f2b632); }
+
+/* Nav hover stays still; retain colour feedback and dropdown open-state rotation. */
+.v-nav-plus:hover .nx-plus-icon { transform: none; }

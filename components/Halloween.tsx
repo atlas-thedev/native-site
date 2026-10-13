@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as RMouseEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as RMouseEvent, type PointerEvent as RPointerEvent } from "react";
+import { useLaunch } from "./launch/LaunchContext";
 
 /**
  * Halloween mode (turned on from the launcher admin panel): a candle light that follows the cursor,
- * a spider you can drop, pumpkins that burst into candy, and drifting fog.
+ * interactive spiders you can drop and retract, pumpkins that burst into candy, and drifting fog.
  */
 
 
@@ -38,70 +39,114 @@ function Spider() {
   );
 }
 
-type Burst = { id: number; x: number; y: number };
+/** Decorative threads never intercept links; only the spider itself is clickable. */
+function HangingSpider({ side }: { side: "left" | "right" }) {
+  const [down, setDown] = useState(false);
+  const body = useRef<HTMLButtonElement>(null);
+  const move = (event: RPointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = Math.max(-8, Math.min(8, (event.clientX - rect.left - rect.width / 2) * 0.3));
+    body.current?.style.setProperty("--peek", `${x}px`);
+  };
+  return (
+    <div className={`hw-spider hw-spider-${side}${down ? " is-down" : ""}`}>
+      <span className="hw-thread" aria-hidden />
+      <button ref={body} type="button" className="hw-spider-body" aria-pressed={down}
+        aria-label={`${down ? "Retract" : "Drop"} the ${side} Halloween spider`}
+        title={down ? "Click to pull me up" : "Click to drop me down"}
+        onClick={() => setDown((value) => !value)} onPointerMove={move}
+        onPointerLeave={() => body.current?.style.removeProperty("--peek")}
+        onKeyDown={(event) => { if (event.key === "Escape") setDown(false); }}>
+        <Spider />
+      </button>
+    </div>
+  );
+}
 
+type Burst = { id: number; x: number; y: number; particles: { angle: number; distance: number }[] };
+
+/** Follow the live admin setting rather than a stale server-rendered mount decision. */
 export default function Halloween() {
-  const [off, setOff] = useState(false);
-  const [drop, setDrop] = useState(false);
+  const { theme } = useLaunch();
+  const enabled = Boolean(theme?.halloween);
+  useEffect(() => {
+    if (enabled) document.body.setAttribute("data-halloween", "on");
+    else document.body.removeAttribute("data-halloween");
+    return () => document.body.removeAttribute("data-halloween");
+  }, [enabled]);
+  return enabled ? <HalloweenEffects /> : null;
+}
+
+function HalloweenEffects() {
   const [bursts, setBursts] = useState<Burst[]>([]);
   const lightRef = useRef<HTMLDivElement>(null);
+  const timers = useRef<Set<number>>(new Set());
 
-  useEffect(() => {
-    try { setOff(localStorage.getItem("native.halloween.off") === "1"); } catch { /* private mode */ }
-  }, []);
-
-  // Halloween mode is always dark: drop light mode and keep it off while the theme is on.
+  // Keep Halloween dark, then restore the visitor's theme when admin disables it.
   useEffect(() => {
     const root = document.documentElement;
+    let previous = root.getAttribute("data-theme");
+    try { previous = localStorage.getItem("theme") || previous; } catch { /* private mode */ }
     const force = () => { if (root.getAttribute("data-theme") === "light") root.removeAttribute("data-theme"); };
     force();
     const watch = new MutationObserver(force);
     watch.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => watch.disconnect();
+    root.setAttribute("data-halloween-fx", "");
+    return () => {
+      watch.disconnect();
+      root.removeAttribute("data-halloween-fx");
+      if (previous === "light") root.setAttribute("data-theme", "light");
+    };
   }, []);
 
   useEffect(() => {
-    document.documentElement.toggleAttribute("data-halloween-fx", !off);
-    return () => document.documentElement.removeAttribute("data-halloween-fx");
-  }, [off]);
-
-  useEffect(() => {
-    if (off) return;
-    const onMove = (e: PointerEvent) => {
-      lightRef.current?.style.setProperty("--mx", `${e.clientX}px`);
-      lightRef.current?.style.setProperty("--my", `${e.clientY}px`);
+    const onMove = (event: PointerEvent) => {
+      lightRef.current?.style.setProperty("--mx", `${event.clientX}px`);
+      lightRef.current?.style.setProperty("--my", `${event.clientY}px`);
     };
     window.addEventListener("pointermove", onMove, { passive: true });
     return () => window.removeEventListener("pointermove", onMove);
-  }, [off]);
+  }, []);
 
-  const pop = (e: RMouseEvent) => {
+  useEffect(() => {
+    const pending = timers.current;
+    return () => { pending.forEach((id) => window.clearTimeout(id)); pending.clear(); };
+  }, []);
+
+  const pop = (event: RMouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
     const id = Date.now() + Math.random();
-    setBursts((list) => [...list, { id, x: e.clientX, y: e.clientY }]);
-    window.setTimeout(() => setBursts((list) => list.filter((b) => b.id !== id)), 1300);
+    const x = event.detail === 0 ? rect.left + rect.width / 2 : event.clientX;
+    const y = event.detail === 0 ? rect.top + rect.height / 2 : event.clientY;
+    const particles = Array.from({ length: 16 }, (_, i) => ({ angle: i * 360 / 16 + Math.random() * 12, distance: 70 + Math.random() * 80 }));
+    setBursts((list) => [...list.slice(-7), { id, x, y, particles }]);
+    const timer = window.setTimeout(() => {
+      setBursts((list) => list.filter((burst) => burst.id !== id));
+      timers.current.delete(timer);
+    }, 1300);
+    timers.current.add(timer);
   };
 
   return (
     <>
-      {!off && (
-        <div className="hw-layer" aria-hidden>
-          <div ref={lightRef} className="hw-light" />
-          <div className="hw-fog"><i /><i /></div>
-        </div>
-      )}
-      {!off && (
-        <div className="hw-pumpkins">
-          {[0, 1].map((i) => (
-            <button key={i} type="button" className={`hw-pumpkin hw-pumpkin-${i}`} onClick={pop} aria-label="Click the pumpkin">
-              <Pumpkin />
-            </button>
-          ))}
-        </div>
-      )}
-      {bursts.map((b) => (
-        <div key={b.id} className="hw-burst" style={{ left: b.x, top: b.y }} aria-hidden>
-          {Array.from({ length: 16 }, (_, i) => (
-            <i key={i} style={{ "--a": `${(i * 360) / 16 + Math.random() * 12}deg`, "--d": `${70 + Math.random() * 80}px` } as CSSProperties}>{CANDY[i % CANDY.length]}</i>
+      <div className="hw-layer" aria-hidden>
+        <div ref={lightRef} className="hw-light" />
+        <div className="hw-fog"><i /><i /></div>
+      </div>
+      <HangingSpider side="left" />
+      <HangingSpider side="right" />
+      <div className="hw-pumpkins">
+        {[0, 1].map((i) => (
+          <button key={i} type="button" className={`hw-pumpkin hw-pumpkin-${i}`} onClick={pop} aria-label="Click the pumpkin">
+            <Pumpkin />
+          </button>
+        ))}
+      </div>
+      {bursts.map((burst) => (
+        <div key={burst.id} className="hw-burst" style={{ left: burst.x, top: burst.y }} aria-hidden>
+          {burst.particles.map((particle, i) => (
+            <i key={i} style={{ "--a": `${particle.angle}deg`, "--d": `${particle.distance}px` } as CSSProperties}>{CANDY[i % CANDY.length]}</i>
           ))}
         </div>
       ))}
