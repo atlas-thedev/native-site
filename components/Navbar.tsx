@@ -11,6 +11,7 @@ import { useLaunch } from "./launch/LaunchContext";
 import { site } from "@/lib/site";
 import { Apple, Discord, Linux, Windows } from "./icons";
 import ThemeToggle from "./ThemeToggle";
+import { HalloweenSpiders } from "./Halloween";
 import SkinHead from "./SkinHead";
 import CommandSearch from "./search/CommandSearch";
 
@@ -222,6 +223,7 @@ export default function Navbar() {
             </button>
           </div>
         </nav>
+        <HalloweenSpiders hidden={hidden && !open} menuOpen={open} />
       </header>
       <div className="v-nav-spacer" aria-hidden />
 

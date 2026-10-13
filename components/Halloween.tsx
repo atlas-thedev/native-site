@@ -64,6 +64,19 @@ function HangingSpider({ side }: { side: "left" | "right" }) {
   );
 }
 
+/** Anchor decorations inside the actual navbar so sticky/hide motion stays in sync. */
+export function HalloweenSpiders({ hidden, menuOpen }: { hidden: boolean; menuOpen: boolean }) {
+  const { theme } = useLaunch();
+  if (!theme?.halloween) return null;
+  const inactive = hidden || menuOpen;
+  return (
+    <div className="hw-spiders" inert={inactive} aria-hidden={inactive || undefined}>
+      <HangingSpider side="left" />
+      <HangingSpider side="right" />
+    </div>
+  );
+}
+
 type Burst = { id: number; x: number; y: number; particles: { angle: number; distance: number }[] };
 
 /** Follow the live admin setting rather than a stale server-rendered mount decision. */
@@ -134,8 +147,6 @@ function HalloweenEffects() {
         <div ref={lightRef} className="hw-light" />
         <div className="hw-fog"><i /><i /></div>
       </div>
-      <HangingSpider side="left" />
-      <HangingSpider side="right" />
       <div className="hw-pumpkins">
         {[0, 1].map((i) => (
           <button key={i} type="button" className={`hw-pumpkin hw-pumpkin-${i}`} onClick={pop} aria-label="Click the pumpkin">
