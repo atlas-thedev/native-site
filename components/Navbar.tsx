@@ -5,8 +5,6 @@ import { ChevronDown, Crown, Gift } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import "../app/redesign.css";
-import Roll from "./v2/Roll";
-import Magnetic from "./v2/Magnetic";
 import { usePathname } from "next/navigation";
 import { useAccount } from "./useAccount";
 import { useLaunch } from "./launch/LaunchContext";
@@ -111,7 +109,7 @@ function DownloadMenu() {
 export default function Navbar() {
   const me = useAccount();
   const name = me === undefined ? undefined : (me?.name ?? null);
-  const { launch } = useLaunch();
+  const { launch, theme } = useLaunch();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -155,7 +153,7 @@ export default function Navbar() {
     </Link>
   ) : (
     <Link href="/login" className={`v-nav-link hidden sm:inline-flex ${name === undefined ? "opacity-0" : ""}`}>
-      <Roll>Sign in</Roll>
+      Sign in
     </Link>
   );
 
@@ -180,7 +178,7 @@ export default function Navbar() {
             {nav.map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className={`v-nav-link ${isOn(l.href) ? "is-on" : ""}`}>
-                  <Roll>{l.label}</Roll>
+                  {l.label}
                 </Link>
               </li>
             ))}
@@ -196,23 +194,21 @@ export default function Navbar() {
             <CommandSearch className="w-11 justify-center lg:w-auto" />
             <div className="hidden xl:block">
               {gift ? (
-                <Magnetic>
-                  <Link href={giftCta.href} className={`${primary} btn-shine gap-2.5 pl-1.5 pr-4`}>
-                    <span className="grid h-8 w-8 place-items-center rounded-[7px] bg-inv-fg/10">
-                      <Gift className="h-4 w-4 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />
-                    </span>
-                    <span className="whitespace-nowrap">{giftCta.label}</span>
-                  </Link>
-                </Magnetic>
+                <Link href={giftCta.href} className={`${primary} btn-shine gap-2.5 pl-1.5 pr-4`}>
+                  <span className="grid h-8 w-8 place-items-center rounded-[7px] bg-inv-fg/10">
+                    <Gift className="h-4 w-4" />
+                  </span>
+                  <span className="whitespace-nowrap">{giftCta.label}</span>
+                </Link>
               ) : (
                 <DownloadMenu />
               )}
             </div>
-            <div className="hidden xl:block">
-              <div className={`${box} w-11`}>
-                <ThemeToggle />
+            {!theme?.halloween && (
+              <div className="hidden xl:block" data-theme-control>
+                <div className={`${box} w-11`}><ThemeToggle /></div>
               </div>
-            </div>
+            )}
             {account}
             <button
               data-claim-target
@@ -259,7 +255,7 @@ export default function Navbar() {
               </Link>
               <div className="ml-auto flex items-center gap-2">
                 <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className={`${box} w-11`}><Discord className="h-[17px] w-[17px]" /></a>
-                <div className={`${box} w-11`}><ThemeToggle /></div>
+                {!theme?.halloween && <div className={`${box} w-11`} data-theme-control><ThemeToggle /></div>}
               </div>
             </motion.div>
           </motion.div>
