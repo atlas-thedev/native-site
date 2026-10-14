@@ -2,7 +2,6 @@ import Link from "next/link";
 import { site } from "@/lib/site";
 import { Discord, YouTube } from "./icons";
 import ThemeToggle from "./ThemeToggle";
-import CodeSigningCredit from "./CodeSigningCredit";
 
 type FooterLink = { label: string; href: string; ext?: boolean };
 
@@ -87,7 +86,6 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        <CodeSigningCredit className="mb-6 max-w-[760px]" />
         <div className="v-foot-bar">
           <div className="space-y-1">
             <p>© {new Date().getFullYear()} Native. All rights reserved.</p>
