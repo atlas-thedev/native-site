@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import DownloadCards from "@/components/DownloadCards";
+import CodeSigningCredit from "@/components/CodeSigningCredit";
 import JsonLd from "@/components/JsonLd";
 import Reveal from "@/components/Reveal";
 import SplitText from "@/components/SplitText";
@@ -57,12 +58,16 @@ export default async function DownloadPage() {
         </DownloadGate>
       </section>
 
+      <div className="v-wrap mt-8">
+        <CodeSigningCredit className="max-w-[760px]" />
+      </div>
+
       <section id="windows-warning" className="v-wrap mt-[clamp(70px,9vw,140px)]">
         <div className="v-head-rule"><span>(Windows)</span><span>Installing for the first time</span></div>
         <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-end">
           <h2 className="v-display v-h2">Windows says “unrecognized app”?</h2>
           <div className="max-w-[520px] space-y-4 text-[16px] leading-relaxed text-mute">
-            <p>That’s normal for new, independent apps. Windows SmartScreen warns about any installer that isn’t signed with a paid code-signing certificate or hasn’t been downloaded by lots of people yet — it doesn’t mean anything is wrong with the file.</p>
+            <p>Windows SmartScreen can warn about new or less commonly downloaded apps while their reputation builds, even when an installer is code-signed. Check the publisher and verify the download before running it.</p>
             <p>Native is only ever published on this site and our GitHub releases. You can check your file against the SHA-256 checksums below before you run it.</p>
           </div>
         </div>
