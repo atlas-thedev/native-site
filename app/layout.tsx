@@ -16,6 +16,7 @@ import { getSiteConfig } from "@/lib/server/siteConfig";
 import { LaunchProvider } from "@/components/launch/LaunchContext";
 import MaintenanceGate from "@/components/launch/MaintenanceGate";
 import Halloween from "@/components/Halloween";
+import PixelWaves from "@/components/PixelWaves";
 
 const figtree = localFont({ src: "../public/fonts/Figtree-Variable.ttf", variable: "--font-figtree", display: "swap", weight: "300 900" });
 const jb = localFont({ src: "../public/fonts/JetBrainsMonoVariable.ttf", variable: "--font-jb", display: "swap", weight: "100 800" });
@@ -81,6 +82,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <JsonLd data={graph} />
       </head>
       <body data-halloween={config.theme?.halloween ? "on" : undefined}>
+        <PixelWaves />
         <a href="#main" className="skip-link">Skip to content</a>
         <VersionProvider version={version}>
           <LaunchProvider config={config}>

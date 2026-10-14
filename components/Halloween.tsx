@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type CSSProperties, type MouseEvent as RMouseEvent, type PointerEvent as RPointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as RMouseEvent, type PointerEvent as RPointerEvent } from "react";
 import { useLaunch } from "./launch/LaunchContext";
 
 /**
  * Halloween mode (turned on from the launcher admin panel): a candle light that follows the cursor,
- * interactive spiders you can drop and retract, pumpkins that burst into candy, and drifting fog.
+ * randomly placed cartoon & pixel spiders you can drop, pumpkins that burst into candy, and drifting fog.
  */
 
 
@@ -29,22 +29,95 @@ function Pumpkin() {
 }
 
 
-function Spider() {
+type SpiderKind = "cute" | "pixel";
+type SpiderSpec = { id: number; x: number; hang: number; drop: number; kind: SpiderKind; size: number; tint: number; sway: number; delay: number; flip: boolean };
+
+const TINTS = [
+  { body: "#7b4fd6", shade: "#3d2370", glow: "#a78bfa", eye: "#ffb347" },
+  { body: "#f0701c", shade: "#8a3608", glow: "#ff9a3c", eye: "#9cff57" },
+  { body: "#43b54c", shade: "#1d5e24", glow: "#9cff57", eye: "#ff3b6b" },
+  { body: "#e0508f", shade: "#7a1f4a", glow: "#ff8cc0", eye: "#fff27a" },
+  { body: "#33263f", shade: "#120a1a", glow: "#c4b5fd", eye: "#ff3b3b" },
+];
+
+function CuteSpider({ tint, size }: { tint: number; size: number }) {
+  const c = TINTS[tint];
   return (
-    <svg viewBox="0 0 40 36" width="34" height="30">
-      <g stroke="#1b0f26" strokeWidth="2.2" fill="none" strokeLinecap="round">
-        <path d="M14 16L4 8M14 19L2 18M14 22L4 30M15 24L9 34M26 16l10-8M26 19l12-1M26 22l10 8M25 24l6 10" />
+    <svg viewBox="0 0 64 56" width={size} height={size * 0.875} style={{ "--glow": c.glow } as CSSProperties}>
+      <g className="hw-legs" stroke={c.shade} strokeWidth="3.4" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 26Q12 14 5 18M21 31Q9 26 3 33M22 36Q11 38 7 48M25 40Q19 47 17 54" />
+        <path d="M42 26Q52 14 59 18M43 31Q55 26 61 33M42 36Q53 38 57 48M39 40Q45 47 47 54" />
       </g>
-      <ellipse cx="20" cy="21" rx="8" ry="9" fill="#1b0f26" stroke="#8b5cf6" strokeOpacity=".6" />
-      <circle cx="20" cy="11" r="5" fill="#1b0f26" />
-      <circle cx="18" cy="10" r="1.3" fill="#ff3b3b" />
-      <circle cx="22" cy="10" r="1.3" fill="#ff3b3b" />
+      <circle cx="32" cy="32" r="15" fill={c.body} />
+      <ellipse cx="26" cy="24" rx="5" ry="3" fill="#fff" opacity=".14" transform="rotate(-25 26 24)" />
+      <g className="hw-eyes">
+        <circle cx="26" cy="30" r="5.4" fill="#fff" />
+        <circle cx="38" cy="30" r="5.4" fill="#fff" />
+        <circle className="hw-pupil" cx="27" cy="31" r="2.8" fill="#12081c" />
+        <circle className="hw-pupil" cx="37" cy="31" r="2.8" fill="#12081c" />
+        <circle cx="28" cy="29.6" r="1" fill="#fff" />
+        <circle cx="38" cy="29.6" r="1" fill="#fff" />
+      </g>
+      <ellipse cx="21.5" cy="37.5" rx="2.6" ry="1.5" fill="#ff7aa8" opacity=".6" />
+      <ellipse cx="42.5" cy="37.5" rx="2.6" ry="1.5" fill="#ff7aa8" opacity=".6" />
+      <path d="M28.5 38.5q3.5 3 7 0" stroke="#fff" strokeOpacity=".85" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M30 40.6l.8 2 .8-1.6M33.2 40.6l.8 2 .8-1.6" stroke="#fff" strokeWidth=".9" fill="none" strokeLinejoin="round" />
     </svg>
   );
 }
 
+const PIXEL_MAP = [
+  "L...........L",
+  ".L..BBBBB..L.",
+  "..LBBBBBBBL..",
+  "LLLBEEBEEBLLL",
+  "...BHBBBBBB..",
+  "..LBBFBFBBL..",
+  ".L.LBBBBBL.L.",
+  "L..L.BBB.L..L",
+  "...L.....L...",
+  "..L.......L..",
+];
+
+function PixelSpider({ tint, size }: { tint: number; size: number }) {
+  const c = TINTS[tint];
+  const fill: Record<string, string> = { L: c.shade, B: c.body, E: c.eye, H: "#ffffff40", F: "#f4f0ff" };
+  return (
+    <svg viewBox="0 0 13 10" width={size} height={size * 10 / 13} shapeRendering="crispEdges" style={{ "--glow": c.glow } as CSSProperties}>
+      {PIXEL_MAP.flatMap((row, y) => [...row].map((ch, x) => ch === "." ? null : (
+        <rect key={`${x}-${y}`} x={x} y={y} width="1.02" height="1.02" fill={fill[ch]} className={ch === "L" ? "hw-px-leg" : undefined} />
+      )))}
+    </svg>
+  );
+}
+
+/** Random layout, made on the client so server HTML never mismatches. */
+function makeSpiders(): SpiderSpec[] {
+  const narrow = window.innerWidth < 700;
+  const count = narrow ? 2 + Math.floor(Math.random() * 2) : 3 + Math.floor(Math.random() * 3);
+  const gap = narrow ? 22 : 11;
+  const xs: number[] = [];
+  for (let tries = 0; xs.length < count && tries < 200; tries++) {
+    const x = 3 + Math.random() * 92;
+    if (xs.every((o) => Math.abs(o - x) > gap)) xs.push(x);
+  }
+  return xs.map((x, id) => {
+    const kind: SpiderKind = Math.random() < 0.5 ? "cute" : "pixel";
+    const hang = Math.round((narrow ? 18 : 22) + Math.random() * (narrow ? 70 : 120));
+    return {
+      id, x, hang, kind,
+      drop: hang + Math.round(130 + Math.random() * (narrow ? 70 : 160)),
+      size: Math.round((kind === "cute" ? (narrow ? 44 : 50) : (narrow ? 40 : 46)) + Math.random() * 18),
+      tint: Math.floor(Math.random() * TINTS.length),
+      sway: 2 + Math.random() * 2.4,
+      delay: -Math.random() * 3,
+      flip: Math.random() < 0.5,
+    };
+  });
+}
+
 /** Decorative threads never intercept links; only the spider itself is clickable. */
-function HangingSpider({ side, inactive }: { side: "left" | "right"; inactive: boolean }) {
+function HangingSpider({ spec, inactive }: { spec: SpiderSpec; inactive: boolean }) {
   const [down, setDown] = useState(false);
   const body = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -59,16 +132,17 @@ function HangingSpider({ side, inactive }: { side: "left" | "right"; inactive: b
     const x = Math.max(-8, Math.min(8, (event.clientX - rect.left - rect.width / 2) * 0.3));
     body.current?.style.setProperty("--peek", `${x}px`);
   };
+  const style = { left: `${spec.x}%`, "--hw-hang": `${spec.hang}px`, "--hw-drop": `${spec.drop}px`, "--hw-sway": `${spec.sway}s`, "--hw-delay": `${spec.delay}s` } as CSSProperties;
   return (
-    <div className={`hw-spider hw-spider-${side}${down ? " is-down" : ""}`}>
+    <div className={`hw-spider hw-spider-${spec.kind}${spec.flip ? " is-flip" : ""}${down ? " is-down" : ""}`} style={style} data-spider-kind={spec.kind}>
       <span className="hw-thread" aria-hidden />
       <button ref={body} type="button" className="hw-spider-body" aria-pressed={down}
-        aria-label={`${down ? "Retract" : "Drop"} the ${side} Halloween spider`}
-        title={down ? "I’ll climb back up in a moment" : "Click to drop me down"}
+        aria-label={`${down ? "Retract" : "Drop"} Halloween spider ${spec.id + 1}`}
+        title={down ? "I'll climb back up in a moment" : "Click to drop me down"}
         onClick={() => setDown((value) => !value)} onPointerMove={move}
         onPointerLeave={() => body.current?.style.removeProperty("--peek")}
         onKeyDown={(event) => { if (event.key === "Escape") setDown(false); }}>
-        <Spider />
+        {spec.kind === "cute" ? <CuteSpider tint={spec.tint} size={spec.size} /> : <PixelSpider tint={spec.tint} size={spec.size} />}
       </button>
     </div>
   );
@@ -77,72 +151,14 @@ function HangingSpider({ side, inactive }: { side: "left" | "right"; inactive: b
 /** Anchor decorations inside the actual navbar so sticky/hide motion stays in sync. */
 export function HalloweenSpiders({ hidden, menuOpen }: { hidden: boolean; menuOpen: boolean }) {
   const { theme } = useLaunch();
-  if (!theme?.halloween) return null;
+  const [spiders, setSpiders] = useState<SpiderSpec[]>([]);
+  const on = Boolean(theme?.halloween);
+  useEffect(() => { if (on) setSpiders(makeSpiders()); }, [on]);
+  if (!on) return null;
   const inactive = hidden || menuOpen;
   return (
     <div className="hw-spiders" inert={inactive} aria-hidden={inactive || undefined}>
-      <HangingSpider side="left" inactive={inactive} />
-      <HangingSpider side="right" inactive={inactive} />
-    </div>
-  );
-}
-
-function WelcomePumpkin({ pop }: { pop: (event: RMouseEvent<HTMLButtonElement>) => void }) {
-  const [phase, setPhase] = useState<"idle" | "spinning" | "open">("idle");
-  const current = useRef(phase);
-  const spinTimer = useRef<number | null>(null);
-  const closeTimer = useRef<number | null>(null);
-  const inside = useRef(false);
-  const messageId = useId();
-  const reset = () => {
-    if (spinTimer.current !== null) window.clearTimeout(spinTimer.current);
-    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
-    spinTimer.current = closeTimer.current = null;
-    current.current = "idle";
-    setPhase("idle");
-  };
-  const closeAfter = (delay: number) => {
-    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(reset, delay);
-  };
-  const greet = () => {
-    inside.current = true;
-    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
-    if (current.current === "spinning") return;
-    if (current.current === "open") { closeAfter(4000); return; }
-    current.current = "spinning";
-    setPhase("spinning");
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    spinTimer.current = window.setTimeout(() => {
-      spinTimer.current = null;
-      current.current = "open";
-      setPhase("open");
-      closeAfter(inside.current ? 4000 : 1000);
-    }, reduced ? 0 : 760);
-  };
-  const leave = () => {
-    inside.current = false;
-    if (current.current === "open") closeAfter(800);
-  };
-  useEffect(() => () => {
-    if (spinTimer.current !== null) window.clearTimeout(spinTimer.current);
-    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
-  }, []);
-  return (
-    <div className={`hw-welcome-pumpkin is-${phase}`}>
-      <div id={messageId} role="tooltip" className="hw-pumpkin-welcome" aria-hidden={phase !== "open"}>
-        <span aria-hidden><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 0l1.7 4.3L12 6l-4.3 1.7L6 12 4.3 7.7 0 6l4.3-1.7z" /></svg></span> Welcome to Native 🎃
-      </div>
-      <button type="button" className="hw-pumpkin hw-pumpkin-1" aria-label="Spin and open the welcome pumpkin"
-        aria-expanded={phase === "open"} aria-describedby={phase === "open" ? messageId : undefined}
-        onPointerEnter={(event) => { if (event.pointerType === "mouse") greet(); }} onPointerLeave={leave}
-        onFocus={greet} onBlur={leave} onClick={(event) => { greet(); pop(event); }}
-        onKeyDown={(event) => { if (event.key === "Escape") reset(); }}>
-        <span className="hw-pumpkin-shell"><Pumpkin /></span>
-        <span className="hw-pumpkin-sparks" aria-hidden>
-          {Array.from({ length: 8 }, (_, i) => <i key={i} style={{ "--a": `${i * 45}deg` } as CSSProperties} />)}
-        </span>
-      </button>
+      {spiders.map((spec) => <HangingSpider key={spec.id} spec={spec} inactive={inactive} />)}
     </div>
   );
 }
@@ -222,7 +238,6 @@ function HalloweenEffects() {
           <Pumpkin />
         </button>
       </div>
-      <WelcomePumpkin pop={pop} />
       {bursts.map((burst) => (
         <div key={burst.id} className="hw-burst" style={{ left: burst.x, top: burst.y }} aria-hidden>
           {burst.particles.map((particle, i) => (
