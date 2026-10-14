@@ -26,6 +26,13 @@ type GhRelease = {
 /** Last list GitHub gave us, so a rate limit or outage never makes the site fall back to an old version. */
 let lastGood: Release[] = [];
 
+const cleanNotes = (notes: string) => {
+  return rebrand(notes)
+    .split("\n")
+    .filter((line) => !/[\u0D80-\u0DFF]/.test(line))
+    .join("\n");
+};
+
 /** Published releases, newest first. Never throws. */
 export async function getReleases(): Promise<Release[]> {
   try {
@@ -37,8 +44,8 @@ export async function getReleases(): Promise<Release[]> {
       .map((x) => ({
         tag: x.tag_name,
         version: x.tag_name.replace(/^v/i, ""),
-        name: rebrand(x.name || x.tag_name),
-        notes: rebrand(x.body || ""),
+        name: rebrand(x.name || x.tag_name).replace(/[\u0D80-\u0DFF]/g, "").trim(),
+        notes: cleanNotes(x.body || ""),
         date: x.published_at as string,
         prerelease: x.prerelease,
         assets: x.assets.map((a) => ({ name: a.name, url: a.browser_download_url, size: a.size, sha256: typeof a.digest === "string" && a.digest.startsWith("sha256:") ? a.digest.slice(7) : null })),

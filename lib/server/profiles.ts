@@ -32,7 +32,16 @@ export async function getPublicProfile(name: string): Promise<PublicProfile | nu
 
 export async function getSkins(sort: SkinSort, q = "", page = 0): Promise<SkinPage> {
   const d = await get<SkinPage>(`/v1/library/skins?sort=${sort}&q=${encodeURIComponent(q)}&page=${page}`, 30);
-  return d ?? { sort, total: 0, more: false, skins: [] };
+  if (!d) return { sort, total: 0, more: false, skins: [] };
+  const seen = new Set<string>();
+  const skins = (d.skins || []).filter((s) => {
+    if (!s || !s.hash) return false;
+    if (seen.has(s.hash) || (s.url && seen.has(s.url))) return false;
+    seen.add(s.hash);
+    if (s.url) seen.add(s.url);
+    return true;
+  });
+  return { ...d, skins };
 }
 
 export async function getSkin(hash: string): Promise<SkinDetail | null> {

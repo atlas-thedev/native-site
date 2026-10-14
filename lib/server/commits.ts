@@ -28,24 +28,30 @@ const clean = (s: string) =>
     .replace(/[ \t]{2,}/g, " ").replace(/[ \t]+$/gm, "")
     .trim();
 
+export const COMMITS_REPO = process.env.NATIVE_COMMITS_REPO ?? (REPO === "atlas-thedev/native-client-releases" ? "atlas-thedev/native-client" : REPO);
+
+const hasSinhala = (s: string) => /[\u0D80-\u0DFF]/.test(s);
+
 /** One page of the main-branch history. Returns hasMore when another page exists. */
 export async function getCommits(page = 1, perPage = 30): Promise<{ commits: Commit[]; hasMore: boolean }> {
   try {
-    const r = await fetch(`https://api.github.com/repos/${REPO}/commits?sha=main&per_page=${perPage}&page=${page}`, { headers: ghHeaders(), next: { revalidate: 600 } });
+    const r = await fetch(`https://api.github.com/repos/${COMMITS_REPO}/commits?sha=main&per_page=${perPage}&page=${page}`, { headers: ghHeaders(), next: { revalidate: 600 } });
     if (!r.ok) return { commits: [], hasMore: false };
     const list = (await r.json()) as GhCommit[];
-    const commits = list.map((c) => {
-      const [first, ...rest] = c.commit.message.split("\n");
-      const title = clean(first) || "Update";
-      return {
-        sha: c.sha.slice(0, 7),
-        title,
-        body: clean(rest.join("\n")).slice(0, 1600),
-        kind: classify(title),
-        author: c.commit.author?.name ?? "Native",
-        date: c.commit.author?.date ?? "",
-      } satisfies Commit;
-    });
+    const commits = list
+      .filter((c) => !hasSinhala(c.commit.message) && !hasSinhala(c.commit.author?.name || ""))
+      .map((c) => {
+        const [first, ...rest] = c.commit.message.split("\n");
+        const title = clean(first) || "Update";
+        return {
+          sha: c.sha.slice(0, 7),
+          title,
+          body: clean(rest.join("\n")).slice(0, 1600),
+          kind: classify(title),
+          author: c.commit.author?.name ?? "Native",
+          date: c.commit.author?.date ?? "",
+        } satisfies Commit;
+      });
     return { commits, hasMore: list.length === perPage };
   } catch {
     return { commits: [], hasMore: false };
