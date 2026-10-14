@@ -6,6 +6,7 @@ import ItemHead from "@/components/store/ItemHead";
 import SkinHead from "@/components/SkinHead";
 import SkinStage from "@/components/skins/SkinStage";
 import LikeButton from "@/components/skins/LikeButton";
+import EquipSkinButton from "@/components/skins/EquipSkinButton";
 import SkinDownload from "@/components/skins/SkinDownload";
 import { getSkin } from "@/lib/server/profiles";
 import { ago, day } from "@/lib/profiles";
@@ -58,6 +59,7 @@ export default async function SkinPage({ params }: Params) {
             ))}
           </dl>
           <div className="mt-6 flex flex-wrap gap-2.5">
+            <EquipSkinButton hash={s.hash} model={s.model} />
             <LikeButton hash={s.hash} initial={s.likes} />
             <SkinDownload url={s.url} name={`${who}-${s.hash.slice(0, 8)}`} />
           </div>
