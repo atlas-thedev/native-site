@@ -237,6 +237,9 @@ function HalloweenEffects() {
         <button type="button" className="hw-pumpkin hw-pumpkin-0" onClick={pop} aria-label="Click the pumpkin">
           <Pumpkin />
         </button>
+        <button type="button" className="hw-pumpkin hw-pumpkin-1" onClick={pop} aria-label="Click the small pumpkin">
+          <Pumpkin />
+        </button>
       </div>
       {bursts.map((burst) => (
         <div key={burst.id} className="hw-burst" style={{ left: burst.x, top: burst.y }} aria-hidden>

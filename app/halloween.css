@@ -104,12 +104,14 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 @keyframes hw-px-blink { 50% { transform: translateY(0.3px); } }
 
 /* pumpkins: click for candy */
-.hw-pumpkins { position: fixed; left: 18px; bottom: 18px; z-index: 60; display: flex; align-items: flex-end; gap: 6px; }
+.hw-pumpkins { position: fixed; left: 18px; bottom: 18px; z-index: 60; display: flex; align-items: flex-end; gap: 8px; }
 .hw-pumpkin { width: 58px; height: 54px; padding: 0; border: 0; background: none; cursor: pointer; filter: drop-shadow(0 6px 16px rgba(255, 122, 24, 0.4)); transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.hw-pumpkin-1 { width: 58px; height: 58px; position: relative; }
+.hw-pumpkin-0 { width: 58px; height: 54px; }
+.hw-pumpkin-1 { width: 40px; height: 38px; }
 .hw-pumpkin svg { overflow: visible; }
 .hw-pumpkin-opening { opacity: 0; }
-.hw-pumpkin:hover { transform: translateY(-4px) rotate(-6deg) scale(1.08); }
+.hw-pumpkin-0:hover { transform: translateY(-4px) rotate(-6deg) scale(1.08); }
+.hw-pumpkin-1:hover { transform: translateY(-3px) rotate(6deg) scale(1.08); }
 .hw-pumpkin:active { transform: scale(0.9); }
 .hw-face { animation: hw-glow 1.8s ease-in-out infinite alternate; }
 .hw-pumpkin-1 .hw-face { animation-delay: -0.9s; }
