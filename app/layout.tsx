@@ -49,6 +49,9 @@ export const viewport: Viewport = {
   colorScheme: "dark light",
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const themeScript = `try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

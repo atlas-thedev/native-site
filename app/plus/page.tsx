@@ -21,7 +21,7 @@ import { getCatalog } from "@/lib/server/store";
 import { breadcrumb, pageMeta } from "@/lib/seo";
 import { isPaid, sortItems } from "@/lib/store";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 export const metadata = pageMeta({
   title: "Native+",
   description:

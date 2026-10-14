@@ -16,7 +16,7 @@ import { outfitOf } from "@/lib/outfit";
 import type { Wearing } from "@/lib/store";
 import { getSiteConfig } from "@/lib/server/siteConfig";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 /** How many Minecraft releases exist (for the stats row). */
 async function releaseCount(): Promise<number> {

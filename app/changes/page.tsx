@@ -9,7 +9,7 @@ import { getLatestMinecraft } from "@/lib/server/mojang";
 import { getReleases, getSiteVersion } from "@/lib/server/releases";
 import { breadcrumb, pageMeta } from "@/lib/seo";
 
-export const revalidate = 600;
+export const dynamic = "force-dynamic";
 
 export const metadata = pageMeta({
   title: "What’s new",

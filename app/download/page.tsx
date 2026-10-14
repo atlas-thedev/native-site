@@ -12,7 +12,7 @@ import { getAvailability, getChecksums } from "@/lib/server/releases";
 import { breadcrumb, pageMeta } from "@/lib/seo";
 import { site } from "@/lib/site";
 
-export const revalidate = 600;
+export const dynamic = "force-dynamic";
 
 export const metadata = pageMeta({
   title: "Download",
