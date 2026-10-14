@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import DownloadCards from "@/components/DownloadCards";
-import CodeSigningCredit from "@/components/CodeSigningCredit";
 import JsonLd from "@/components/JsonLd";
 import Reveal from "@/components/Reveal";
 import SplitText from "@/components/SplitText";
@@ -57,10 +56,6 @@ export default async function DownloadPage() {
           )}
         </DownloadGate>
       </section>
-
-      <div className="v-wrap mt-8">
-        <CodeSigningCredit className="max-w-[760px]" />
-      </div>
 
       <section id="windows-warning" className="v-wrap mt-[clamp(70px,9vw,140px)]">
         <div className="v-head-rule"><span>(Windows)</span><span>Installing for the first time</span></div>
