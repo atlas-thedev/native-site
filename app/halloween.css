@@ -81,6 +81,7 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 
 /* Randomly scattered spiders (cute cartoon + pixel art) hanging from the navbar. */
 .hw-spider { position: absolute; top: 100%; z-index: 41; display: flex; flex-direction: column; align-items: center; width: 72px; margin-left: -36px; pointer-events: none; transition: transform 0.6s var(--v-ease), opacity 0.6s var(--v-ease); }
+.v-nav.is-hidden .hw-spider, .v-nav.is-open .hw-spider { transform: translateY(-100%); opacity: 0; }
 .hw-thread {
   width: 2px;
   height: var(--hw-hang, 38px);
