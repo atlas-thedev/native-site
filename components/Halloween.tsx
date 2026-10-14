@@ -44,6 +44,7 @@ function CuteSpider({ tint, size }: { tint: number; size: number }) {
   const c = TINTS[tint];
   return (
     <svg viewBox="0 0 64 56" width={size} height={size * 0.875} style={{ "--glow": c.glow } as CSSProperties}>
+      <line x1="32" y1="0" x2="32" y2="18" stroke="rgba(240, 235, 255, 0.9)" strokeWidth="2" strokeLinecap="round" />
       <g className="hw-legs" stroke={c.shade} strokeWidth="3.4" fill="none" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 26Q12 14 5 18M21 31Q9 26 3 33M22 36Q11 38 7 48M25 40Q19 47 17 54" />
         <path d="M42 26Q52 14 59 18M43 31Q55 26 61 33M42 36Q53 38 57 48M39 40Q45 47 47 54" />
@@ -103,7 +104,7 @@ function makeSpiders(): SpiderSpec[] {
   }
   return xs.map((x, id) => {
     const kind: SpiderKind = Math.random() < 0.5 ? "cute" : "pixel";
-    const hang = Math.round((narrow ? 18 : 22) + Math.random() * (narrow ? 70 : 120));
+    const hang = Math.round((narrow ? 28 : 36) + Math.random() * (narrow ? 65 : 105));
     return {
       id, x, hang, kind,
       drop: hang + Math.round(130 + Math.random() * (narrow ? 70 : 160)),

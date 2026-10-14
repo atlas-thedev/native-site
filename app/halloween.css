@@ -81,9 +81,23 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 
 /* Randomly scattered spiders (cute cartoon + pixel art) hanging from the navbar. */
 .hw-spider { position: absolute; top: 100%; z-index: 41; display: flex; flex-direction: column; align-items: center; width: 72px; margin-left: -36px; pointer-events: none; transition: transform 0.6s var(--v-ease), opacity 0.6s var(--v-ease); }
-.v-nav.is-hidden .hw-spider, .v-nav.is-open .hw-spider { transform: translateY(-100%); opacity: 0; }
-.hw-thread { width: 1px; height: var(--hw-hang, 38px); background: linear-gradient(rgba(230, 220, 255, 0.15), rgba(230, 220, 255, 0.6)); transition: height 0.8s cubic-bezier(0.34, 1.25, 0.64, 1); }
-.hw-spider-pixel .hw-thread { width: 2px; background: repeating-linear-gradient(rgba(240, 235, 255, 0.6) 0 4px, transparent 4px 6px); }
+.hw-thread {
+  width: 2px;
+  height: var(--hw-hang, 38px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(235, 225, 255, 0.95) 100%);
+  box-shadow: 0 0 4px rgba(180, 160, 255, 0.55), 0 0 1px rgba(0, 0, 0, 0.7);
+  transition: height 0.8s cubic-bezier(0.34, 1.25, 0.64, 1);
+}
+.hw-spider-cute .hw-thread {
+  width: 2px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(235, 225, 255, 0.95) 100%);
+  box-shadow: 0 0 4px rgba(180, 160, 255, 0.55), 0 0 1px rgba(0, 0, 0, 0.7);
+}
+.hw-spider-pixel .hw-thread {
+  width: 2px;
+  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0 4px, transparent 4px 6px);
+  box-shadow: 0 0 3px rgba(180, 160, 255, 0.45);
+}
 .hw-spider.is-down .hw-thread { height: min(var(--hw-drop, 280px), 48vh); }
 .hw-spider-body { display: grid; place-items: center; min-width: 44px; min-height: 44px; margin-top: -4px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; pointer-events: auto; transform: translateX(var(--peek, 0px)); transition: transform 0.12s ease, background 0.2s ease; }
 .hw-spider-body svg { display: block; overflow: visible; animation: hw-sway var(--hw-sway, 2.6s) ease-in-out var(--hw-delay, 0s) infinite; transform-origin: 50% -6px; filter: drop-shadow(0 0 7px color-mix(in srgb, var(--glow, #8b5cf6) 70%, transparent)); }
