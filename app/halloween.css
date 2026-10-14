@@ -140,7 +140,3 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 /* Halloween is dark only: hide the light/dark switch. */
 body[data-halloween="on"] [data-theme-control],
 body[data-halloween="on"] button[aria-label="Switch theme"] { display: none !important; }
-
-/* Pixel-art sea along the bottom of the page background. */
-.px-waves { position: fixed; left: 0; right: 0; bottom: 0; z-index: 0; width: 100%; height: clamp(110px, 20vh, 200px); image-rendering: pixelated; pointer-events: none; }
-#main, body > footer, footer { position: relative; z-index: 1; }
