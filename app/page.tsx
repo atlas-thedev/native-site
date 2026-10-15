@@ -65,9 +65,9 @@ export default async function Home() {
       <VersionsRail latest={mc} />
       <Explainer versions={versions} />
       <GoFurther />
-      <PartnersSection partners={partners} index="(06)" />
+      <PartnersSection partners={partners} />
       <section id="download" className="v-wrap pb-[clamp(80px,10vw,150px)]">
-        <SectionHead index="(07)" label="Download" title="Get Native" />
+        <SectionHead index="(06)" label="Download" title="Get Native" />
         <DownloadGate>
           <DownloadCta version={a.version} avail={a.platforms} />
         </DownloadGate>

@@ -55,3 +55,76 @@ export const FALLBACK_PARTNERS: Partner[] = [
     tier: "featured",
   },
 ];
+
+/** The long-form partner page (like a product page): hero, a split section, features, media rows and an FAQ. */
+export type PartnerStory = {
+  headline: [string, string];
+  intro: string;
+  note: string;
+  cta: string;
+  heroImage: string;
+  split: { title: string; body: string; image?: string };
+  features: { title: string; items: { title: string; body: string }[] };
+  rows: { title: string; body: string; image: string }[];
+  faq: [string, string][];
+};
+
+export const PARTNER_STORIES: Record<string, PartnerStory> = {
+  aurex01: {
+    headline: ["Your own Minecraft server,", "60 ms from home"],
+    intro:
+      "We’ve partnered with Aurex Hosting, Sri Lanka’s #1 game hosting provider. Start a Minecraft server on Aurex and play it with your friends on Native.",
+    note: "From LKR 400/mo · Instant setup",
+    cta: "Get a server",
+    heroImage: "/partners/aurex/hero.webp",
+    split: {
+      title: "Low ping, right next door.",
+      body: "Aurex runs on AMD Ryzen 7 nodes in Singapore, around 60 ms from Colombo, so your server stays quick for everyone playing from Sri Lanka.",
+      image: "/partners/aurex/map.webp",
+    },
+    features: {
+      title: "Everything a server needs.",
+      items: [
+        { title: "Instant setup", body: "Your server is ready as soon as you order it." },
+        { title: "NVMe storage", body: "Worlds load and save fast on NVMe drives." },
+        { title: "Always-on DDoS protection", body: "Attacks are filtered before they reach your server." },
+        { title: "More than Minecraft", body: "FiveM, MTA, Rust and Hytale servers too, all in one place." },
+      ],
+    },
+    rows: [
+      {
+        title: "Protected from day one",
+        body: "Every Aurex server sits behind DDoS protection that is always on. Nothing to switch on, nothing extra to pay.",
+        image: "/partners/aurex/ddos.webp",
+      },
+      {
+        title: "Play it with Native",
+        body: "Join your Aurex server from Native with your capes and cosmetics on. Everyone else on Native sees them too.",
+        image: "/partners/aurex/crystal.webp",
+      },
+    ],
+    faq: [
+      ["Is Aurex part of Native?", "No. Aurex Hosting is an independent company and one of our partners. Your server, billing and support are with Aurex."],
+      ["Where are the servers?", "In Singapore, on AMD Ryzen 7 nodes, around 60 ms from Colombo."],
+      ["How much does it cost?", "Minecraft servers start from LKR 400 a month. Aurex lists every plan on aurex.lk."],
+      ["Do I need Native to use Aurex?", "No. Aurex works with any Minecraft client. Native just makes playing on it nicer."],
+    ],
+  },
+};
+
+/** A simple page for partners without a written story, built from what the admin entered. */
+export function storyFor(p: Partner): PartnerStory {
+  const known = PARTNER_STORIES[p.id];
+  if (known) return known;
+  return {
+    headline: [p.name, p.tagline || "Partnered with Native"],
+    intro: p.description || p.tagline,
+    note: p.code ? `Use code ${p.code}` : "",
+    cta: p.cta || "Visit",
+    heroImage: p.background,
+    split: { title: p.tagline || p.name, body: p.description },
+    features: { title: "Why we picked them.", items: p.perks.map((perk) => ({ title: perk, body: "" })) },
+    rows: p.art ? [{ title: p.name, body: p.tagline, image: p.art }] : [],
+    faq: [],
+  };
+}

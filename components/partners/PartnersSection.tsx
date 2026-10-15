@@ -1,41 +1,32 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import SectionHead from "@/components/v2/SectionHead";
-import Marquee from "@/components/v2/Marquee";
-import PartnerCard from "./PartnerCard";
+import Lockup from "./Lockup";
+import Reveal from "@/components/Reveal";
 import type { Partner } from "@/lib/partners";
 
-/** Home page: the spotlight partner card, a ticker of every partner and a link to /partners. */
-export default function PartnersSection({ partners, index }: { partners: Partner[]; index: string }) {
-  if (!partners.length) return null;
-  const spotlight = partners.find((p) => p.tier === "featured") ?? partners[0];
-  const others = partners.filter((p) => p.id !== spotlight.id).slice(0, 2);
+/** Home page: one quiet, transparent banner announcing the partnership. */
+export default function PartnersSection({ partners }: { partners: Partner[] }) {
+  const partner = partners.find((p) => p.tier === "featured") ?? partners[0];
+  if (!partner) return null;
   return (
-    <section id="partners" className="v-section !pt-0">
-      <div className="v-wrap">
-        <SectionHead
-          index={index}
-          label="Partners"
-          title="Built with friends"
-          sub="The hosts, servers and creators who help keep Native fast and free."
-        />
-        <PartnerCard partner={spotlight} size="hero" />
-        {others.length > 0 && (
-          <div className="mt-5 grid gap-5 md:grid-cols-2">
-            {others.map((p, i) => <PartnerCard key={p.id} partner={p} index={i + 1} />)}
+    <section id="partners" className="v-wrap pb-[clamp(60px,8vw,120px)]">
+      <Reveal blur={false} y={16}>
+        <div className="np-banner" style={{ ["--np-accent" as string]: partner.accent }}>
+          <div className="np-banner-copy">
+            <Lockup partner={partner} size={26} />
+            <p className="np-banner-title">
+              We’ve partnered with <span className="np-accent">{partner.name}</span>
+            </p>
+            <p className="np-banner-sub">{partner.tagline} {partner.perks.slice(-1)[0] ? `${partner.perks.slice(-1)[0]}.` : ""}</p>
           </div>
-        )}
-        <div className="mt-8 flex justify-end">
-          <Link href="/partners" className="v-btn">All partners <ArrowUpRight /></Link>
+          <div className="np-banner-actions">
+            <Link href="/partners" className="np-btn is-solid">Learn more</Link>
+            <a href={partner.website} target="_blank" rel="noopener sponsored" className="np-btn">
+              Visit {partner.name.split(" ")[0]} <ArrowUpRight className="h-4 w-4" />
+            </a>
+          </div>
         </div>
-      </div>
-      {partners.length > 0 && (
-        <Marquee
-          className="is-outline is-sm mt-[clamp(48px,6vw,90px)]"
-          items={[...partners.map((p) => p.name), "Native Client", "Partner with us"]}
-          speed={30}
-        />
-      )}
+      </Reveal>
     </section>
   );
 }
