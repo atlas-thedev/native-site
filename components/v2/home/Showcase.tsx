@@ -3,7 +3,8 @@
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Expand, X } from "lucide-react";
+import { Expand } from "lucide-react";
+import GalleryViewer, { type Shot as ViewerShot } from "./GalleryViewer";
 import SectionHead from "../SectionHead";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -25,7 +26,7 @@ const SCREENS: (Shot & { id: string })[] = [
 /** In-game screens from the Native mod. */
 const INGAME: (Shot & { k: string; span: string; pos?: string })[] = [
   { k: "Multiplayer", t: "Everyone sees your look", d: "Capes and cosmetics show on every Native player, on any server.", src: "/ui/ingame-multiplayer.webp", w: 1600, h: 900, span: "lg:col-span-2 lg:row-span-2" },
-  { k: "Mods menu", t: "30+ built-in modules", d: "FPS, CPS, keystrokes, coordinates and more. Switch each on in a click.", src: "/ui/ingame-mods.webp", w: 1600, h: 900, span: "" },
+  { k: "Mods menu", t: "20+ built-in modules", d: "FPS, CPS, keystrokes, coordinates and more. Switch each on in a click.", src: "/ui/ingame-mods.webp", w: 1600, h: 900, span: "" },
   { k: "Wardrobe", t: "Change your look in game", d: "Put on capes, hats and wings without leaving your world.", src: "/ui/ingame-cosmetics.webp", w: 1600, h: 900, span: "" },
   { k: "HUD editor", t: "Place every module", d: "Drag your HUD where you want it, then get back to playing.", src: "/ui/ingame-hud.webp", w: 1600, h: 900, span: "", pos: "object-[0%_45%]" },
   { k: "Native settings", t: "Everything one key away", d: "Mods, cosmetics, Relay chat and settings from a single menu.", src: "/ui/ingame-settings.webp", w: 1600, h: 900, span: "" },
@@ -33,38 +34,18 @@ const INGAME: (Shot & { k: string; span: string; pos?: string })[] = [
 
 const ROTATE_MS = 5500;
 
-/** Full-size view of a screenshot. */
-function Lightbox({ shot, onClose }: { shot: Shot | null; onClose: () => void }) {
-  useEffect(() => {
-    if (!shot) return;
-    const key = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", key);
-    return () => window.removeEventListener("keydown", key);
-  }, [shot, onClose]);
-  return (
-    <AnimatePresence>
-      {shot && (
-        <motion.div
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm sm:p-10"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          onClick={onClose} role="dialog" aria-modal="true" aria-label={shot.t}
-        >
-          <motion.div initial={{ scale: 0.96, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.97 }} transition={{ duration: 0.35, ease }} className="relative w-full max-w-[1500px]" onClick={(e) => e.stopPropagation()}>
-            <Image src={shot.src} alt={shot.t} width={shot.w} height={shot.h} sizes="96vw" className="h-auto w-full rounded-[14px] border border-white/10" />
-            <p className="mt-3 text-center text-[14px] text-white/70"><b className="text-white">{shot.t}.</b> {shot.d}</p>
-            <button type="button" onClick={onClose} aria-label="Close" className="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-lg"><X className="h-4 w-4" /></button>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
+/** Every screenshot on the page, in one gallery (launcher first, then in game). */
+const ALL: ViewerShot[] = [
+  ...SCREENS.map(({ src, w, h, t, d }) => ({ src, w, h, t, d, group: "Launcher" })),
+  ...INGAME.map(({ src, w, h, t, d }) => ({ src, w, h, t, d, group: "In game" })),
+];
+const indexOf = (src: string) => Math.max(0, ALL.findIndex((x) => x.src === src));
 
 /** "Take the tour": every launcher screen behind tabs, playing on its own until you pick one. */
 export function ScreenTour() {
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [open, setOpen] = useState<Shot | null>(null);
+  const [open, setOpen] = useState<number | null>(null);
   const [inView, setInView] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -74,7 +55,7 @@ export function ScreenTour() {
     io.observe(el);
     return () => io.disconnect();
   }, []);
-  const playing = inView && !paused && !open;
+  const playing = inView && !paused && open === null;
   useEffect(() => {
     if (!playing) return;
     const t = setTimeout(() => setI((n) => (n + 1) % SCREENS.length), ROTATE_MS);
@@ -99,7 +80,7 @@ export function ScreenTour() {
           ))}
         </div>
         <div className="grid items-start gap-[clamp(20px,3vw,44px)] lg:grid-cols-[minmax(0,1fr)_300px]">
-          <button type="button" onClick={() => setOpen(s)} className="group relative block w-full cursor-zoom-in text-left" aria-label={`Open ${s.t} full size`}>
+          <button type="button" onClick={() => setOpen(indexOf(s.src))} className="group relative block w-full cursor-zoom-in text-left" aria-label={`Open ${s.t} full size`}>
             <div className="v-shot relative aspect-[1366/728] shadow-[0_30px_80px_-30px_rgb(0_0_0/0.6)]">
               <AnimatePresence mode="popLayout" initial={false}>
                 <motion.div key={s.id} className="absolute inset-0" initial={{ opacity: 0, scale: 1.015 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6, ease }}>
@@ -125,21 +106,21 @@ export function ScreenTour() {
           </AnimatePresence>
         </div>
       </div>
-      <Lightbox shot={open} onClose={() => setOpen(null)} />
+      <GalleryViewer shots={ALL} index={open} onIndex={setOpen} onClose={() => setOpen(null)} />
     </section>
   );
 }
 
 /** "In game": the Native mod's screens in a bento grid. */
 export function InGame() {
-  const [open, setOpen] = useState<Shot | null>(null);
+  const [open, setOpen] = useState<number | null>(null);
   return (
     <section id="in-game" className="v-section v-wrap">
       <SectionHead index="(03)" label="In game" title="Native comes into the game with you." sub="The Native mod adds a mods menu, a HUD editor, your wardrobe and Relay chat inside Minecraft, and shows everyone's capes and cosmetics." />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
         {INGAME.map((x, n) => (
           <motion.button
-            key={x.src} type="button" onClick={() => setOpen(x)}
+            key={x.src} type="button" onClick={() => setOpen(indexOf(x.src))}
             initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.8, delay: n * 0.06, ease }}
             className={`group relative min-h-[220px] cursor-zoom-in overflow-hidden rounded-[18px] border border-line bg-surface text-left ${x.span} ${n === 0 ? "sm:col-span-2 lg:min-h-[460px]" : ""}`}
           >
@@ -154,7 +135,7 @@ export function InGame() {
           </motion.button>
         ))}
       </div>
-      <Lightbox shot={open} onClose={() => setOpen(null)} />
+      <GalleryViewer shots={ALL} index={open} onIndex={setOpen} onClose={() => setOpen(null)} />
     </section>
   );
 }
