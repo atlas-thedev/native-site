@@ -12,15 +12,12 @@
 .np-lockup-x { color: var(--dim); font-weight: 400; font-size: calc(var(--np-size) * 0.6); }
 
 /* buttons */
-.np-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 50px; padding: 0 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--fg); font-size: 15px; font-weight: 650; white-space: nowrap; transition: background 0.2s, border-color 0.2s, transform 0.2s; }
+.np-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 50px; padding: 0 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--fg); font-size: 15px; font-weight: 650; white-space: nowrap; }
 .np-btn:hover { background: var(--surface-2); border-color: color-mix(in srgb, var(--fg) 25%, transparent); }
-.np-btn:active { transform: translateY(1px); }
 .np-btn.is-solid { background: var(--fg); border-color: var(--fg); color: var(--bg); }
 .np-btn.is-solid:hover { opacity: 0.88; }
 .np-btn.is-accent { background: var(--np-accent); border-color: var(--np-accent); color: #fff; }
 .np-btn.is-accent:hover { filter: brightness(1.1); }
-.np-btn svg { transition: transform 0.2s; }
-.np-btn:hover svg { transform: translate(2px, -2px); }
 .np-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 
 /* type */
@@ -79,8 +76,7 @@
 
 /* more partners */
 .np-list { margin-top: 28px; border-top: 1px solid var(--line); }
-.np-list-row { display: flex; align-items: center; gap: 16px; padding: 18px 4px; border-bottom: 1px solid var(--line); transition: background 0.2s; }
-.np-list-row:hover { background: var(--surface); }
+.np-list-row { display: flex; align-items: center; gap: 16px; padding: 18px 4px; border-bottom: 1px solid var(--line); }
 .np-list-row img { width: 40px; height: 40px; border-radius: 10px; object-fit: contain; }
 .np-list-row span { flex: 1; display: flex; flex-direction: column; }
 .np-list-row small { color: var(--mute); font-size: 14px; }
@@ -130,12 +126,10 @@
 .np-stripe-label { align-self: flex-start; padding: 3px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .np-stripe-copy p { margin: 0; font-size: 15.5px; line-height: 1.45; color: rgba(255, 255, 255, 0.86); }
 .np-stripe-actions { display: flex; gap: 10px; flex: none; }
-.np-stripe-btn { display: inline-flex; align-items: center; gap: 7px; height: 44px; padding: 0 18px; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 12px; color: #fff; font-size: 14px; font-weight: 700; white-space: nowrap; transition: background 0.2s, transform 0.2s; }
+.np-stripe-btn { display: inline-flex; align-items: center; gap: 7px; height: 44px; padding: 0 18px; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 12px; color: #fff; font-size: 14px; font-weight: 700; white-space: nowrap; }
 .np-stripe-btn:hover { background: rgba(255, 255, 255, 0.12); }
 .np-stripe-btn.is-solid { border-color: #fff; background: #fff; color: #1b1033; }
-.np-stripe-btn.is-solid:hover { background: rgba(255, 255, 255, 0.9); transform: translateY(-1px); }
-.np-stripe-btn svg { transition: transform 0.2s; }
-.np-stripe-btn:hover svg { transform: translate(2px, -2px); }
+.np-stripe-btn.is-solid:hover { background: rgba(255, 255, 255, 0.9); }
 @media (max-width: 1000px) {
   .np-stripe-inner { flex-wrap: wrap; }
   .np-stripe-copy { flex-basis: 100%; order: 3; }
