@@ -1,6 +1,6 @@
 "use client";
 
-import { FlaskConical, Lock, Sparkles } from "lucide-react";
+import { FlaskConical, Lock, Gift } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Countdown from "./Countdown";
@@ -41,7 +41,7 @@ export default function DownloadGate({ children }: { children: React.ReactNode }
       <p className="mx-auto mt-2 max-w-[460px] text-mute">Native for Windows, macOS and Linux unlocks the second the timer hits zero. Make your account now so you’re ready.</p>
       <Countdown at={launch.at} size="sm" className="mt-8" />
       <Link href={me ? "/founder" : "/register?next=/founder"} className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-inv px-7 text-[15px] font-semibold text-inv-fg transition hover:opacity-85">
-        <Sparkles className="h-4 w-4" /> {me ? "Pick your free founder cape" : "Create your free account"}
+        <Gift className="h-4 w-4" /> {me ? "Pick your free founder cape" : "Create your free account"}
       </Link>
     </div>
   );

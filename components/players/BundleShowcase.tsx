@@ -1,4 +1,4 @@
-import { BadgeCheck, Boxes, Sparkles } from "lucide-react";
+import { BadgeCheck, Boxes, Package } from "lucide-react";
 import type { ReactNode } from "react";
 import type { StoreItem } from "@/lib/store";
 import type { OwnedBundle } from "./BundleChips";
@@ -12,7 +12,7 @@ export default function BundleShowcase({ bundles, byId, piece }: { bundles: Owne
   return (
     <section id="bundles" className="mt-6 scroll-mt-24">
       <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4" />
+        <Package className="h-4 w-4" />
         <h2 className="text-[15px] font-extrabold tracking-tight">Complete sets</h2>
         <span className="text-[13px] text-dim">{bundles.length}</span>
       </div>

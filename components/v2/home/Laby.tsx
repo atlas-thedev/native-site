@@ -2,7 +2,21 @@
 
 import { motion } from "motion/react";
 import {
-  ArrowUpRight, Bug, Compass, Gauge, Layers, MessageCircle, Package, RefreshCw, Server, Shirt, Sparkles, Swords, UserRound, Users, Zap,
+  ArrowUpRight,
+  Bug,
+  Compass,
+  Gauge,
+  Layers,
+  MessageCircle,
+  Package,
+  RefreshCw,
+  Server,
+  Shirt,
+  Swords,
+  UserRound,
+  Users,
+  Zap,
+  History,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -127,7 +141,7 @@ export function LauncherGrid() {
   const cards: { icon: ReactNode; t: string; d: string }[] = [
     { icon: <Gauge />, t: "Fast start", d: "From click to playing in seconds." },
     { icon: <Layers />, t: "Instances", d: "Separate mods, worlds and settings for every way you play." },
-    { icon: <Sparkles />, t: "Every version", d: "The newest snapshot back to the classics." },
+    { icon: <History />, t: "Every version", d: "The newest snapshot back to the classics." },
     { icon: <Package />, t: "Mod browser", d: "Modrinth and CurseForge, built in." },
     { icon: <Shirt />, t: "3D locker", d: "Skins, capes and cosmetics on your own model." },
     { icon: <Server />, t: "Servers", d: "Find a server and jump straight in." },

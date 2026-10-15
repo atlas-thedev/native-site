@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { AlertCircle, ArrowLeft, Check, CheckCircle2, Eye, EyeOff, KeyRound, Loader2, Lock, Mail, ShieldCheck, Sparkles, User } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, CheckCircle2, Eye, EyeOff, KeyRound, Loader2, Lock, Mail, ShieldCheck, User, UserPlus } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -341,7 +341,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
             </AnimatePresence>
 
             <button type="submit" disabled={busy} className="auth-submit">
-              {busy ? <Loader2 className="h-[18px] w-[18px] animate-spin" /> : mode === "register" && step === 2 ? <Sparkles className="h-[18px] w-[18px]" /> : null}
+              {busy ? <Loader2 className="h-[18px] w-[18px] animate-spin" /> : mode === "register" && step === 2 ? <UserPlus className="h-[18px] w-[18px]" /> : null}
               {button}
             </button>
           </form>

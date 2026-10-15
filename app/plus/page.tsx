@@ -7,7 +7,6 @@ import {
   Minus,
   RefreshCw,
   Shirt,
-  Sparkles,
 } from "lucide-react";
 import NativeGlyph from "@/components/NativeGlyph";
 import JsonLd from "@/components/JsonLd";
@@ -36,7 +35,7 @@ const perks = [
     body: "Every paid Native cape sits in your locker while you’re a member. Wear any of them in the launcher and in game.",
   },
   {
-    icon: Sparkles,
+    icon: Shirt,
     title: "Every cosmetic, free",
     body: "All the 3D hats, glasses, wings, backpacks and shoes are yours to wear while you’re a member. Nothing to buy, nothing to claim.",
   },

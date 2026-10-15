@@ -1,4 +1,4 @@
-import { BadgeCheck, Bug, Code2, Crown, FlaskConical, Gem, Heart, Shield, Sparkles, Star, Wrench } from "lucide-react";
+import { BadgeCheck, Bug, Code2, Crown, FlaskConical, Gem, Heart, Shield, Star, Wrench, Video } from "lucide-react";
 
 type Look = { label: string; bg: string; fg: string; Icon: typeof Star };
 // Solid colours with their own text colour, so badges read the same in light and dark mode.
@@ -18,7 +18,7 @@ const KNOWN: Record<string, Look> = {
   bug_hunter: { label: "Bug hunter", bg: "linear-gradient(#7fe07a,#2f9b2b)", fg: "#0b2a0a", Icon: Bug },
   super_beta_tester: { label: "Super beta tester", bg: "linear-gradient(#5fe3d8,#e9b93a)", fg: "#06201d", Icon: FlaskConical },
   verified: { label: "Verified", bg: "linear-gradient(#5ea8ff,#2f74e0)", fg: "#fff", Icon: BadgeCheck },
-  creator: { label: "Creator", bg: "linear-gradient(#ff8fc8,#e0479a)", fg: "#fff", Icon: Sparkles },
+  creator: { label: "Creator", bg: "linear-gradient(#ff8fc8,#e0479a)", fg: "#fff", Icon: Video },
 };
 const PLUS: Look = { label: "Native+", bg: "linear-gradient(#ffe08a,#e9a91c)", fg: "#000", Icon: Crown };
 const PREMIUM: Look = { label: "Premium", bg: "linear-gradient(#6ee7a0,#22a35a)", fg: "#03230f", Icon: BadgeCheck };

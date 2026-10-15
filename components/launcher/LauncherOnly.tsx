@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Download, Palette, Shirt, ShoppingBag, Sparkles, UserRound } from "lucide-react";
+import { ArrowRight, Download, Palette, Shirt, ShoppingBag, UserRound, Gamepad2 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
@@ -29,7 +29,7 @@ const perks: { icon: ReactNode; title: string; body: string }[] = [
   { icon: <ShoppingBag />, title: "Store", body: "Cloaks, hats, wings, shoes and hand items. Try anything on your own skin in 3D before you buy." },
   { icon: <Shirt />, title: "Locker", body: "Change your skin, pick a cloak and wear up to one cosmetic per slot, all in one place." },
   { icon: <Palette />, title: "Dyes", body: "Dyeable cosmetics can be recoloured to any colour you like, right from the Locker." },
-  { icon: <Sparkles />, title: "In game", body: "Everything you wear shows up in game for every player running Native." },
+  { icon: <Gamepad2 />, title: "In game", body: "Everything you wear shows up in game for every player running Native." },
 ];
 
 const steps = [

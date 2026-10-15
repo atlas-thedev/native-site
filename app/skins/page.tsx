@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Flame, Search, Sparkles, Trophy } from "lucide-react";
+import { Flame, Search, Trophy, Clock } from "lucide-react";
 import StoreHero from "@/components/store/StoreHero";
 import SkinCard from "@/components/skins/SkinCard";
 import { getSkins } from "@/lib/server/profiles";
@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMeta({
 
 const SORTS: { id: SkinSort; label: string; Icon: typeof Flame }[] = [
   { id: "trending", label: "Trending", Icon: Flame },
-  { id: "new", label: "New", Icon: Sparkles },
+  { id: "new", label: "New", Icon: Clock },
   { id: "popular", label: "Most liked", Icon: Trophy },
 ];
 
