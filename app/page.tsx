@@ -15,8 +15,6 @@ import { getCatalog } from "@/lib/server/store";
 import { outfitOf } from "@/lib/outfit";
 import type { Wearing } from "@/lib/store";
 import { getSiteConfig } from "@/lib/server/siteConfig";
-import { getPartners } from "@/lib/server/partners";
-import PartnerStripe from "@/components/partners/PartnerStripe";
 
 export const dynamic = "force-dynamic";
 
@@ -34,13 +32,12 @@ async function releaseCount(): Promise<number> {
 }
 
 export default async function Home() {
-  const [a, mc, cfg, catalog, versions, partners] = await Promise.all([
+  const [a, mc, cfg, catalog, versions] = await Promise.all([
     getAvailability(),
     getLatestMinecraft(),
     getSiteConfig(),
     getCatalog(),
     releaseCount(),
-    getPartners(),
   ]);
   const all = [...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])].filter((i) => !i.hidden);
   const byId = new Map(all.map((i) => [i.id, i]));
@@ -58,7 +55,6 @@ export default async function Home() {
         }}
       />
       <HomeHero mascot={mascot} />
-      <PartnerStripe partner={partners.find((p) => p.tier === "featured") ?? partners[0] ?? null} />
       <Included items={all.length} versions={versions} />
       <Highlights />
       <LauncherGrid />
