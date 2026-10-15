@@ -141,7 +141,7 @@ export async function getAccountSkin(token: string, name: string, uuid?: string)
 /** A player's public profile by name, or null when there is none. */
 export async function getPlayer(name: string): Promise<PlayerProfile | null> {
   try {
-    const r = await fetch(`${API_URL}/v1/store/users/${encodeURIComponent(name)}`, { next: { revalidate: 15 }, signal: AbortSignal.timeout(8000) });
+    const r = await fetch(`${API_URL}/v1/store/users/${encodeURIComponent(name)}`, { cache: "no-store", signal: AbortSignal.timeout(8000) });
     if (!r.ok) return null;
     const d = (await r.json()) as { profile?: PlayerProfile };
     return d.profile ? { ...d.profile, sides: sidesOf(d.profile.sides) } : null;
@@ -152,13 +152,18 @@ export async function getPlayer(name: string): Promise<PlayerProfile | null> {
 
 /** Players whose name starts with `q`; without `q` the biggest collectors. */
 export async function findPlayers(q: string): Promise<PlayerHit[]> {
+  return (await playerDirectory(q)).users;
+}
+
+/** The directory: matches (or top collectors), plus the newest players and the total when there's no search. Live, never cached. */
+export async function playerDirectory(q: string): Promise<{ users: PlayerHit[]; recent: PlayerHit[]; total: number }> {
   try {
-    const r = await fetch(`${API_URL}/v1/store/users?q=${encodeURIComponent(q)}`, { next: { revalidate: 20 }, signal: AbortSignal.timeout(8000) });
-    if (!r.ok) return [];
-    const d = (await r.json()) as { users?: PlayerHit[] };
-    return Array.isArray(d.users) ? d.users : [];
+    const r = await fetch(`${API_URL}/v1/store/users?q=${encodeURIComponent(q)}`, { cache: "no-store", signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return { users: [], recent: [], total: 0 };
+    const d = (await r.json()) as { users?: PlayerHit[]; recent?: PlayerHit[]; total?: number };
+    return { users: Array.isArray(d.users) ? d.users : [], recent: Array.isArray(d.recent) ? d.recent : [], total: Number(d.total) || 0 };
   } catch {
-    return [];
+    return { users: [], recent: [], total: 0 };
   }
 }
 

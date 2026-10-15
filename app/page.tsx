@@ -8,6 +8,7 @@ import SectionHead from "@/components/v2/SectionHead";
 import HomeHero from "@/components/v2/home/HomeHero";
 import { BigCta, GoFurther, Locker } from "@/components/v2/home/Sections";
 import { Explainer, Highlights, Included, LauncherGrid } from "@/components/v2/home/Laby";
+import { InGame, ScreenTour } from "@/components/v2/home/Showcase";
 import { getAvailability } from "@/lib/server/releases";
 import { getLatestMinecraft } from "@/lib/server/mojang";
 import { faqs } from "@/lib/site";
@@ -56,7 +57,9 @@ export default async function Home() {
       />
       <HomeHero mascot={mascot} />
       <Included items={all.length} versions={versions} />
+      <ScreenTour />
       <Highlights />
+      <InGame />
       <LauncherGrid />
       <Locker items={showcase} />
       <VersionsRail latest={mc} />

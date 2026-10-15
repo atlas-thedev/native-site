@@ -1,34 +1,41 @@
-import { BadgeCheck, Bug, Code2, Crown, FlaskConical, Gem, Heart, Shield, Star, Wrench, Video } from "lucide-react";
+import { BadgeCheck, Shield, Star } from "lucide-react";
 
-type Look = { label: string; bg: string; fg: string; Icon: typeof Star };
-// Solid colours with their own text colour, so badges read the same in light and dark mode.
-const KNOWN: Record<string, Look> = {
-  admin: { label: "Admin", bg: "linear-gradient(#ff6b6b,#d63a3a)", fg: "#fff", Icon: Shield },
-  staff: { label: "Staff", bg: "linear-gradient(#5ea8ff,#2f74e0)", fg: "#fff", Icon: Wrench },
-  developer: { label: "Developer", bg: "linear-gradient(#a98bff,#7651ea)", fg: "#fff", Icon: Code2 },
-  dev: { label: "Developer", bg: "linear-gradient(#a98bff,#7651ea)", fg: "#fff", Icon: Code2 },
-  moderator: { label: "Moderator", bg: "linear-gradient(#4fd1c5,#1f9e93)", fg: "#06201d", Icon: Shield },
-  beta: { label: "Beta tester", bg: "linear-gradient(#ffb36b,#f07d1f)", fg: "#2a1300", Icon: FlaskConical },
-  "beta tester": { label: "Beta tester", bg: "linear-gradient(#ffb36b,#f07d1f)", fg: "#2a1300", Icon: FlaskConical },
-  tester: { label: "Tester", bg: "linear-gradient(#ffb36b,#f07d1f)", fg: "#2a1300", Icon: Bug },
-  founder: { label: "Founder", bg: "linear-gradient(#ffe08a,#e9a91c)", fg: "#2b1b02", Icon: Gem },
-  supporter: { label: "Supporter", bg: "linear-gradient(#ff8fc8,#e0479a)", fg: "#fff", Icon: Heart },
-  partner: { label: "Partner", bg: "linear-gradient(135deg,#8b5cf6,#f5b94a)", fg: "#fff", Icon: Star },
-  early_supporter: { label: "Early supporter", bg: "linear-gradient(#ff9b6b,#f0661f)", fg: "#fff", Icon: Heart },
-  bug_hunter: { label: "Bug hunter", bg: "linear-gradient(#7fe07a,#2f9b2b)", fg: "#0b2a0a", Icon: Bug },
-  super_beta_tester: { label: "Super beta tester", bg: "linear-gradient(#5fe3d8,#e9b93a)", fg: "#06201d", Icon: FlaskConical },
-  verified: { label: "Verified", bg: "linear-gradient(#5ea8ff,#2f74e0)", fg: "#fff", Icon: BadgeCheck },
-  creator: { label: "Creator", bg: "linear-gradient(#ff8fc8,#e0479a)", fg: "#fff", Icon: Video },
+/* The launcher's badges (native-client src/features/social/Badges.jsx): same art, names and colours. */
+const PLUS_ART = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect width="16" height="16" rx="4" fill="#ffd68c"/><path fill="#1a1306" d="M3 5h2v2h1V5h1V4h2v1h1v2h1V5h2v7H3z"/><path fill="#ffd68c" d="M5 10h6v1H5z"/></svg>')}`;
+type Real = { name: string; description: string; gradient: string; art: string };
+const REAL: Record<string, Real> = {
+  developer: { name: "Active Developer", description: "Verified Native Core Developer", gradient: "linear-gradient(135deg,#5865f2 0%,#3ba55d 100%)", art: "/badges/developer.png" },
+  early_supporter: { name: "Early Supporter", description: "Supported Native Client in its earliest days", gradient: "linear-gradient(135deg,#f47b67 0%,#faa61a 100%)", art: "/badges/early-supporter.png" },
+  bug_hunter: { name: "Bug Hunter", description: "Found and reported crucial launcher bugs", gradient: "linear-gradient(135deg,#3ba55d 0%,#57f287 100%)", art: "/badges/bug-hunter.png" },
+  staff: { name: "Native Staff", description: "Official Native Client Staff Team", gradient: "linear-gradient(135deg,#5865f2 0%,#eb459e 100%)", art: "/badges/staff.png" },
+  super_beta_tester: { name: "Super Beta Tester", description: "Hand-picked to test Native before everyone else", gradient: "linear-gradient(135deg,#2fd4c9 0%,#ffd36b 100%)", art: "/badges/launcher-super-beta-tester.png" },
+  partner: { name: "Native Partner", description: "Official Native partner", gradient: "linear-gradient(135deg,#8b5cf6 0%,#f5b94a 100%)", art: "/badges/partner.png" },
+  plus: { name: "Native+", description: "Native+ member", gradient: "linear-gradient(135deg,#ffd68c 0%,#f5b94a 100%)", art: PLUS_ART },
 };
-const PLUS: Look = { label: "Native+", bg: "linear-gradient(#ffe08a,#e9a91c)", fg: "#000", Icon: Crown };
-const PREMIUM: Look = { label: "Premium", bg: "linear-gradient(#6ee7a0,#22a35a)", fg: "#03230f", Icon: BadgeCheck };
-const OTHER = (label: string): Look => ({ label, bg: "linear-gradient(#5b5b63,#3a3a40)", fg: "#fff", Icon: Star });
-const isPlusBadge = (b: string) => /^(native)?\s*\+?\s*plus$|^native\+$/i.test(b);
+const ALIASES: Record<string, string> = { dev: "developer", "early supporter": "early_supporter", "bug hunter": "bug_hunter", "super beta tester": "super_beta_tester", "native+": "plus", "native plus": "plus" };
 
-function Badge({ look, title }: { look: Look; title?: string }) {
+type Plain = { label: string; bg: string; fg: string; Icon: typeof Star };
+const ADMIN: Plain = { label: "Admin", bg: "linear-gradient(#ff6b6b,#d63a3a)", fg: "#fff", Icon: Shield };
+const PREMIUM: Plain = { label: "Premium", bg: "linear-gradient(#6ee7a0,#22a35a)", fg: "#03230f", Icon: BadgeCheck };
+const OTHER = (label: string): Plain => ({ label, bg: "linear-gradient(#5b5b63,#3a3a40)", fg: "#fff", Icon: Star });
+
+/** A launcher badge: its pixel art in a tile with the badge's gradient, and the name. */
+function RealBadge({ b }: { b: Real }) {
+  return (
+    <span title={`${b.name} · ${b.description}`} className="inline-flex h-[28px] items-center gap-2 rounded-[8px] border border-white/10 bg-black/40 py-0 pl-[3px] pr-2.5 text-[12px] font-bold text-white shadow-[0_1px_0_rgb(0_0_0/0.25)]">
+      <span className="flex h-[22px] w-[22px] items-center justify-center rounded-[6px]" style={{ background: b.gradient }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={b.art} alt="" width={18} height={18} className="h-[18px] w-[18px] [image-rendering:pixelated]" draggable={false} />
+      </span>
+      {b.name}
+    </span>
+  );
+}
+
+function PlainBadge({ look, title }: { look: Plain; title?: string }) {
   const { Icon } = look;
   return (
-    <span title={title ?? look.label} className="inline-flex h-[24px] items-center gap-1.5 rounded-[6px] px-2 text-[11px] font-black uppercase tracking-[0.07em] shadow-[inset_0_-2px_0_rgb(0_0_0/0.2),0_1px_0_rgb(0_0_0/0.25)]" style={{ background: look.bg, color: look.fg }}>
+    <span title={title ?? look.label} className="inline-flex h-[28px] items-center gap-1.5 rounded-[8px] px-2.5 text-[12px] font-bold shadow-[inset_0_-2px_0_rgb(0_0_0/0.2),0_1px_0_rgb(0_0_0/0.25)]" style={{ background: look.bg, color: look.fg }}>
       <Icon className="h-3.5 w-3.5" />{look.label}
     </span>
   );
@@ -37,15 +44,17 @@ function Badge({ look, title }: { look: Look; title?: string }) {
 /** Admin, Native+, Premium (Microsoft-linked Minecraft account) and the player's own badges. */
 export default function ProfileBadges({ badges = [], admin = false, plus = false, premium = false }: { badges?: string[]; admin?: boolean; plus?: boolean; premium?: boolean }) {
   const seen = new Set<string>();
-  const out: { key: string; look: Look; title?: string }[] = [];
-  const add = (key: string, look: Look, title?: string) => { if (!seen.has(look.label)) { seen.add(look.label); out.push({ key, look, title }); } };
-  if (admin) add("admin", KNOWN.admin, "Native team");
-  if (plus) add("plus", PLUS, "Native+ member");
-  if (premium) add("premium", PREMIUM, "Premium Minecraft account connected (Microsoft)");
-  for (const b of badges) {
-    if (isPlusBadge(b)) { if (plus) continue; add("plus", PLUS); continue; }
-    const k = b.trim().toLowerCase();
-    add(k, KNOWN[k] ?? OTHER(b.trim()));
+  const out: React.ReactNode[] = [];
+  const real = (id: string) => { if (!seen.has(id) && REAL[id]) { seen.add(id); out.push(<RealBadge key={id} b={REAL[id]} />); } };
+  const plain = (id: string, look: Plain, title?: string) => { if (!seen.has(id)) { seen.add(id); out.push(<PlainBadge key={id} look={look} title={title} />); } };
+  if (admin) plain("admin", ADMIN, "Native team");
+  if (plus) real("plus");
+  if (premium) plain("premium", PREMIUM, "Premium Minecraft account connected (Microsoft)");
+  for (const raw of badges) {
+    const k = String(raw).trim().toLowerCase();
+    const id = REAL[k] ? k : ALIASES[k];
+    if (id) real(id);
+    else if (k) plain(k, OTHER(String(raw).trim()));
   }
-  return <>{out.map((b) => <Badge key={b.key} look={b.look} title={b.title} />)}</>;
+  return <>{out}</>;
 }

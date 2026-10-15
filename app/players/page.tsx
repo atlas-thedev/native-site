@@ -7,7 +7,7 @@ import Podium from "@/components/players/Podium";
 import SkinHead from "@/components/SkinHead";
 import Marquee from "@/components/v2/Marquee";
 import SplitText from "@/components/SplitText";
-import { findPlayers, getCatalog, getLook, getPlayer } from "@/lib/server/store";
+import { getCatalog, getLook, getPlayer, playerDirectory } from "@/lib/server/store";
 import { outfitOf } from "@/lib/outfit";
 import { pageMeta } from "@/lib/seo";
 
@@ -23,12 +23,13 @@ const joined = (t: number) => (t ? new Date(t).toLocaleDateString("en", { month:
 
 export default async function PlayersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const q = ((await searchParams).q ?? "").trim().slice(0, 32);
-  const players = await findPlayers(q);
+  const { users: players, recent, total } = await playerDirectory(q);
   const exact = q && players.find((p) => p.name.toLowerCase() === q.toLowerCase());
   if (exact) redirect(`/u/${encodeURIComponent(exact.name)}`);
   const top = !q ? players.slice(0, 3) : [];
-  const [looks, catalog, profiles] = await Promise.all([
+  const [looks, recentLooks, catalog, profiles] = await Promise.all([
     Promise.all(players.map((p) => getLook(p.name, p.model, p.uuid))),
+    Promise.all(recent.map((p) => getLook(p.name, p.model, p.uuid))),
     top.length ? getCatalog() : Promise.resolve(null),
     Promise.all(top.map((p) => getPlayer(p.name))),
   ]);
@@ -48,7 +49,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
       <section className="v-wrap v-page-hero">
         <div className="v-head-rule">
           <span>(Directory)</span>
-          <span>{q ? `${players.length} match${players.length === 1 ? "" : "es"}` : "Native + Minecraft Java"}</span>
+          <span>{q ? `${players.length} match${players.length === 1 ? "" : "es"}` : total ? `${total.toLocaleString()} players on Native` : "Native + Minecraft Java"}</span>
         </div>
         <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
           <SplitText as="h1" text={q ? `“${q}”` : "Players"} className="v-page-title" stagger={0.06} />
@@ -75,6 +76,26 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
             </span>
             <ArrowUpRight className="h-7 w-7 shrink-0 transition group-hover:-translate-y-1 group-hover:translate-x-1" />
           </Link>
+        </section>
+      )}
+
+      {recent.length > 0 && (
+        <section className="v-wrap mt-[clamp(40px,6vw,80px)]">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+            <h2 className="v-display v-h3">New on Native</h2>
+            <p className="v-label">Newest sign-ups, live</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+            {recent.slice(0, 12).map((p, i) => (
+              <Link key={p.name} href={`/u/${encodeURIComponent(p.name)}`} className="group flex items-center gap-3 rounded-[12px] border border-line bg-surface px-3 py-3 transition hover:border-fg/40">
+                <SkinHead skin={recentLooks[i]?.skin ?? null} name={p.name} size={36} className="!rounded-[7px]" />
+                <span className="min-w-0">
+                  <span className="block truncate text-[14px] font-semibold">{p.name}</span>
+                  <span className="block font-mono text-[11px] text-mute">{joined(p.joinedAt)}</span>
+                </span>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 
