@@ -15,6 +15,8 @@ import { getCatalog } from "@/lib/server/store";
 import { outfitOf } from "@/lib/outfit";
 import type { Wearing } from "@/lib/store";
 import { getSiteConfig } from "@/lib/server/siteConfig";
+import { getPartners } from "@/lib/server/partners";
+import PartnersSection from "@/components/partners/PartnersSection";
 
 export const dynamic = "force-dynamic";
 
@@ -32,12 +34,13 @@ async function releaseCount(): Promise<number> {
 }
 
 export default async function Home() {
-  const [a, mc, cfg, catalog, versions] = await Promise.all([
+  const [a, mc, cfg, catalog, versions, partners] = await Promise.all([
     getAvailability(),
     getLatestMinecraft(),
     getSiteConfig(),
     getCatalog(),
     releaseCount(),
+    getPartners(),
   ]);
   const all = [...(catalog?.items ?? []), ...(catalog?.cosmetics ?? [])].filter((i) => !i.hidden);
   const byId = new Map(all.map((i) => [i.id, i]));
@@ -62,8 +65,9 @@ export default async function Home() {
       <VersionsRail latest={mc} />
       <Explainer versions={versions} />
       <GoFurther />
+      <PartnersSection partners={partners} index="(06)" />
       <section id="download" className="v-wrap pb-[clamp(80px,10vw,150px)]">
-        <SectionHead index="(06)" label="Download" title="Get Native" />
+        <SectionHead index="(07)" label="Download" title="Get Native" />
         <DownloadGate>
           <DownloadCta version={a.version} avail={a.platforms} />
         </DownloadGate>

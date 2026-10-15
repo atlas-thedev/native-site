@@ -25,7 +25,7 @@ export const dynamic = "force-dynamic";
 export const metadata = pageMeta({
   title: "Native+",
   description:
-    "Native+ unlocks every paid Native cape and every 3D cosmetic, a gold N+ in the launcher and the Native+ crown in Relay. $2.99 a month or $24.99 a year, and you can cancel anytime.",
+    "Native+ unlocks every paid Native cape and every 3D cosmetic, a gold N+ in the launcher and the Native+ crown in Relay. $5.99 a month or $42.99 a year, and you can cancel anytime.",
   path: "/plus",
 });
 
@@ -149,7 +149,7 @@ export default async function PlusPage() {
               </Link>
             </div>
             <p className="mt-5 text-[14px] text-dim">
-              $2.99 a month or $24.99 a year
+              $5.99 a month or $42.99 a year
             </p>
           </div>
 

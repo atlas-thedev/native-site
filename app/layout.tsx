@@ -4,6 +4,7 @@ import "./globals.css";
 import "./v2.css";
 import "./v3.css";
 import "./halloween.css";
+import "./partners.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import Announcement from "@/components/Announcement";
 import Navbar from "@/components/Navbar";
