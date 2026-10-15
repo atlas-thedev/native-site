@@ -13,7 +13,11 @@ const KNOWN: Record<string, Look> = {
   tester: { label: "Tester", bg: "linear-gradient(#ffb36b,#f07d1f)", fg: "#2a1300", Icon: Bug },
   founder: { label: "Founder", bg: "linear-gradient(#ffe08a,#e9a91c)", fg: "#2b1b02", Icon: Gem },
   supporter: { label: "Supporter", bg: "linear-gradient(#ff8fc8,#e0479a)", fg: "#fff", Icon: Heart },
-  partner: { label: "Partner", bg: "linear-gradient(#7fe07a,#2f9b2b)", fg: "#0b2a0a", Icon: Star },
+  partner: { label: "Partner", bg: "linear-gradient(135deg,#8b5cf6,#f5b94a)", fg: "#fff", Icon: Star },
+  early_supporter: { label: "Early supporter", bg: "linear-gradient(#ff9b6b,#f0661f)", fg: "#fff", Icon: Heart },
+  bug_hunter: { label: "Bug hunter", bg: "linear-gradient(#7fe07a,#2f9b2b)", fg: "#0b2a0a", Icon: Bug },
+  super_beta_tester: { label: "Super beta tester", bg: "linear-gradient(#5fe3d8,#e9b93a)", fg: "#06201d", Icon: FlaskConical },
+  verified: { label: "Verified", bg: "linear-gradient(#5ea8ff,#2f74e0)", fg: "#fff", Icon: BadgeCheck },
   creator: { label: "Creator", bg: "linear-gradient(#ff8fc8,#e0479a)", fg: "#fff", Icon: Sparkles },
 };
 const PLUS: Look = { label: "Native+", bg: "linear-gradient(#ffe08a,#e9a91c)", fg: "#000", Icon: Crown };

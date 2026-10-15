@@ -10,6 +10,8 @@ export type StoreItem = {
   author: string;
   featured: boolean;
   exclusive?: boolean;
+  /** made with a Native partner (Aurex…): shown with the partner's logo */
+  partner?: { id: string; name: string; logo: string | null; accent: string; website?: string } | null;
   hidden?: boolean;
   isNew?: boolean;
   owners?: number;

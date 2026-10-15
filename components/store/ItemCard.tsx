@@ -34,7 +34,16 @@ export default function ItemCard({ item, href, art, left, right, bottom, own, wo
       <div className={`st-art ${aspect}`}>
         <div className="transition duration-300 group-hover:scale-[1.06]">{art}</div>
         <div className="absolute inset-x-2.5 top-2.5 flex items-start justify-between gap-2">
-          <div className="flex flex-wrap gap-1.5">{left}</div>
+          <div className="flex flex-wrap gap-1.5">
+            {item.partner && (
+              <span title={`Made with ${item.partner.name}, a Native partner`} className="st-tag inline-flex items-center gap-1 !pl-0.5" style={{ background: item.partner.accent || "#8b5cf6", color: "#fff" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {item.partner.logo && <img src={item.partner.logo} alt="" className="h-4 w-4 rounded-full bg-white object-contain p-[1px]" />}
+                {item.partner.name.replace(/\s+(hosting|host|network|studios?)$/i, "")}
+              </span>
+            )}
+            {left}
+          </div>
           <div className="flex flex-col items-end gap-1.5">{right}{wish && <WishHeart itemId={item.id} signedIn={wish.signedIn} />}</div>
         </div>
         {bottom && <div className="absolute bottom-2.5 left-2.5 flex flex-col items-start gap-1.5">{bottom}</div>}
