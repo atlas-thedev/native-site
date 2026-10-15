@@ -64,7 +64,7 @@ export default function BillingPanel({ names }: { names: Record<string, string> 
               Member · {plus.plan === "yearly" ? "yearly" : "monthly"} plan{plus.endsAt ? ` · ends ${fmt(plus.endsAt)}` : plus.renewsAt ? ` · renews ${fmt(plus.renewsAt)}` : ""}. Every paid cloak and cosmetic is yours to add.
             </p>
           ) : (
-            <p className="mt-3 flex-1 text-[14.5px] text-mute">Every paid cloak, every cosmetic and the Native+ badge from $2.99 a month.</p>
+            <p className="mt-3 flex-1 text-[14.5px] text-mute">Every paid cloak, every cosmetic and the Native+ badge from $5.99 a month.</p>
           )}
           <div className="mt-5 flex flex-wrap gap-2">
             {plus?.active ? (

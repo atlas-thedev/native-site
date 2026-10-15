@@ -11,6 +11,7 @@ const pages: [string, number, MetadataRoute.Sitemap[number]["changeFrequency"]][
   ["/vote", 0.6, "daily"],
   ["/beta", 0.7, "weekly"],
   ["/changes", 0.7, "daily"],
+  ["/partners", 0.6, "weekly"],
   ["/support", 0.6, "monthly"],
   ["/terms", 0.3, "yearly"],
   ["/privacy", 0.3, "yearly"],

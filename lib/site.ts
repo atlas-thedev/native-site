@@ -36,6 +36,7 @@ export const nav = [
   { href: "/plus", label: "Native+" },
   { href: "/beta", label: "Beta" },
   { href: "/changes", label: "Changes" },
+  { href: "/partners", label: "Partners" },
   { href: "/support", label: "Support" },
 ];
 

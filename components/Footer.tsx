@@ -26,6 +26,7 @@ const cols: { title: string; links: FooterLink[] }[] = [
       { label: "Native+", href: "/plus" },
       { label: "Super Beta", href: "/beta" },
       { label: "Community vote", href: "/vote" },
+      { label: "Partners", href: "/partners" },
       { label: "Forgot password", href: "/forgot" },
     ],
   },

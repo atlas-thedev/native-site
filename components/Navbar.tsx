@@ -22,6 +22,7 @@ const nav = [
   { href: "/players", label: "Players" },
   { href: "/beta", label: "Beta" },
   { href: "/changes", label: "Changes" },
+  { href: "/partners", label: "Partners" },
   { href: "/support", label: "Support" },
 ];
 
