@@ -1,91 +1,163 @@
 import Link from "next/link";
-import { ArrowUpRight, Handshake, Megaphone, Rocket, Server } from "lucide-react";
+import { ArrowUpRight, Check, Plus } from "lucide-react";
 import JsonLd from "@/components/JsonLd";
-import SectionHead from "@/components/v2/SectionHead";
-import SplitText from "@/components/SplitText";
-import Marquee from "@/components/v2/Marquee";
-import Magnetic from "@/components/v2/Magnetic";
-import PartnerCard from "@/components/partners/PartnerCard";
-import PartnerOrbit from "@/components/partners/PartnerOrbit";
+import Reveal from "@/components/Reveal";
+import Lockup from "@/components/partners/Lockup";
 import { getPartners } from "@/lib/server/partners";
+import { storyFor } from "@/lib/partners";
 import { breadcrumb, pageMeta } from "@/lib/seo";
 import { site } from "@/lib/site";
 
 export const revalidate = 60;
 export const metadata = pageMeta({
   title: "Partners",
-  description: "The hosts, servers and creators Native Client works with, including Aurex Hosting, Sri Lanka’s #1 game hosting provider.",
+  description: "Native Client has partnered with Aurex Hosting, Sri Lanka’s #1 game hosting provider. Minecraft servers from LKR 400 a month, around 60 ms from Colombo.",
   path: "/partners",
 });
 
-const pitch = [
-  { Icon: Server, t: "Hosts & servers", d: "Put your brand in front of players the moment they pick where to play." },
-  { Icon: Megaphone, t: "Creators", d: "Exclusive capes, codes and drops for your community, worn in game." },
-  { Icon: Rocket, t: "Brands", d: "An animated card on playnative.net and inside the launcher, made for you." },
-];
-
 export default async function PartnersPage() {
   const partners = await getPartners();
-  const featured = partners.filter((p) => p.tier === "featured");
-  const rest = partners.filter((p) => p.tier !== "featured");
+  const partner = partners.find((p) => p.tier === "featured") ?? partners[0];
+  const others = partners.filter((p) => p.id !== partner?.id);
+
+  if (!partner) {
+    return (
+      <div className="np-page v-wrap">
+        <section className="np-hero">
+          <h1 className="np-h1">Partners</h1>
+          <p className="np-lead">New partners are on the way.</p>
+        </section>
+      </div>
+    );
+  }
+
+  const story = storyFor(partner);
+  const style = { ["--np-accent" as string]: partner.accent, ["--np-accent-2" as string]: partner.accent2 };
 
   return (
-    <div className="pb-[clamp(80px,10vw,150px)]">
+    <div className="np-page" style={style}>
       <JsonLd data={breadcrumb([{ name: "Partners", path: "/partners" }])} />
 
+      {/* Hero */}
       <section className="np-hero v-wrap">
-        <div className="np-hero-copy">
-          <p className="v-label">Partners · {partners.length || "Soon"}</p>
-          <SplitText as="h1" text="Better together" className="v-display mt-6 text-[clamp(3.6rem,10vw,9.5rem)]" stagger={0.08} />
-          <p className="mt-7 max-w-[480px] text-[clamp(16px,1.4vw,19px)] leading-relaxed text-mute">
-            Native is free because of the people we team up with. Meet the hosts, servers and creators who help keep it fast.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Magnetic>
-              <a href="#all" className="v-btn is-solid is-lg">Meet them</a>
-            </Magnetic>
-            <a href="#become-a-partner" className="v-btn is-lg">Partner with us <ArrowUpRight /></a>
-          </div>
+        <Reveal blur={false} y={12}>
+          <Lockup partner={partner} size={30} />
+        </Reveal>
+        <div className="np-hero-grid">
+          <Reveal blur={false} delay={0.05}>
+            <h1 className="np-h1">
+              {story.headline[0]}
+              <span className="np-accent">{story.headline[1]}</span>
+            </h1>
+          </Reveal>
+          <Reveal blur={false} delay={0.15} className="np-hero-side">
+            <p className="np-lead">{story.intro}</p>
+            <div className="np-actions">
+              <a href={partner.website} target="_blank" rel="noopener sponsored" className="np-btn is-accent">
+                {story.cta} <ArrowUpRight className="h-4 w-4" />
+              </a>
+              <Link href="/download" className="np-btn">Download Native</Link>
+            </div>
+            {story.note && <p className="np-note">{story.note}</p>}
+          </Reveal>
         </div>
-        <PartnerOrbit partners={partners} />
-      </section>
-
-      <Marquee className="is-inv is-sm" items={[...partners.map((p) => p.name), "Partners", "Native Client"]} speed={28} sep="✦" />
-
-      <section id="all" className="v-section v-wrap">
-        <SectionHead index="(01)" label="Featured" title="Our partners" />
-        {partners.length === 0 && <p className="text-mute">New partners are on the way.</p>}
-        <div className="flex flex-col gap-6">
-          {featured.map((p, i) => <PartnerCard key={p.id} partner={p} size="hero" index={i} />)}
-        </div>
-        {rest.length > 0 && (
-          <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {rest.map((p, i) => <PartnerCard key={p.id} partner={p} index={i} />)}
-          </div>
+        {story.heroImage && (
+          <Reveal y={30} delay={0.2}>
+            <div className="np-shot">
+              <img src={story.heroImage} alt="" />
+              <div className="np-shot-over">
+                <Lockup partner={partner} size={64} />
+                {partner.tagline && <p>{partner.tagline}</p>}
+              </div>
+            </div>
+          </Reveal>
         )}
       </section>
 
-      <section id="become-a-partner" className="v-wrap">
-        <SectionHead index="(02)" label="Work with us" title="Become a partner" sub="Hosting, servers, creators or brands: if you make Minecraft better, we want to hear from you." />
-        <div className="grid gap-px overflow-hidden rounded-[16px] border border-line bg-line lg:grid-cols-3">
-          {pitch.map(({ Icon, t, d }) => (
-            <div key={t} className="flex min-h-[240px] flex-col bg-bg p-7 sm:p-9">
-              <Icon className="h-5 w-5" />
-              <span className="mt-auto block pt-10 font-[family-name:var(--font-display)] text-[clamp(1.9rem,2.8vw,2.6rem)] uppercase leading-[0.95]">{t}</span>
-              <span className="mt-3 block max-w-[340px] text-[15px] leading-relaxed text-mute">{d}</span>
+      {/* Split */}
+      {story.split.body && (
+        <section className="np-section v-wrap">
+          <div className="np-split">
+            {story.split.image && <img className="np-split-bg" src={story.split.image} alt="" aria-hidden />}
+            <h2 className="np-h2">{story.split.title}</h2>
+            <p className="np-body">{story.split.body}</p>
+          </div>
+        </section>
+      )}
+
+      {/* Features */}
+      {story.features.items.length > 0 && (
+        <section className="np-section v-wrap">
+          <h2 className="np-h2">{story.features.title}</h2>
+          <div className="np-features">
+            {story.features.items.map((item, i) => (
+              <Reveal key={item.title} blur={false} y={16} delay={i * 0.06} className="np-feature">
+                <span className="np-feature-tick"><Check className="h-3.5 w-3.5" /></span>
+                <h3>{item.title}</h3>
+                {item.body && <p>{item.body}</p>}
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Media rows */}
+      {story.rows.map((row, i) => (
+        <section key={row.title} className="np-section v-wrap">
+          <div className={`np-row ${i % 2 ? "is-flip" : ""}`}>
+            <Reveal y={20} className="np-row-media">
+              <img src={row.image} alt="" />
+            </Reveal>
+            <div className="np-row-copy">
+              <h2 className="np-h2">{row.title}</h2>
+              <p className="np-body">{row.body}</p>
             </div>
-          ))}
-        </div>
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-6 border-t border-line pt-8">
-          <p className="flex max-w-[460px] items-center gap-3 text-[16px] leading-relaxed text-mute">
-            <Handshake className="h-5 w-5 flex-none" />
-            Open a ticket on our Discord and the team will get back to you.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Magnetic>
-              <a href={site.discord} target="_blank" rel="noreferrer" className="v-btn is-solid is-lg">Talk to us on Discord</a>
-            </Magnetic>
-            <Link href="/support" className="v-btn is-lg">Support <ArrowUpRight /></Link>
+          </div>
+        </section>
+      ))}
+
+      {/* FAQ */}
+      {story.faq.length > 0 && (
+        <section className="np-section v-wrap">
+          <div className="np-split is-top">
+            <h2 className="np-h2">FAQ</h2>
+            <div className="np-faq">
+              {story.faq.map(([q, a]) => (
+                <details key={q}>
+                  <summary>{q}<Plus className="h-4 w-4" /></summary>
+                  <p>{a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* More partners */}
+      {others.length > 0 && (
+        <section className="np-section v-wrap">
+          <h2 className="np-h2">More partners</h2>
+          <div className="np-list">
+            {others.map((p) => (
+              <a key={p.id} href={p.website} target="_blank" rel="noopener sponsored" className="np-list-row">
+                <img src={p.logo} alt="" />
+                <span><strong>{p.name}</strong><small>{p.tagline}</small></span>
+                <ArrowUpRight className="h-4 w-4" />
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Become a partner */}
+      <section id="become-a-partner" className="np-section v-wrap">
+        <div className="np-split">
+          <h2 className="np-h2">Work with Native.</h2>
+          <div>
+            <p className="np-body">Hosting, servers, creators or brands: if you make Minecraft better, we’d like to hear from you. Open a ticket on our Discord and the team will get back to you.</p>
+            <div className="np-actions mt-6">
+              <a href={site.discord} target="_blank" rel="noreferrer" className="np-btn is-solid">Talk to us on Discord</a>
+            </div>
           </div>
         </div>
       </section>
