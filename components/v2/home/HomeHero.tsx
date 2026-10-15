@@ -16,6 +16,7 @@ import { useOS } from "../../useOS";
 import { Apple, Linux, Windows } from "../../icons";
 import { platforms } from "@/lib/site";
 import type { StoreItem } from "@/lib/store";
+import type { Partner } from "@/lib/partners";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -70,7 +71,7 @@ function Count({ at }: { at: number }) {
 /** JustSok's skin, waving on the hero in a Cyber Hood, Witch Broom and Street Sneakers. */
 const MASCOT_SKIN = "https://textures.minecraft.net/texture/1d2bf4478f021a7cb7175b574ac59764ba6846fc8ffba5d207a594a9dced7ed8";
 
-export default function HomeHero({ mascot = [] }: { mascot?: Worn[] }) {
+export default function HomeHero({ mascot = [], partner = null }: { mascot?: Worn[]; partner?: Partner | null }) {
   const { launch } = useLaunch();
   const me = useAccount();
   const version = useVersion();
@@ -95,6 +96,18 @@ export default function HomeHero({ mascot = [] }: { mascot?: Worn[] }) {
       <motion.div style={{ y }} className="v-wrap flex flex-1 flex-col">
         <div className="grid items-start gap-[clamp(28px,4vw,64px)] lg:grid-cols-[minmax(0,1fr)_auto]">
           <div>
+            {partner && (
+              <motion.div {...up(0.15)} className="mb-[clamp(18px,2.4vw,30px)]">
+                <Link href="/partners" className="np-hero-badge" style={{ ["--np-accent" as string]: partner.accent }}>
+                  <span className="np-hero-badge-label">Official partner</span>
+                  <span className="np-hero-badge-who">
+                    <img src={partner.logo} alt="" width={18} height={18} />
+                    {partner.name}
+                  </span>
+                  <ArrowUpRight className="np-hero-badge-arrow" />
+                </Link>
+              </motion.div>
+            )}
             <Lines lines={lines} go={go} />
 
             {pre && (

@@ -7,7 +7,7 @@
 /* lockup: native × AUREX */
 .np-lockup { display: inline-flex; align-items: center; gap: calc(var(--np-size) * 0.55); font-weight: 800; font-size: calc(var(--np-size) * 0.72); letter-spacing: -0.02em; line-height: 1; }
 .np-lockup-mark { display: inline-flex; align-items: center; gap: calc(var(--np-size) * 0.3); }
-.np-lockup-mark img { width: var(--np-size); height: var(--np-size); object-fit: contain; }
+.np-lockup-mark img { flex: none; width: var(--np-size); height: var(--np-size); max-width: none; aspect-ratio: 1; object-fit: contain; }
 .np-lockup-mark.is-partner span { text-transform: uppercase; letter-spacing: 0.02em; color: color-mix(in srgb, var(--np-accent) 75%, var(--fg)); }
 .np-lockup-x { color: var(--dim); font-weight: 400; font-size: calc(var(--np-size) * 0.6); }
 
@@ -37,7 +37,7 @@
 .np-hero-side { display: flex; flex-direction: column; gap: 22px; padding-bottom: 8px; }
 .np-shot { margin-top: clamp(40px, 6vw, 72px); overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: 0 40px 120px -50px color-mix(in srgb, var(--np-accent) 55%, transparent); }
 .np-shot { position: relative; }
-.np-shot img { display: block; width: 100%; aspect-ratio: 21 / 9; object-fit: cover; }
+.np-shot > img { display: block; width: 100%; aspect-ratio: 21 / 9; object-fit: cover; }
 .np-shot-over { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; color: #fff; background: radial-gradient(60% 70% at 50% 50%, rgba(0, 0, 0, 0.45), transparent 75%); }
 .np-shot-over .np-lockup { --np-size: clamp(22px, 3.4vw, 46px) !important; flex-wrap: wrap; justify-content: center; text-shadow: 0 6px 30px rgba(0, 0, 0, 0.6); }
 .np-shot-over .np-lockup-mark.is-partner span { color: #fff; }
@@ -102,3 +102,12 @@
   .np-features { grid-template-columns: minmax(0, 1fr); }
   .np-lockup { --np-size: 24px !important; }
 }
+
+/* home hero: "Official partner · Aurex Hosting" */
+.np-hero-badge { display: inline-flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px 0 6px; border: 1px solid var(--line); border-radius: 999px; background: transparent; font-size: 13.5px; font-weight: 600; color: var(--fg); transition: border-color 0.2s, background 0.2s; }
+.np-hero-badge:hover { border-color: color-mix(in srgb, var(--np-accent) 55%, var(--line)); background: color-mix(in srgb, var(--np-accent) 8%, transparent); }
+.np-hero-badge-label { padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--np-accent) 18%, transparent); color: color-mix(in srgb, var(--np-accent) 70%, var(--fg)); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.np-hero-badge-who { display: inline-flex; align-items: center; gap: 7px; }
+.np-hero-badge-who img { flex: none; width: 18px; height: 18px; max-width: none; object-fit: contain; }
+.np-hero-badge-arrow { width: 15px; height: 15px; color: var(--dim); transition: transform 0.2s, color 0.2s; }
+.np-hero-badge:hover .np-hero-badge-arrow { transform: translate(2px, -2px); color: var(--fg); }

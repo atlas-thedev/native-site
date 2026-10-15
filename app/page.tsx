@@ -16,7 +16,6 @@ import { outfitOf } from "@/lib/outfit";
 import type { Wearing } from "@/lib/store";
 import { getSiteConfig } from "@/lib/server/siteConfig";
 import { getPartners } from "@/lib/server/partners";
-import PartnersSection from "@/components/partners/PartnersSection";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +56,7 @@ export default async function Home() {
           mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
         }}
       />
-      <HomeHero mascot={mascot} />
+      <HomeHero mascot={mascot} partner={partners.find((p) => p.tier === "featured") ?? partners[0] ?? null} />
       <Included items={all.length} versions={versions} />
       <Highlights />
       <LauncherGrid />
@@ -65,7 +64,6 @@ export default async function Home() {
       <VersionsRail latest={mc} />
       <Explainer versions={versions} />
       <GoFurther />
-      <PartnersSection partners={partners} />
       <section id="download" className="v-wrap pb-[clamp(80px,10vw,150px)]">
         <SectionHead index="(06)" label="Download" title="Get Native" />
         <DownloadGate>
