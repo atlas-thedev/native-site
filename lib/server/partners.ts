@@ -28,6 +28,7 @@ function clean(raw: Record<string, unknown>): Partner | null {
     perks: (Array.isArray(raw.perks) ? raw.perks : []).map((p) => String(p).slice(0, 40)).filter(Boolean).slice(0, 6),
     code: String(raw.code ?? "").slice(0, 24),
     tier: raw.tier === "featured" || raw.tier === "sponsor" ? raw.tier : "partner",
+    logoSize: Number(raw.logoSize) ? Math.max(20, Math.min(160, Number(raw.logoSize))) : 52,
   };
 }
 

@@ -19,6 +19,7 @@ export type Partner = {
   perks: string[];
   code: string;
   tier: "featured" | "partner" | "sponsor";
+  logoSize?: number;
 };
 
 /* Art the API serves from its bundle has a copy here, so it loads from our own domain. */
@@ -43,6 +44,7 @@ export const FALLBACK_PARTNERS: Partner[] = [
     website: "https://www.aurex.lk/en",
     cta: "Get a server",
     logo: "/partners/aurex/logo.webp",
+    logoSize: 52,
     background: "/partners/aurex/banner.webp",
     art: "/partners/aurex/crystal.webp",
     accent: "#8b5cf6",

@@ -41,7 +41,7 @@ export default async function PartnersPage() {
       {/* Hero */}
       <section className="np-hero v-wrap">
         <Reveal blur={false} y={12}>
-          <Lockup partner={partner} size={30} />
+          <Lockup partner={partner} />
         </Reveal>
         <div className="np-hero-grid">
           <Reveal blur={false} delay={0.05}>
@@ -142,7 +142,7 @@ export default async function PartnersPage() {
           <div className="np-list">
             {others.map((p) => (
               <a key={p.id} href={p.website} target="_blank" rel="noopener sponsored" className="np-list-row">
-                <img src={p.logo} alt="" />
+                <img src={p.logo} alt="" style={p.logoSize ? { width: Math.min(64, p.logoSize), height: Math.min(64, p.logoSize) } : undefined} />
                 <span><strong>{p.name}</strong><small>{p.tagline}</small></span>
                 <ArrowUpRight className="h-4 w-4" />
               </a>

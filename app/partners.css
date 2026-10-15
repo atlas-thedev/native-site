@@ -117,8 +117,8 @@
 .np-stripe-x { font-weight: 400; font-size: 22px; color: rgba(255, 255, 255, 0.55); }
 .np-stripe-partner > span:last-child { text-transform: uppercase; letter-spacing: 0.03em; }
 .np-stripe-logo { position: relative; display: grid; place-items: center; width: 56px; height: 56px; flex: none; }
-.np-stripe-chip { position: relative; z-index: 2; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #fff; box-shadow: 0 6px 20px -4px rgba(20, 8, 50, 0.55), 0 0 0 3px rgba(255, 255, 255, 0.18); animation: np-logo-float 4s ease-in-out infinite; }
-.np-stripe-chip img { width: 32px; height: 32px; max-width: none; object-fit: contain; }
+.np-stripe-chip { position: relative; z-index: 2; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: transparent; box-shadow: none; animation: np-logo-float 4s ease-in-out infinite; }
+.np-stripe-chip img { width: 36px; height: 36px; max-width: none; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4)); }
 @keyframes np-logo-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 /* behind the Aurex logo: two spinning arcs and a breathing glow */
 .np-ring { position: absolute; inset: -4px; z-index: 1; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 55%, rgba(255, 255, 255, 0.85) 75%, transparent 90%); -webkit-mask: radial-gradient(circle, transparent 60%, #000 62%, #000 66%, transparent 68%); mask: radial-gradient(circle, transparent 60%, #000 62%, #000 66%, transparent 68%); animation: np-spin 3.2s linear infinite; }
