@@ -21,8 +21,8 @@ export default function PlusPlans() {
   }, []);
 
   const plans = bill?.config?.plus;
-  const monthly = plans?.monthly?.amount ?? 2.99;
-  const yearly = plans?.yearly?.amount ?? 24.99;
+  const monthly = plans?.monthly?.amount ?? 5.99;
+  const yearly = plans?.yearly?.amount ?? 42.99;
   const saving = Math.max(0, Math.round((1 - yearly / (monthly * 12)) * 100));
   const enabled = bill ? !!bill.config.enabled : true;
   const plus = bill?.plus;
