@@ -64,11 +64,13 @@ export default async function PartnersPage() {
         {story.heroImage && (
           <Reveal y={30} delay={0.2}>
             <div className="np-shot">
-              <img src={story.heroImage} alt="" />
-              <div className="np-shot-over">
-                <Lockup partner={partner} size={64} />
-                {partner.tagline && <p>{partner.tagline}</p>}
-              </div>
+              <img src={story.heroImage} alt={partner.name} />
+              {!story.heroImage.includes("banner") && (
+                <div className="np-shot-over">
+                  <Lockup partner={partner} size={64} />
+                  {partner.tagline && <p>{partner.tagline}</p>}
+                </div>
+              )}
             </div>
           </Reveal>
         )}

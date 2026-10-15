@@ -43,7 +43,7 @@ export const FALLBACK_PARTNERS: Partner[] = [
     website: "https://www.aurex.lk/en",
     cta: "Get a server",
     logo: "/partners/aurex/logo.webp",
-    background: "/partners/aurex/hero.webp",
+    background: "/partners/aurex/banner.webp",
     art: "/partners/aurex/crystal.webp",
     accent: "#8b5cf6",
     accent2: "#c07eff",
@@ -76,7 +76,7 @@ export const PARTNER_STORIES: Record<string, PartnerStory> = {
       "We’ve partnered with Aurex Hosting, Sri Lanka’s #1 game hosting provider. Start a Minecraft server on Aurex and play it with your friends on Native.",
     note: "From LKR 400/mo · Instant setup",
     cta: "Get a server",
-    heroImage: "/partners/aurex/hero.webp",
+    heroImage: "/partners/aurex/banner.webp",
     split: {
       title: "Low ping, right next door.",
       body: "Aurex runs on AMD Ryzen 7 nodes in Singapore, around 60 ms from Colombo, so your server stays quick for everyone playing from Sri Lanka.",
