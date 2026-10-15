@@ -76,6 +76,8 @@ export function useReady() {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     if ((window as unknown as { __nxReady?: boolean }).__nxReady) return setReady(true);
+    // No intro on screen (it only plays on some pages, once a session): start right away.
+    if (!document.querySelector(".v-pre")) return setReady(true);
     const on = () => setReady(true);
     window.addEventListener("nx:ready", on);
     const t = setTimeout(on, 2600);

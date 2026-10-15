@@ -16,6 +16,7 @@ import { outfitOf } from "@/lib/outfit";
 import type { Wearing } from "@/lib/store";
 import { getSiteConfig } from "@/lib/server/siteConfig";
 import { getPartners } from "@/lib/server/partners";
+import PartnerStripe from "@/components/partners/PartnerStripe";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,8 @@ export default async function Home() {
           mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
         }}
       />
-      <HomeHero mascot={mascot} partner={partners.find((p) => p.tier === "featured") ?? partners[0] ?? null} />
+      <HomeHero mascot={mascot} />
+      <PartnerStripe partner={partners.find((p) => p.tier === "featured") ?? partners[0] ?? null} />
       <Included items={all.length} versions={versions} />
       <Highlights />
       <LauncherGrid />
