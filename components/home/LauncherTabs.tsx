@@ -14,7 +14,7 @@ const tabs = [
     label: "Your instances",
     title: "Every game gets its own space.",
     body: "Create isolated instances for any Minecraft version. Native installs Fabric, Forge, NeoForge or Quilt and the right Java for you, then keeps worlds, screenshots and playtime organised per instance.",
-    img: "/ui/win-instances.webp",
+    img: "/ui/win-instances-v5.webp",
     alt: "Native Client instances screen",
   },
   {
@@ -22,7 +22,7 @@ const tabs = [
     label: "Mods & modpacks",
     title: "Find it. Install it. Play.",
     body: "Search Modrinth and CurseForge together, see dependencies before you install and update every mod in one sweep. Shaders, resource packs and data packs are covered too.",
-    img: "/ui/win-discover.webp",
+    img: "/ui/win-discover-v5.webp",
     alt: "Native Client Discover screen",
   },
   {
@@ -30,7 +30,7 @@ const tabs = [
     label: "Skin locker",
     title: "Your look, in 3D.",
     body: "Preview skins and capes on a live 3D model, keep a wardrobe of favourites and sync it to your account. Manage it from the launcher or right here on the website.",
-    img: "/ui/win-locker.webp",
+    img: "/ui/win-locker-v5.webp",
     alt: "Native Client skin locker",
   },
   {
@@ -38,7 +38,7 @@ const tabs = [
     label: "Play together",
     title: "Friends are built in.",
     body: "Relay gives you friends, direct messages, group chats and presence that shows which instance someone is playing, with one-click sharing so everyone is on the same page.",
-    img: "/ui/win-relay.webp",
+    img: "/ui/win-relay-v5.webp",
     alt: "Native Client Relay chat",
   },
 ] as const;

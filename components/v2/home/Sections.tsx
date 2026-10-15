@@ -45,12 +45,12 @@ export function Statement({ items }: { items: number }) {
 }
 
 const features = [
-  { t: "Instances", d: "Separate worlds, mods and settings for every way you play.", img: "/ui/win-instances.webp" },
-  { t: "Mods & packs", d: "Search Modrinth and CurseForge, install in one click, dependencies handled.", img: "/ui/manager-mods.webp" },
-  { t: "Skin locker", d: "Your skins and capes in 3D. Wear them in every game.", img: "/ui/win-locker.webp" },
-  { t: "Relay chat", d: "Friends, groups and invites — right inside the launcher.", img: "/ui/win-relay.webp" },
+  { t: "Instances", d: "Separate worlds, mods and settings for every way you play.", img: "/ui/win-instances-v5.webp" },
+  { t: "Mods & packs", d: "Search Modrinth and CurseForge, install in one click, dependencies handled.", img: "/ui/manager-mods-v5.webp" },
+  { t: "Skin locker", d: "Your skins and capes in 3D. Wear them in every game.", img: "/ui/win-locker-v5.webp" },
+  { t: "Relay chat", d: "Friends, groups and invites — right inside the launcher.", img: "/ui/win-relay-v5.webp" },
   { t: "Crash fixer", d: "Reads the log, finds the culprit and fixes it for you.", img: "/ui/crash-dialog.webp" },
-  { t: "Discover", d: "Servers, modpacks and worlds picked for you.", img: "/ui/win-discover.webp" },
+  { t: "Discover", d: "Servers, modpacks and worlds picked for you.", img: "/ui/win-discover-v5.webp" },
   { t: "Every version", d: "From the newest snapshot back to the classics.", img: "/ui/win-versions.webp" },
 ];
 
@@ -100,7 +100,7 @@ export function FeatureIndex() {
 /** Three feature spreads with a parallax screenshot each. */
 export function Spreads() {
   const rows = [
-    { k: "Mod manager", t: "Mods without the mess", d: "Every installed mod in one list. Toggle, update or remove it — Native tracks dependencies so nothing breaks.", pts: ["Modrinth + CurseForge search", "One-click modpacks", "Auto updates per instance"], img: "/ui/manager-mods.webp" },
+    { k: "Mod manager", t: "Mods without the mess", d: "Every installed mod in one list. Toggle, update or remove it — Native tracks dependencies so nothing breaks.", pts: ["Modrinth + CurseForge search", "One-click modpacks", "Auto updates per instance"], img: "/ui/manager-mods-v5.webp" },
     { k: "Crash analyzer", t: "It reads the crash so you don’t", d: "When a game closes unexpectedly Native spots the cause, explains it in plain language and offers the fix.", pts: ["Finds the conflicting mod", "Wrong Java? Fixed", "Share a clean report"], img: "/ui/crash-dialog.webp" },
     { k: "Locker", t: "A locker for your look", d: "Preview skins and capes in 3D before you wear them, keep a wardrobe, and switch looks in a click.", pts: ["3D preview", "Skins + capes + cosmetics", "Works on every server you join"], img: "/ui/locker-skins.webp" },
   ];

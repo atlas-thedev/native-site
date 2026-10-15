@@ -7,9 +7,9 @@ import Reveal from "./Reveal";
 import SplitText from "./SplitText";
 
 const tabs = [
-  { id: "mods", label: "Mods", img: "/ui/manager-mods.webp", text: "See every installed mod, toggle it, update it or remove it. Dependencies are tracked for you." },
+  { id: "mods", label: "Mods", img: "/ui/manager-mods-v5.webp", text: "See every installed mod, toggle it, update it or remove it. Dependencies are tracked for you." },
   { id: "console", label: "Console", img: "/ui/manager-console.webp", text: "A live game console with filters, search and one-click copy, right next to your instance." },
-  { id: "screenshots", label: "Screenshots", img: "/ui/manager-screenshots.webp", text: "Every screenshot you take in game, in a gallery that belongs to the instance." },
+  { id: "screenshots", label: "Screenshots", img: "/ui/manager-screenshots-v5.webp", text: "Every screenshot you take in game, in a gallery that belongs to the instance." },
   { id: "worlds", label: "Worlds", img: "/ui/manager-worlds.webp", text: "Browse, back up and open your worlds without digging through folders." },
 ];
 const DURATION = 6000;

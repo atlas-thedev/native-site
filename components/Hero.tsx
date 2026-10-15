@@ -78,7 +78,7 @@ function LaunchedHero() {
           className="nx-shot nx-fade-b mx-auto mt-14 max-w-[1120px] sm:mt-20"
         >
           <Image
-            src="/ui/win-home.webp"
+            src="/ui/win-home-v5.webp"
             alt="Native Client home screen"
             width={1900}
             height={1187}

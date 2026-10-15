@@ -160,7 +160,7 @@ export function ShowReel() {
       <div ref={ref}>
         <motion.div style={{ scale, borderRadius: r }} className="v-shot origin-top" data-cursor="Native">
           <motion.div style={{ y: iy }} className="scale-[1.12]">
-            <Image src="/ui/win-home.webp" alt="Native launcher home screen" width={1900} height={1187} sizes="(min-width:1480px) 1400px, 94vw" className="block h-auto w-full" priority={false} />
+            <Image src="/ui/win-home-v5.webp" alt="Native launcher home screen" width={1900} height={1187} sizes="(min-width:1480px) 1400px, 94vw" className="block h-auto w-full" priority={false} />
           </motion.div>
         </motion.div>
       </div>

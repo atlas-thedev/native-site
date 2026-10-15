@@ -113,7 +113,7 @@ export function Highlights() {
         k="Relay chat"
         t="Your friends. Right in the launcher."
         d="Chat with friends, start a group and invite people into your game without alt-tabbing to another app."
-        img="/ui/win-relay.webp"
+        img="/ui/win-relay-v5.webp"
         pts={[
           { icon: <MessageCircle />, t: "Direct messages", d: "Emoji, GIFs and pasted images." },
           { icon: <Users />, t: "Groups", d: "One chat for the whole squad." },
@@ -125,7 +125,7 @@ export function Highlights() {
         k="Mods & crashes"
         t="Mods without the mess."
         d="Search Modrinth and CurseForge, install in a click and let Native handle the rest. If a game crashes, Native reads the log and offers the fix."
-        img="/ui/manager-mods.webp"
+        img="/ui/manager-mods-v5.webp"
         pts={[
           { icon: <Package />, t: "One-click modpacks", d: "Whole packs, ready to play." },
           { icon: <RefreshCw />, t: "Updates per instance", d: "Keep each setup up to date." },
