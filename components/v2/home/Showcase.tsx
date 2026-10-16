@@ -25,12 +25,12 @@ const SCREENS: (Shot & { id: string })[] = [
 ];
 
 /** In-game screens from the Native mod. */
-const INGAME: (Shot & { k: string; span: string; pos?: string })[] = [
-  { k: "Multiplayer", t: "Everyone sees your look", d: "Capes and cosmetics show on every Native player, on any server.", src: "/ui/ingame-multiplayer-v5.webp", w: 1600, h: 900, span: "lg:col-span-2 lg:row-span-2" },
-  { k: "Mods menu", t: `${STAT_FLOORS.modules}+ built-in modules`, d: "FPS, CPS, keystrokes, coordinates and more. Switch each on in a click.", src: "/ui/ingame-mods-v5.webp", w: 1600, h: 900, span: "" },
-  { k: "Wardrobe", t: "Change your look in game", d: "Put on capes, hats and wings without leaving your world.", src: "/ui/ingame-cosmetics-v5.webp", w: 1600, h: 900, span: "" },
-  { k: "HUD editor", t: "Place every module", d: "Drag your HUD where you want it, then get back to playing.", src: "/ui/ingame-hud-v5.webp", w: 1600, h: 900, span: "", pos: "object-[0%_45%]" },
-  { k: "Native settings", t: "Everything one key away", d: "Mods, cosmetics, Relay chat and settings from a single menu.", src: "/ui/ingame-settings-v5.webp", w: 1600, h: 900, span: "" },
+const INGAME: (Shot & { k: string })[] = [
+  { k: "Multiplayer", t: "Everyone sees your look", d: "Capes and cosmetics show on every Native player, on any server.", src: "/ui/ingame-multiplayer-v5.webp", w: 1600, h: 900 },
+  { k: "Mods menu", t: `${STAT_FLOORS.modules}+ built-in modules`, d: "FPS, CPS, keystrokes, coordinates and more. Switch each on in a click.", src: "/ui/ingame-mods-v5.webp", w: 1600, h: 900 },
+  { k: "Wardrobe", t: "Change your look in game", d: "Put on capes, hats and wings without leaving your world.", src: "/ui/ingame-cosmetics-v5.webp", w: 1600, h: 900 },
+  { k: "HUD editor", t: "Place every module", d: "Drag your HUD where you want it, then get back to playing.", src: "/ui/ingame-hud-v5.webp", w: 1600, h: 900 },
+  { k: "Native settings", t: "Everything one key away", d: "Mods, cosmetics, Relay chat and settings from a single menu.", src: "/ui/ingame-settings-v5.webp", w: 1600, h: 900 },
 ];
 
 const ROTATE_MS = 5500;
@@ -166,23 +166,21 @@ export function ScreenTour() {
               setOpen(i);
             }}
             aria-label={i === active ? `Open ${x.t} full size` : `Show ${x.t}`}
-            className={`group relative aspect-[1366/728] w-[min(76vw,940px)] shrink-0 snap-center overflow-hidden rounded-[clamp(14px,1.6vw,22px)] bg-surface ring-1 ring-line transition-[box-shadow] duration-500 ${i === active ? "cursor-zoom-in shadow-[0_40px_100px_-30px_rgb(0_0_0/0.7)]" : "cursor-pointer"}`}
+            className={`group relative aspect-[1366/728] w-[min(76vw,940px)] shrink-0 snap-center overflow-hidden rounded-[8px] bg-black ring-1 ring-line transition-[box-shadow] duration-500 ${i === active ? "cursor-zoom-in shadow-[0_40px_100px_-30px_rgb(0_0_0/0.7)]" : "cursor-pointer"}`}
             style={{ transform: "rotateY(var(--r, 0deg)) scale(var(--s, 1))", opacity: "var(--o, 1)", transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.35s" } as React.CSSProperties}
           >
-            <Image src={x.src} alt={`Native launcher: ${x.t}`} fill draggable={false} priority={i === 0} sizes="(min-width:1240px) 940px, 76vw" className="select-none object-cover object-top" />
-            <span className={`absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 bg-gradient-to-t from-black/85 via-black/30 to-transparent p-[clamp(14px,2vw,26px)] pt-16 text-left text-white transition duration-500 ${i === active ? "opacity-100" : "opacity-0"}`}>
-              <span className="min-w-0">
-                <span className="font-mono text-[11px] tracking-[0.14em] text-white/55">{String(i + 1).padStart(2, "0")} / {String(shots.length).padStart(2, "0")}</span>
-                <span className="mt-1 block text-[clamp(1.1rem,2vw,1.7rem)] font-bold leading-tight tracking-tight">{x.t}</span>
-                <span className="mt-1 hidden max-w-[560px] text-[14px] leading-snug text-white/70 sm:block">{x.d}</span>
-              </span>
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-black transition group-hover:scale-110"><Expand className="h-[18px] w-[18px]" /></span>
-            </span>
+            <Image src={x.src} alt={`Native launcher: ${x.t}`} fill draggable={false} priority={i === 0} sizes="(min-width:1240px) 940px, 76vw" className="select-none object-contain" />
+            <span className={`absolute top-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur transition duration-500 group-hover:scale-110 ${i === active ? "opacity-100" : "opacity-0"}`}><Expand className="h-[17px] w-[17px]" /></span>
           </button>
         ))}
       </div>
 
-      <div className="v-wrap mt-2 flex items-center justify-center gap-1.5" aria-hidden="true">
+      <div className="v-wrap text-center">
+        <p className="font-mono text-[11px] tracking-[0.14em] text-dim">{String(active + 1).padStart(2, "0")} / {String(shots.length).padStart(2, "0")}</p>
+        <p className="mt-1 text-[clamp(1.1rem,2vw,1.6rem)] font-bold tracking-tight">{shots[active]?.t}</p>
+        <p className="mx-auto mt-1 max-w-[620px] text-[15px] leading-snug text-mute">{shots[active]?.d}</p>
+      </div>
+      <div className="v-wrap mt-3 flex items-center justify-center gap-1.5" aria-hidden="true">
         {shots.map((x, i) => (
           <button key={x.src} type="button" tabIndex={-1} onClick={() => scrollTo(i)} className="group py-2">
             <span className={`block h-[5px] rounded-full transition-all duration-500 ${i === active ? "w-8 bg-fg" : "w-[5px] bg-line group-hover:bg-mute"}`} />
@@ -196,28 +194,29 @@ export function ScreenTour() {
   );
 }
 
-/** "In game": the Native mod's screens in a bento grid. */
+/** "In game": the Native mod's screens, each shown whole with its caption underneath. */
 export function InGame() {
   const [open, setOpen] = useState<number | null>(null);
   const [from, setFrom] = useState<DOMRect | null>(null);
   return (
     <section id="in-game" className="v-section v-wrap">
       <SectionHead index="(03)" label="In game" title="Native comes into the game with you." sub="The Native mod adds a mods menu, a HUD editor, your wardrobe and Relay chat inside Minecraft, and shows everyone's capes and cosmetics." />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
+      <div className="grid gap-3 sm:grid-cols-2">
         {INGAME.map((x, n) => (
           <motion.button
             key={x.src} type="button" onClick={(e) => { setFrom(e.currentTarget.getBoundingClientRect()); setOpen(indexOf(x.src)); }}
             initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.8, delay: n * 0.06, ease }}
-            className={`group relative min-h-[220px] cursor-zoom-in overflow-hidden rounded-[18px] border border-line bg-surface text-left ${x.span} ${n === 0 ? "sm:col-span-2 lg:min-h-[460px]" : ""}`}
+            className={`group relative block w-full cursor-zoom-in overflow-hidden rounded-[10px] border border-line bg-surface text-left ${n === 0 ? "sm:col-span-2" : ""}`}
           >
-            <Image src={x.src} alt={x.t} fill sizes={n === 0 ? "(min-width:1024px) 640px, 94vw" : "(min-width:1024px) 320px, 94vw"} className={`object-cover transition duration-700 group-hover:scale-[1.04] ${x.pos ?? ""}`} />
-            <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-            <span className="absolute inset-x-0 bottom-0 p-5 text-white">
-              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/60">{x.k}</span>
-              <span className={`mt-1.5 block font-bold tracking-tight ${n === 0 ? "text-[clamp(1.4rem,2.4vw,2rem)]" : "text-[17px]"}`}>{x.t}</span>
-              <span className={`mt-1 block leading-snug text-white/70 ${n === 0 ? "max-w-[460px] text-[15px]" : "text-[13px]"}`}>{x.d}</span>
+            <span className="relative block aspect-video w-full overflow-hidden bg-black">
+              <Image src={x.src} alt={x.t} fill sizes={n === 0 ? "(min-width:640px) 1200px, 94vw" : "(min-width:640px) 600px, 94vw"} className="object-contain transition duration-700 group-hover:scale-[1.02]" />
+              <span className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white opacity-0 backdrop-blur transition group-hover:opacity-100"><Expand className="h-3.5 w-3.5" /></span>
             </span>
-            <span className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white opacity-0 backdrop-blur transition group-hover:opacity-100"><Expand className="h-3.5 w-3.5" /></span>
+            <span className="block p-5">
+              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-dim">{x.k}</span>
+              <span className={`mt-1.5 block font-bold tracking-tight ${n === 0 ? "text-[clamp(1.4rem,2.4vw,2rem)]" : "text-[17px]"}`}>{x.t}</span>
+              <span className={`mt-1 block leading-snug text-mute ${n === 0 ? "max-w-[560px] text-[15px]" : "text-[13.5px]"}`}>{x.d}</span>
+            </span>
           </motion.button>
         ))}
       </div>

@@ -204,7 +204,7 @@ export default function Lightroom({ shots, index, from, onIndex, onClose }: { sh
                 initial="enter" animate="center" exit="exit"
                 transition={{ duration: grow ? 0.6 : 0.55, ease }}
                 style={{ width: size.w, height: size.h, perspective: 1200 }}
-                className="relative overflow-hidden rounded-[16px] shadow-[0_50px_140px_-30px_rgb(0_0_0/0.9)] ring-1 ring-white/10"
+                className="relative overflow-hidden rounded-[8px] bg-black shadow-[0_50px_140px_-30px_rgb(0_0_0/0.9)] ring-1 ring-white/10"
                 onWheel={onWheel}
                 onDoubleClick={() => { setPan({ x: 0, y: 0 }); setScale((z) => (z > 1 ? 1 : 2.5)); }}
                 onPointerDown={(e) => { if (scale > 1) { drag.current = { x: e.clientX, y: e.clientY, px: pan.x, py: pan.y, moved: false }; e.currentTarget.setPointerCapture(e.pointerId); } }}
@@ -221,7 +221,7 @@ export default function Lightroom({ shots, index, from, onIndex, onClose }: { sh
                   className={`absolute inset-0 ${scale > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"}`}
                   style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`, transition: drag.current ? "none" : "transform 0.25s cubic-bezier(0.16,1,0.3,1)" }}
                 >
-                  <Image src={s.src} alt={s.t} fill sizes="(min-width:1700px) 1680px, 94vw" priority draggable={false} className="select-none object-cover" />
+                  <Image src={s.src} alt={s.t} fill sizes="(min-width:1700px) 1680px, 94vw" priority draggable={false} className="select-none object-contain" />
                 </div>
                 {scale > 1 && <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-black/60 px-2.5 py-1 font-mono text-[11px] backdrop-blur">{Math.round(scale * 100)}%</span>}
               </motion.div>
