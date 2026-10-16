@@ -29,7 +29,7 @@ const INGAME: (Shot & { k: string })[] = [
   { k: "Multiplayer", t: "Everyone sees your look", d: "Capes and cosmetics show on every Native player, on any server.", src: "/ui/ingame-multiplayer-v5.webp", w: 1600, h: 900 },
   { k: "Mods menu", t: `${STAT_FLOORS.modules}+ built-in modules`, d: "FPS, CPS, keystrokes, coordinates and more. Switch each on in a click.", src: "/ui/ingame-mods-v5.webp", w: 1600, h: 900 },
   { k: "Wardrobe", t: "Change your look in game", d: "Put on capes, hats and wings without leaving your world.", src: "/ui/ingame-cosmetics-v5.webp", w: 1600, h: 900 },
-  { k: "HUD editor", t: "Place every module", d: "Drag your HUD where you want it, then get back to playing.", src: "/ui/ingame-hud-v5.webp", w: 1600, h: 900 },
+  { k: "HUD editor", t: "Place every module", d: "Drag your HUD where you want it, then get back to playing.", src: "/ui/ingame-hud-v6.webp", w: 1600, h: 900 },
   { k: "Native settings", t: "Everything one key away", d: "Mods, cosmetics, Relay chat and settings from a single menu.", src: "/ui/ingame-settings-v5.webp", w: 1600, h: 900 },
 ];
 
