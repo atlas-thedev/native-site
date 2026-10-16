@@ -90,8 +90,8 @@ function Feature({ i, k, t, d, img, pts }: { i: number; k: string; t: string; d:
           <h2 className="v-display v-h2 mt-5">{t}</h2>
           <p className="mt-5 max-w-[520px] text-[17px] leading-relaxed text-mute">{d}</p>
         </Reveal>
-        <motion.div {...rise()} className="v-shot aspect-[16/10]">
-          <Image src={img} alt={t} fill sizes="(min-width:1024px) 640px, 94vw" className="object-cover object-top" />
+        <motion.div {...rise()} className="v-shot v-shot-full aspect-[1366/728]">
+          <Image src={img} alt={t} fill sizes="(min-width:1024px) 640px, 94vw" className="object-contain" />
         </motion.div>
       </div>
       <div className="mt-10 grid gap-px overflow-hidden rounded-[18px] border border-line bg-line sm:grid-cols-3">

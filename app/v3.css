@@ -51,6 +51,8 @@
 .v-btn.is-lg { height: 56px; padding: 0 28px; font-size: 15px; }
 .v-btn.is-sm { height: 38px; font-size: 12.5px; }
 .v-shot { border-radius: 22px; }
+/* launcher screenshots: the whole window, only lightly rounded so its corners aren't cut */
+.v-shot.v-shot-full { border-radius: 8px; background: #000; }
 .v-nav-link { text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 600; }
 
 /* Nav: logo left, everything else grouped on the right. */
