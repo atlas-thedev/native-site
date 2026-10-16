@@ -46,6 +46,19 @@ function Unit({ value, label, big, progress = null }: { value: string; label: st
 export default function Countdown({ at, size = "hero", className = "" }: { at: number; size?: "hero" | "sm"; className?: string }) {
   const t = useCountdown(at);
   const big = size === "hero";
+
+  if (t.done || at <= Date.now()) {
+    return (
+      <div className={`inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-[13px] font-semibold text-emerald-600 dark:text-emerald-400 ${className}`}>
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+        </span>
+        <span>Early Access Active</span>
+      </div>
+    );
+  }
+
   // each tile fills up as its unit runs out (the seconds bar sweeps every minute)
   const units: [string, string, number | null][] = [
     [t.days > 99 ? String(t.days) : pad(t.days), t.days === 1 ? "Day" : "Days", null],

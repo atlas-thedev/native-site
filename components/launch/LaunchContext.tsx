@@ -67,7 +67,7 @@ export function useCountdown(at: number) {
   const s = ms == null ? null : Math.floor(ms / 1000);
   return {
     ready: s != null,
-    done: s === 0,
+    done: s !== null && s <= 0,
     days: s == null ? 0 : Math.floor(s / 86400),
     hours: s == null ? 0 : Math.floor((s % 86400) / 3600),
     minutes: s == null ? 0 : Math.floor((s % 3600) / 60),

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "motion/react";
-import { ArrowDown, ArrowUpRight, Gift, UserPlus } from "lucide-react";
+import { ArrowDown, ArrowUpRight, FlaskConical, Gift, UserPlus } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -86,7 +86,7 @@ export default function HomeHero({ mascot = [] }: { mascot?: Worn[] }) {
   }, [launch.at]);
 
   const pre = launch.prelaunch;
-  const lines = pre ? twoLines(launch.headline || "Native is almost here.") : ["Minecraft,", "launched", "beautifully."];
+  const lines = ["Minecraft,", "launched", "beautifully."];
   const OsIcon = os === "mac" ? Apple : os === "linux" ? Linux : Windows;
   const up = (d: number) => ({ initial: { opacity: 0, y: 24 }, animate: go ? { opacity: 1, y: 0 } : {}, transition: { duration: 1, delay: d, ease } });
 
@@ -95,40 +95,34 @@ export default function HomeHero({ mascot = [] }: { mascot?: Worn[] }) {
       <motion.div style={{ y }} className="v-wrap flex flex-1 flex-col">
         <div className="grid items-start gap-[clamp(28px,4vw,64px)] lg:grid-cols-[minmax(0,1fr)_auto]">
           <div>
+            <motion.div {...up(0.1)} className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-line bg-surface/90 px-4 py-1.5 text-[13px] font-semibold backdrop-blur">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+              </span>
+              <span className="text-fg font-bold tracking-tight">Early Access Active</span>
+              <span className="text-dim">·</span>
+              <span className="text-mute">Super Beta v6.0</span>
+            </motion.div>
+
             <Lines lines={lines} go={go} />
 
-            {pre && (
-              <motion.div {...up(0.35)} className="mt-[clamp(18px,2.4vw,34px)]">
-                <Count at={launch.at} />
-              </motion.div>
-            )}
-
-            <motion.p {...up(0.45)} className="v-hero-copy mt-6">
-              {pre
-                ? launch.subline || "Create your free account before launch and pick one exclusive cape on us."
-                : "Instances, mods, modpacks, a 3D skin locker, friends chat and a crash analyzer that fixes things for you. One fast launcher, free for everyone."}
+            <motion.p {...up(0.35)} className="v-hero-copy mt-6">
+              Instances, mods, modpacks, a 3D skin locker, friends chat and a crash analyzer that fixes things for you. Native is currently in active Early Access — join the Super Beta program to start playing today.
             </motion.p>
 
-            <motion.div {...up(0.55)} className="v-hero-ctas mt-7 !justify-start pb-[clamp(40px,6vw,90px)]">
-              {pre ? (
-                <>
-                  <Magnetic>
-                    <Link href={me ? "/founder" : "/register?next=/founder"} className="v-btn is-solid is-lg">
-                      {me ? <Gift /> : <UserPlus />} {me ? "Pick your free cape" : "Create free account"}
-                    </Link>
-                  </Magnetic>
-                  <Link href="#features" className="v-btn is-lg">See what’s coming <ArrowDown /></Link>
-                </>
-              ) : (
-                <>
-                  <Magnetic>
-                    <Link href="/download" className="v-btn is-solid is-lg">
-                      <OsIcon /> Download for {platforms[os].label}
-                    </Link>
-                  </Magnetic>
-                  <Link href="/download" className="v-btn is-lg">Other platforms <ArrowUpRight /></Link>
-                </>
-              )}
+            <motion.div {...up(0.45)} className="v-hero-ctas mt-7 !justify-start pb-[clamp(40px,6vw,90px)]">
+              <Magnetic>
+                <Link href="/beta" className="v-btn is-solid is-lg">
+                  <FlaskConical className="h-4 w-4" /> Apply for Early Access
+                </Link>
+              </Magnetic>
+              <Link href={me ? "/founder" : "/register?next=/founder"} className="v-btn is-lg">
+                <Gift className="h-4 w-4" /> {me ? "Claim Free Cape" : "Join Waitlist & Free Cape"}
+              </Link>
+              <Link href="#download" className="v-btn is-lg">
+                Download status <ArrowDown className="h-4 w-4" />
+              </Link>
             </motion.div>
           </div>
 

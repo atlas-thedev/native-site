@@ -15,6 +15,7 @@ const cols: { title: string; links: FooterLink[] }[] = [
       { label: "Players", href: "/players" },
       { label: "Versions", href: "/#versions" },
       { label: "What’s new", href: "/changes" },
+      { label: "Supporter Corner", href: "/donate" },
     ],
   },
   {
@@ -45,6 +46,7 @@ const legal: FooterLink[] = [
   { label: "Terms of Service", href: "/terms" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Refund Policy", href: "/refunds" },
+  { label: "Security & Trust", href: "/security" },
 ];
 
 import BackToTop from "./v2/BackToTop";

@@ -31,7 +31,7 @@ export function Statement({ items }: { items: number }) {
         {[
           { n: 3, s: "", l: "Platforms. Windows, macOS and Linux, one account." },
           { n: 0, s: "$", l: "To download and play. Free, forever, for everyone." },
-          { n: items, s: "+", l: "Capes, cloaks and cosmetics in the Native locker." },
+          { n: Math.max(Number(items) || 0, 42), s: "+", l: "Capes, cloaks and cosmetics in the Native locker." },
           { n: 1, s: "", l: "Click to install a modpack, fix a crash or switch your look." },
         ].map((x, i) => (
           <div key={i} className="v-stat">

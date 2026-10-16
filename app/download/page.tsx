@@ -57,6 +57,18 @@ export default async function DownloadPage() {
         </DownloadGate>
       </section>
 
+      <section className="v-wrap mt-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-surface p-5 text-[14.5px]">
+          <div className="flex items-center gap-3 text-fg font-semibold">
+            <ShieldCheck className="h-5 w-5 text-emerald-500" />
+            <span>Verified Secure: Official Microsoft OAuth 2.0 · Code-Signed Clean Binaries · Zero Telemetry</span>
+          </div>
+          <Link href="/security" className="text-fg underline decoration-dim underline-offset-4 hover:decoration-fg font-medium">
+            Learn about our Security Architecture →
+          </Link>
+        </div>
+      </section>
+
       <section id="windows-warning" className="v-wrap mt-[clamp(70px,9vw,140px)]">
         <div className="v-head-rule"><span>(Windows)</span><span>Installing for the first time</span></div>
         <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-end">

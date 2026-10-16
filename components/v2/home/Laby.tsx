@@ -43,9 +43,11 @@ export function Included({ items, versions }: { items: number; versions: number 
     { k: "Fixes", icon: <Bug />, list: ["Crash analyzer", "Java fixer", "Clean reports", "Logs"] },
     { k: "Discover", icon: <Compass />, list: ["Servers", "Modpacks", "Worlds", "Skins"] },
   ];
+  const safeVersions = Math.max(Number(versions) || 0, 80);
+  const safeItems = Math.max(Number(items) || 0, 42);
   const stats = [
-    { n: versions, s: "+", l: "Minecraft versions" },
-    { n: items, s: "+", l: "Capes & cosmetics" },
+    { n: safeVersions, s: "+", l: "Minecraft versions" },
+    { n: safeItems, s: "+", l: "Capes & cosmetics" },
     { n: 3, s: "", l: "Platforms" },
   ];
   return (

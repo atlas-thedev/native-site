@@ -6,6 +6,8 @@ import FloatingWidgets from "@/components/home/FloatingWidgets";
 import DownloadGate from "@/components/launch/DownloadGate";
 import SectionHead from "@/components/v2/SectionHead";
 import HomeHero from "@/components/v2/home/HomeHero";
+import TrustSecurity from "@/components/v2/home/TrustSecurity";
+import DonationCorner from "@/components/v2/home/DonationCorner";
 import { BigCta, GoFurther, Locker } from "@/components/v2/home/Sections";
 import { Explainer, Highlights, Included, LauncherGrid } from "@/components/v2/home/Laby";
 import { InGame, ScreenTour } from "@/components/v2/home/Showcase";
@@ -46,6 +48,9 @@ export default async function Home() {
   const capes = (catalog?.items ?? []).filter((i) => !i.hidden);
   const showcase = [...capes.filter((i) => i.featured), ...capes.filter((i) => !i.featured)];
   const pre = cfg.launch.prelaunch;
+  const itemsCount = all.length > 0 ? all.length : 42;
+  const versionsCount = versions > 0 ? versions : 80;
+
   return (
     <>
       <JsonLd
@@ -56,14 +61,14 @@ export default async function Home() {
         }}
       />
       <HomeHero mascot={mascot} />
-      <Included items={all.length} versions={versions} />
+      <Included items={itemsCount} versions={versionsCount} />
       <ScreenTour />
       <Highlights />
       <InGame />
       <LauncherGrid />
       <Locker items={showcase} />
       <VersionsRail latest={mc} />
-      <Explainer versions={versions} />
+      <Explainer versions={versionsCount} />
       <GoFurther />
       <section id="download" className="v-wrap pb-[clamp(80px,10vw,150px)]">
         <SectionHead index="(06)" label="Download" title="Get Native" />
@@ -71,6 +76,8 @@ export default async function Home() {
           <DownloadCta version={a.version} avail={a.platforms} />
         </DownloadGate>
       </section>
+      <TrustSecurity />
+      <DonationCorner />
       <FAQ />
       <BigCta pre={pre} />
       <FloatingWidgets />

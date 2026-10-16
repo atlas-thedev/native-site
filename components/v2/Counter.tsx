@@ -7,14 +7,18 @@ import { useEffect, useRef, useState } from "react";
 export default function Counter({ to, suffix = "", className = "", duration = 1.6 }: { to: number; suffix?: string; className?: string; duration?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-60px" });
-  const [v, setV] = useState(0);
+  const [v, setV] = useState(to);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || hasAnimated) return;
+    setHasAnimated(true);
     const c = animate(0, to, { duration, ease: [0.16, 1, 0.3, 1], onUpdate: (x) => setV(Math.round(x)) });
     return () => c.stop();
-  }, [inView, to, duration]);
+  }, [inView, to, duration, hasAnimated]);
+
   return (
-    <span ref={ref} className={className}>
+    <span ref={ref} className={className} suppressHydrationWarning>
       {v.toLocaleString()}
       {suffix}
     </span>

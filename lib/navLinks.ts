@@ -1,5 +1,5 @@
 import {
-  Crown, Download, FileText, Flag, FlaskConical, Gem, Handshake, History, House, LifeBuoy, ShoppingBag, Shirt, User, Users, Vote,
+  Crown, Download, FileText, Flag, FlaskConical, Gem, Handshake, Heart, History, House, LifeBuoy, ShieldCheck, ShoppingBag, Shirt, User, Users, Vote,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,6 +17,8 @@ export const PAGES = {
   skins: { href: "/skins", label: "Skins", desc: "The skin library, worn by real players", Icon: Shirt, keywords: "skin library" },
   vote: { href: "/vote", label: "Vote", desc: "Help pick what we make next", Icon: Vote, keywords: "poll community" },
   partners: { href: "/partners", label: "Partners", desc: "Servers and creators we team up with", Icon: Handshake, keywords: "servers creators" },
+  donate: { href: "/donate", label: "Supporter Corner", desc: "Support Native and unlock loyalty perks", Icon: Heart, keywords: "donate tip support loyalty backer community" },
+  security: { href: "/security", label: "Security & Trust", desc: "Microsoft auth, code signing and checksums", Icon: ShieldCheck, keywords: "security trust microsoft sha256 checksums privacy" },
   beta: { href: "/beta", label: "Beta", desc: "Become a Super Beta Tester", Icon: FlaskConical, keywords: "super beta tester apply" },
   changes: { href: "/changes", label: "Changes", desc: "What’s new in every release", Icon: History, keywords: "changelog updates release notes" },
   support: { href: "/support", label: "Support", desc: "Help, crash fixes and contact", Icon: LifeBuoy, keywords: "help contact faq crash" },
@@ -31,7 +33,7 @@ export const PAGES = {
 export const NAV: NavEntry[] = [
   PAGES.home,
   { label: "Store", items: [PAGES.store, PAGES.cloaks, PAGES.cosmetics, PAGES.plus] },
-  { label: "Community", items: [PAGES.players, PAGES.skins, PAGES.vote, PAGES.partners] },
+  { label: "Community", items: [PAGES.players, PAGES.skins, PAGES.vote, PAGES.partners, PAGES.donate] },
   PAGES.beta,
   PAGES.changes,
   PAGES.support,
@@ -39,9 +41,9 @@ export const NAV: NavEntry[] = [
 
 /** The phone menu, in groups. */
 export const MENU_GROUPS: { label: string; items: NavPage[] }[] = [
-  { label: "Native", items: [PAGES.home, PAGES.download, PAGES.changes, PAGES.beta] },
+  { label: "Native", items: [PAGES.home, PAGES.download, PAGES.changes, PAGES.beta, PAGES.security] },
   { label: "Store", items: [PAGES.store, PAGES.cloaks, PAGES.cosmetics, PAGES.plus] },
-  { label: "Community", items: [PAGES.players, PAGES.skins, PAGES.vote, PAGES.partners, PAGES.support] },
+  { label: "Community", items: [PAGES.players, PAGES.skins, PAGES.vote, PAGES.partners, PAGES.donate, PAGES.support] },
 ];
 
 /** Pages the search can jump to. */

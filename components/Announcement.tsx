@@ -9,7 +9,7 @@ const pill = "inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-
 
 function Mini({ at }: { at: number }) {
   const t = useCountdown(at);
-  if (!t.ready) return null;
+  if (!t.ready || t.done || at <= Date.now()) return null;
   const p = (n: number) => String(n).padStart(2, "0");
   return <span className="font-mono font-semibold tabular-nums text-fg">{t.days}d {p(t.hours)}h {p(t.minutes)}m {p(t.seconds)}s</span>;
 }
