@@ -176,7 +176,7 @@ export default function FounderPicker({ name, capes, picked: initialPicked, welc
                 <BetaBadge size={44} still />
                 <span className="min-w-0 flex-1">
                   <span className="block text-[16px] font-bold tracking-tight">Want to test Native early?</span>
-                  <span className="block text-[13.5px] text-mute">Apply to be a Super Beta Tester and keep the cape, badge and Native+ for good.</span>
+                  <span className="block text-[13.5px] text-mute">Apply to be a Super Beta Tester: keep the cape and badge for good, plus a month of Native+.</span>
                 </span>
                 <span className="text-[20px] transition group-hover:translate-x-1" aria-hidden>→</span>
               </Link>

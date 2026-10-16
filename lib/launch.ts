@@ -28,6 +28,8 @@ export type BetaAnswers = {
 export type BetaApplication = {
   id: string; status: "pending" | "approved" | "waitlist" | "rejected"; answers: BetaAnswers; createdAt: number; updatedAt: number;
   reviewedAt: number | null; note: string | null; canReapply: boolean; reapplyAt: number | null;
+  /** Accepted only: when the tester's month of Native+ ends (null once it's over or Native+ comes from elsewhere). */
+  plusEndsAt?: number | null;
 };
 
 /** Used when the API can't be reached: assume launched with nothing locked (never lock people out by accident). */

@@ -187,3 +187,53 @@ html {
 
 /* Nav hover stays still; retain colour feedback and dropdown open-state rotation. */
 .v-nav-plus:hover .nx-plus-icon { transform: none; }
+
+/* ---------- navbar: sliding hover, Store / Community menus ---------- */
+.v-nav-links > li { position: relative; }
+.v-nav-hover { position: absolute; inset: 4px 0; z-index: 0; border-radius: 9px; background: var(--surface-2); pointer-events: none; }
+.v-nav-links .v-nav-link { position: relative; z-index: 1; }
+.v-nav-group { gap: 4px; background: none; border: 0; cursor: pointer; font: inherit; }
+.v-nav-group .v-nav-chev { opacity: 0.6; transition: transform 0.25s var(--v-ease, ease), opacity 0.2s; }
+.v-nav-group.is-open { color: var(--fg); }
+.v-nav-group.is-open .v-nav-chev { transform: rotate(180deg); opacity: 1; }
+.v-nav-drop {
+  position: absolute; left: 50%; top: calc(100% + 10px); z-index: 80; width: 330px; margin-left: -165px; padding: 8px;
+  border: 1px solid var(--line); border-radius: 16px;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2); backdrop-filter: blur(20px) saturate(1.2);
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.7);
+  transform-origin: 50% 0;
+}
+.v-nav-drop::before { content: ""; position: absolute; left: 0; right: 0; top: -12px; height: 12px; } /* hover bridge */
+.v-nav-drop-item { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 11px; color: var(--fg); transition: background-color 0.15s; }
+.v-nav-drop-item:hover, .v-nav-drop-item:focus-visible { background: var(--surface-2); outline: none; }
+.v-nav-drop-item.is-on .v-nav-drop-icon { background: var(--inv); color: var(--inv-fg); border-color: transparent; }
+.v-nav-drop-icon { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--mute); transition: color 0.15s, background-color 0.15s; }
+.v-nav-drop-item:hover .v-nav-drop-icon { color: var(--fg); }
+
+/* ---------- phone menu: search + groups ---------- */
+.v-menu-search { display: flex; align-items: center; gap: 12px; width: 100%; height: 54px; margin-bottom: 18px; padding: 0 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--dim); font-size: 15px; font-weight: 600; text-align: left; transition: background-color 0.2s, color 0.2s; }
+.v-menu-search:hover { background: var(--surface-2); color: var(--fg); }
+.v-menu-groups { display: grid; gap: 22px; }
+@media (min-width: 720px) { .v-menu-groups { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; } }
+.v-menu-group { margin-bottom: 4px; text-transform: uppercase; }
+.v-menu-groups .v-menu-link { align-items: center; gap: 14px; font-size: clamp(1.6rem, 5.4vw, 2.4rem); padding: 9px 0 7px; }
+.v-menu-icon { width: 0.7em; height: 0.7em; flex: none; color: var(--dim); transition: color 0.2s; }
+.v-menu-link:hover .v-menu-icon, .v-menu-link.is-on .v-menu-icon { color: var(--fg); }
+
+/* ---------- Ctrl+K search ---------- */
+.cs-section { padding: 10px 12px 4px; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+.cs-section:first-child { padding-top: 4px; }
+.cs-row { display: flex; align-items: center; border-radius: 9px; transition: background-color 0.12s; }
+.cs-row.is-active { background: var(--inv); color: var(--inv-fg); }
+.cs-icon { display: flex; flex: none; align-items: center; justify-content: center; width: 44px; height: 44px; overflow: hidden; border-radius: 8px; background: rgba(0, 0, 0, 0.25); }
+.cs-row.is-active .cs-icon { background: color-mix(in srgb, var(--inv-fg) 12%, transparent); }
+.cs-sub { color: var(--dim); }
+.cs-row.is-active .cs-sub { color: inherit; opacity: 0.7; }
+.cs-mark { background: none; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 55%, transparent); }
+.cs-forget { display: grid; place-items: center; width: 30px; height: 30px; margin-right: 8px; border-radius: 7px; opacity: 0.6; transition: opacity 0.15s, background-color 0.15s; }
+.cs-forget:hover { opacity: 1; background: color-mix(in srgb, currentColor 14%, transparent); }
+.cs-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 9px 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--dim); }
+.cs-foot span { display: inline-flex; align-items: center; gap: 4px; }
+.cs-foot kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); font-family: var(--font-mono, monospace); font-size: 11px; color: var(--mute); }
+@media (prefers-reduced-motion: reduce) { .v-nav-group .v-nav-chev, .cs-row { transition: none; } }

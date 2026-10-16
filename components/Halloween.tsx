@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as RMouseEvent, type PointerEvent as RPointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as RMouseEvent } from "react";
 import { useLaunch } from "./launch/LaunchContext";
 
 /**
  * Halloween mode (turned on from the launcher admin panel): a candle light that follows the cursor,
- * randomly placed cartoon & pixel spiders you can drop, pumpkins that burst into candy, and drifting fog.
+ * cartoon & pixel spiders on living silk (they swing, watch the cursor and wander) that you can drop, pumpkins that burst into candy, and drifting fog.
  */
 
 
@@ -44,7 +44,7 @@ function CuteSpider({ tint, size }: { tint: number; size: number }) {
   const c = TINTS[tint];
   return (
     <svg viewBox="0 0 64 56" width={size} height={size * 0.875} style={{ "--glow": c.glow } as CSSProperties}>
-      <line x1="32" y1="0" x2="32" y2="18" stroke="rgba(240, 235, 255, 0.9)" strokeWidth="2" strokeLinecap="round" />
+      <line x1="32" y1="0" x2="32" y2="18" stroke="rgba(240, 235, 255, 0.9)" strokeWidth="1.6" strokeLinecap="round" />
       <g className="hw-legs" stroke={c.shade} strokeWidth="3.4" fill="none" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 26Q12 14 5 18M21 31Q9 26 3 33M22 36Q11 38 7 48M25 40Q19 47 17 54" />
         <path d="M42 26Q52 14 59 18M43 31Q55 26 61 33M42 36Q53 38 57 48M39 40Q45 47 47 54" />
@@ -86,7 +86,7 @@ function PixelSpider({ tint, size }: { tint: number; size: number }) {
   return (
     <svg viewBox="0 0 13 10" width={size} height={size * 10 / 13} shapeRendering="crispEdges" style={{ "--glow": c.glow } as CSSProperties}>
       {PIXEL_MAP.flatMap((row, y) => [...row].map((ch, x) => ch === "." ? null : (
-        <rect key={`${x}-${y}`} x={x} y={y} width="1.02" height="1.02" fill={fill[ch]} className={ch === "L" ? "hw-px-leg" : undefined} />
+        <rect key={`${x}-${y}`} x={x} y={y} width="1.02" height="1.02" fill={fill[ch]} className={ch === "L" ? "hw-px-leg" : ch === "E" ? "hw-px-eye" : undefined} />
       )))}
     </svg>
   );
@@ -117,34 +117,313 @@ function makeSpiders(): SpiderSpec[] {
   });
 }
 
-/** Decorative threads never intercept links; only the spider itself is clickable. */
-function HangingSpider({ spec, inactive }: { spec: SpiderSpec; inactive: boolean }) {
-  const [down, setDown] = useState(false);
-  const body = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    if (!down) return;
-    const timer = window.setTimeout(() => setDown(false), 1800);
-    return () => window.clearTimeout(timer);
-  }, [down]);
-  useEffect(() => { if (inactive) setDown(false); }, [inactive]);
-  const move = (event: RPointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = Math.max(-8, Math.min(8, (event.clientX - rect.left - rect.width / 2) * 0.3));
-    body.current?.style.setProperty("--peek", `${x}px`);
+/* ── Living silk ──────────────────────────────────────────────────────
+ * Every thread is a little rope (verlet points) hanging from the bottom of the navbar with the spider as its
+ * heavy end. The cursor brushes threads aside, scrolling sets them swinging, and each spider has a mind of
+ * its own: it bobs up and down, kicks, turns round and watches the cursor. A click drops it on a bungee
+ * bounce; it climbs back up hand over hand a moment later.
+ */
+const SEG = 12;
+const GRAVITY = 1500; // px/s²
+const STEP = 1 / 60;
+const CLIMB = 85; // px/s when climbing back up
+
+type Strand = {
+  ax: number; // anchor x (px in the host)
+  x: Float32Array; y: Float32Array; px: Float32Array; py: Float32Array;
+  len: number; lenV: number; target: number;
+  down: boolean; upAt: number; bobUntil: number; nextIdle: number;
+  hover: boolean; moving: boolean; flip: boolean; dew: number[];
+};
+
+function makeStrand(ax: number, len: number, flip: boolean): Strand {
+  const n = SEG + 1;
+  const s: Strand = {
+    ax, x: new Float32Array(n), y: new Float32Array(n), px: new Float32Array(n), py: new Float32Array(n),
+    len, lenV: 0, target: len, down: false, upAt: 0, bobUntil: 0, nextIdle: performance.now() + 2500 + Math.random() * 6000,
+    hover: false, moving: false, flip, dew: [0.3 + Math.random() * 0.25, 0.62 + Math.random() * 0.2],
   };
-  const style = { left: `${spec.x}%`, "--hw-hang": `${spec.hang}px`, "--hw-drop": `${spec.drop}px`, "--hw-sway": `${spec.sway}s`, "--hw-delay": `${spec.delay}s` } as CSSProperties;
+  for (let i = 0; i < n; i++) {
+    s.x[i] = s.px[i] = ax;
+    s.y[i] = s.py[i] = (len * i) / SEG;
+  }
+  // start with a little swing so nothing looks frozen on load
+  const kick = (Math.random() - 0.5) * 6;
+  for (let i = 1; i < n; i++) s.px[i] = ax - kick * (i / SEG);
+  return s;
+}
+
+/** Smooth path through the rope points (midpoint quadratic curves). */
+function silkPath(s: Strand) {
+  let d = `M${s.x[0].toFixed(1)} ${s.y[0].toFixed(1)}`;
+  for (let i = 1; i < SEG; i++) {
+    const mx = (s.x[i] + s.x[i + 1]) / 2, my = (s.y[i] + s.y[i + 1]) / 2;
+    d += `Q${s.x[i].toFixed(1)} ${s.y[i].toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`;
+  }
+  return d + `L${s.x[SEG].toFixed(1)} ${s.y[SEG].toFixed(1)}`;
+}
+
+/** A tiny tuft of web where a thread is glued under the navbar. */
+function tuft(ax: number) {
+  const f = (n: number) => n.toFixed(1);
+  return `M${f(ax - 17)} 0L${f(ax)} 9M${f(ax - 6)} 0L${f(ax)} 9M${f(ax + 6)} 0L${f(ax)} 9M${f(ax + 17)} 0L${f(ax)} 9`
+    + `M${f(ax - 12)} 2.4Q${f(ax - 6)} 5 ${f(ax - 4)} 2.4Q${f(ax)} 4.6 ${f(ax + 4)} 2.4Q${f(ax + 6)} 5 ${f(ax + 12)} 2.4`
+    + `M${f(ax - 6.5)} 5.6Q${f(ax - 3)} 7.4 ${f(ax)} 6Q${f(ax + 3)} 7.4 ${f(ax + 6.5)} 5.6`;
+}
+
+function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boolean }) {
+  const host = useRef<HTMLDivElement>(null);
+  const silk = useRef<(SVGPathElement | null)[]>([]);
+  const glint = useRef<(SVGPathElement | null)[]>([]);
+  const dew = useRef<(SVGCircleElement | null)[]>([]);
+  const tufts = useRef<(SVGPathElement | null)[]>([]);
+  const bodies = useRef<(HTMLDivElement | null)[]>([]);
+  const strands = useRef<Strand[]>([]);
+  const [down, setDown] = useState<boolean[]>([]);
+  const inactiveRef = useRef(inactive);
+  inactiveRef.current = inactive;
+
+  const maxDrop = (spec: SpiderSpec) => Math.min(spec.drop, window.innerHeight * (window.innerWidth < 700 ? 0.35 : 0.48));
+
+  const toggle = (i: number, force?: boolean) => {
+    const s = strands.current[i], spec = spiders[i];
+    if (!s || !spec) return;
+    const next = force ?? !s.down;
+    s.down = next;
+    s.target = next ? maxDrop(spec) : spec.hang;
+    s.upAt = next ? performance.now() + 1800 : 0;
+    if (next) s.lenV = 260; // let go of the line
+    setDown((list) => { const copy = list.slice(); copy[i] = next; return copy; });
+  };
+
+  useEffect(() => { if (inactive) strands.current.forEach((s, i) => s.down && toggle(i, false)); });
+
+  useEffect(() => {
+    const el = host.current;
+    if (!el || !spiders.length) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let width = el.clientWidth;
+    strands.current = spiders.map((spec) => makeStrand((spec.x / 100) * width, spec.hang, spec.flip));
+    setDown(spiders.map(() => false));
+
+    const pointer = { x: -1e4, y: -1e4, vx: 0, vy: 0, t: 0 };
+    let rect = el.getBoundingClientRect();
+    const onMove = (e: PointerEvent) => {
+      const now = performance.now();
+      const nx = e.clientX - rect.left, ny = e.clientY - rect.top;
+      const dt = Math.max(8, now - pointer.t) / 1000;
+      if (pointer.t) { pointer.vx = pointer.vx * 0.5 + ((nx - pointer.x) / dt) * 0.5; pointer.vy = pointer.vy * 0.5 + ((ny - pointer.y) / dt) * 0.5; }
+      pointer.x = nx; pointer.y = ny; pointer.t = now;
+    };
+    let lastScroll = window.scrollY;
+    const onScroll = () => {
+      const dy = window.scrollY - lastScroll;
+      lastScroll = window.scrollY;
+      const push = Math.max(-30, Math.min(30, dy)) * 0.09;
+      for (const s of strands.current) {
+        const dir = s.flip ? -1 : 1;
+        for (let i = 1; i <= SEG; i++) s.px[i] -= push * dir * (i / SEG);
+        s.lenV += Math.abs(push) * 9; // a little bounce on the line
+      }
+    };
+    const onResize = () => {
+      const w = el.clientWidth;
+      if (!w) return;
+      strands.current.forEach((s, i) => {
+        const nx = (spiders[i].x / 100) * w, dx = nx - s.ax;
+        s.ax = nx;
+        for (let k = 0; k <= SEG; k++) { s.x[k] += dx; s.px[k] += dx; }
+        tufts.current[i]?.setAttribute("d", tuft(nx));
+      });
+      width = w;
+    };
+
+    const look = (i: number, s: Strand) => {
+      const b = bodies.current[i];
+      if (!b) return;
+      const ex = s.x[SEG], ey = s.y[SEG] + 22;
+      let lx = pointer.x - ex, ly = pointer.y - ey;
+      const d = Math.hypot(lx, ly);
+      if (pointer.t === 0 || d > 520) { lx = 0; ly = 0; } else { lx = (lx / Math.max(d, 1)) * 1.7; ly = (ly / Math.max(d, 1)) * 1.4; }
+      b.style.setProperty("--lx", `${(s.flip ? -lx : lx).toFixed(2)}px`);
+      b.style.setProperty("--ly", `${ly.toFixed(2)}px`);
+    };
+
+    const draw = () => {
+      strands.current.forEach((s, i) => {
+        silk.current[i]?.setAttribute("d", silkPath(s));
+        glint.current[i]?.setAttribute("d", silkPath(s));
+        s.dew.forEach((f, k) => {
+          const c = dew.current[i * 2 + k];
+          if (!c) return;
+          const at = f * SEG, j = Math.floor(at), t = at - j;
+          c.setAttribute("cx", (s.x[j] + (s.x[j + 1] - s.x[j]) * t).toFixed(1));
+          c.setAttribute("cy", (s.y[j] + (s.y[j + 1] - s.y[j]) * t).toFixed(1));
+        });
+        const b = bodies.current[i];
+        if (b) {
+          const dx = s.x[SEG] - s.x[SEG - 2], dy = s.y[SEG] - s.y[SEG - 2];
+          const rot = (-Math.atan2(dx, dy) * 180) / Math.PI;
+          b.style.transform = `translate3d(${s.x[SEG].toFixed(1)}px, ${(s.y[SEG] - 2).toFixed(1)}px, 0) rotate(${rot.toFixed(1)}deg)`;
+          if (b.classList.contains("is-moving") !== s.moving) b.classList.toggle("is-moving", s.moving);
+          if (b.classList.contains("is-flip") !== s.flip) b.classList.toggle("is-flip", s.flip);
+        }
+        look(i, s);
+      });
+    };
+
+    const step = (now: number) => {
+      const pSpeed = Math.hypot(pointer.vx, pointer.vy);
+      pointer.vx *= 0.9; pointer.vy *= 0.9;
+      strands.current.forEach((s, idx) => {
+        const spec = spiders[idx];
+        // ── length: bungee when dropped, steady climb back, gentle idle bobbing
+        if (s.down && now >= s.upAt && !s.hover) { s.down = false; s.target = spec.hang; setDown((l) => { const c = l.slice(); c[idx] = false; return c; }); }
+        if (!s.down && s.bobUntil && now >= s.bobUntil) { s.bobUntil = 0; s.target = spec.hang; }
+        let climbing = false;
+        if (!s.down && s.len > s.target + 1.5) {
+          s.len = Math.max(s.target, s.len - CLIMB * STEP * (s.len - s.target > 40 ? 1 : 0.6));
+          s.lenV = 0;
+          climbing = true;
+        } else {
+          const k = s.down ? 46 : 22, damp = s.down ? 4.2 : 6;
+          s.lenV += ((s.target - s.len) * k - s.lenV * damp) * STEP;
+          s.len += s.lenV * STEP;
+        }
+        s.moving = climbing || Math.abs(s.lenV) > 18;
+        // ── idle mind
+        if (!s.down && !s.hover && now >= s.nextIdle) {
+          s.nextIdle = now + 3500 + Math.random() * 7000;
+          const r = Math.random();
+          if (r < 0.42) { s.target = spec.hang + (Math.random() < 0.5 ? -1 : 1) * (10 + Math.random() * 26); s.bobUntil = now + 1600 + Math.random() * 2200; }
+          else if (r < 0.7) { const kick = (Math.random() - 0.5) * 14; s.px[SEG] -= kick; s.px[SEG - 1] -= kick * 0.6; }
+          else if (r < 0.85) s.flip = !s.flip;
+          else { s.lenV -= 70; } // a little hop
+        }
+        // ── verlet
+        const rest = Math.max(4, s.len) / SEG;
+        for (let i = 1; i <= SEG; i++) {
+          const vx = (s.x[i] - s.px[i]) * 0.986, vy = (s.y[i] - s.py[i]) * 0.986;
+          s.px[i] = s.x[i]; s.py[i] = s.y[i];
+          s.x[i] += vx;
+          s.y[i] += vy + GRAVITY * STEP * STEP * (i === SEG ? 1 : 0.6);
+          // the cursor brushes past: push points it passes near
+          if (pSpeed > 40) {
+            const dx = s.x[i] - pointer.x, dy = s.y[i] - pointer.y, d2 = dx * dx + dy * dy;
+            if (d2 < 70 * 70) {
+              const fall = 1 - Math.sqrt(d2) / 70;
+              s.x[i] += Math.max(-9, Math.min(9, pointer.vx * 0.006)) * fall;
+              s.y[i] += Math.max(-4, Math.min(4, pointer.vy * 0.003)) * fall;
+            }
+          }
+        }
+        // a breath of air so a still thread is never perfectly still
+        s.x[SEG] += Math.sin(now / 900 + idx * 1.7) * 0.012;
+        // Silk is paid out, never slack: the spider sits exactly `len` from the anchor (a pendulum whose length
+        // is the bungee spring above), and the silk between is a rope a touch longer than that, so it can bend
+        // when brushed but never bunches up.
+        const ax = s.ax, rope = (Math.max(4, s.len) * 1.025) / SEG;
+        for (let it = 0; it < 8; it++) {
+          s.x[0] = ax; s.y[0] = 0;
+          for (let i = 0; i < SEG; i++) {
+            const dx = s.x[i + 1] - s.x[i], dy = s.y[i + 1] - s.y[i];
+            const d = Math.hypot(dx, dy) || 0.001;
+            if (d <= rope) continue; // a rope only pulls
+            const diff = (d - rope) / d;
+            const wa = i === 0 ? 0 : 0.5, wb = i === 0 ? 1 : 0.5;
+            s.x[i] += dx * diff * wa; s.y[i] += dy * diff * wa;
+            s.x[i + 1] -= dx * diff * wb; s.y[i + 1] -= dy * diff * wb;
+          }
+          const ex = s.x[SEG] - ax, ey = s.y[SEG], d = Math.hypot(ex, ey) || 0.001, want = Math.max(4, s.len);
+          s.x[SEG] = ax + (ex / d) * want; s.y[SEG] = (ey / d) * want;
+        }
+        // keep swings sane (a hard flick can't throw a spider over the navbar)
+        const ang = Math.atan2(s.x[SEG] - ax, s.y[SEG]);
+        if (Math.abs(ang) > 1.1) { const a = Math.sign(ang) * 1.1, L = Math.max(4, s.len); s.x[SEG] = ax + Math.sin(a) * L; s.y[SEG] = Math.cos(a) * L; s.px[SEG] = s.x[SEG]; s.py[SEG] = s.y[SEG]; }
+      });
+    };
+
+    let raf = 0, last = performance.now(), acc = 0;
+    const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      if (document.hidden || inactiveRef.current) { last = now; return; }
+      rect = el.getBoundingClientRect();
+      acc = Math.min(acc + (now - last) / 1000, 0.1);
+      last = now;
+      while (acc >= STEP) { step(now); acc -= STEP; }
+      draw();
+    };
+    tufts.current.forEach((t, i) => t?.setAttribute("d", tuft(strands.current[i].ax)));
+    if (reduce) {
+      draw();
+    } else {
+      raf = requestAnimationFrame(frame);
+      window.addEventListener("pointermove", onMove, { passive: true });
+      window.addEventListener("scroll", onScroll, { passive: true });
+    }
+    window.addEventListener("resize", onResize);
+    if (reduce) {
+      // no physics: still answer clicks by setting the length straight away
+      const id = window.setInterval(() => {
+        strands.current.forEach((s, i) => {
+          if (s.down && performance.now() >= s.upAt) toggle(i, false);
+          const len = s.target;
+          for (let k = 0; k <= SEG; k++) { s.x[k] = s.ax; s.y[k] = (len * k) / SEG; }
+        });
+        draw();
+      }, 120);
+      return () => { window.clearInterval(id); window.removeEventListener("resize", onResize); };
+    }
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spiders]);
+
+  const hover = (i: number, on: boolean) => {
+    const s = strands.current[i];
+    if (!s) return;
+    s.hover = on;
+    if (on && !s.down) { s.target = spiders[i].hang - 10; s.bobUntil = performance.now() + 900; } // shy: pulls up a touch
+  };
+
   return (
-    <div className={`hw-spider hw-spider-${spec.kind}${spec.flip ? " is-flip" : ""}${down ? " is-down" : ""}`} style={style} data-spider-kind={spec.kind}>
-      <span className="hw-thread" aria-hidden />
-      <button ref={body} type="button" className="hw-spider-body" aria-pressed={down}
-        aria-label={`${down ? "Retract" : "Drop"} Halloween spider ${spec.id + 1}`}
-        title={down ? "I'll climb back up in a moment" : "Click to drop me down"}
-        onClick={() => setDown((value) => !value)} onPointerMove={move}
-        onPointerLeave={() => body.current?.style.removeProperty("--peek")}
-        onKeyDown={(event) => { if (event.key === "Escape") setDown(false); }}>
-        {spec.kind === "cute" ? <CuteSpider tint={spec.tint} size={spec.size} /> : <PixelSpider tint={spec.tint} size={spec.size} />}
-      </button>
+    <div ref={host} className="hw-spiders" inert={inactive} aria-hidden={inactive || undefined}>
+      <svg className="hw-silk" aria-hidden>
+        <defs>
+          <linearGradient id="hw-silk-fade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#fff" stopOpacity="0.95" />
+            <stop offset="1" stopColor="#e9e2ff" stopOpacity="0.8" />
+          </linearGradient>
+        </defs>
+        {spiders.map((spec, i) => (
+          <g key={spec.id} className={`hw-strand hw-strand-${spec.kind}`}>
+            <path ref={(n) => { tufts.current[i] = n; }} className="hw-tuft" />
+            <path ref={(n) => { silk.current[i] = n; }} className="hw-line" />
+            <path ref={(n) => { glint.current[i] = n; }} className="hw-glint" pathLength={100}
+              style={{ animationDuration: `${3.4 + (spec.id % 3) * 1.3}s`, animationDelay: `${spec.delay}s` } as CSSProperties} />
+            <circle ref={(n) => { dew.current[i * 2] = n; }} className="hw-dew" r="1.5" />
+            <circle ref={(n) => { dew.current[i * 2 + 1] = n; }} className="hw-dew" r="1.1" />
+          </g>
+        ))}
+      </svg>
+      {spiders.map((spec, i) => (
+        <div key={spec.id} ref={(n) => { bodies.current[i] = n; }}
+          className={`hw-spider hw-spider-${spec.kind}${down[i] ? " is-down" : ""}`} data-spider-kind={spec.kind}
+          style={{ "--hw-delay": `${spec.delay}s` } as CSSProperties}>
+          <button type="button" className="hw-spider-body" aria-pressed={!!down[i]}
+            aria-label={`${down[i] ? "Retract" : "Drop"} Halloween spider ${spec.id + 1}`}
+            title={down[i] ? "I'll climb back up in a moment" : "Click to drop me down"}
+            onClick={() => toggle(i)}
+            onPointerEnter={() => hover(i, true)} onPointerLeave={() => hover(i, false)}
+            onKeyDown={(event) => { if (event.key === "Escape") toggle(i, false); }}>
+            {spec.kind === "cute" ? <CuteSpider tint={spec.tint} size={spec.size} /> : <PixelSpider tint={spec.tint} size={spec.size} />}
+          </button>
+        </div>
+      ))}
     </div>
   );
 }
@@ -156,12 +435,7 @@ export function HalloweenSpiders({ hidden, menuOpen }: { hidden: boolean; menuOp
   const on = Boolean(theme?.halloween);
   useEffect(() => { if (on) setSpiders(makeSpiders()); }, [on]);
   if (!on) return null;
-  const inactive = hidden || menuOpen;
-  return (
-    <div className="hw-spiders" inert={inactive} aria-hidden={inactive || undefined}>
-      {spiders.map((spec) => <HangingSpider key={spec.id} spec={spec} inactive={inactive} />)}
-    </div>
-  );
+  return <SpiderWeb spiders={spiders} inactive={hidden || menuOpen} />;
 }
 
 type Burst = { id: number; x: number; y: number; particles: { angle: number; distance: number }[] };

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, Crown, Gift } from "lucide-react";
+import { ChevronDown, Crown, Gift, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import "../app/redesign.css";
@@ -13,18 +13,8 @@ import { Apple, Discord, Linux, Windows } from "./icons";
 import ThemeToggle from "./ThemeToggle";
 import { HalloweenSpiders } from "./Halloween";
 import SkinHead from "./SkinHead";
-import CommandSearch from "./search/CommandSearch";
-
-const nav = [
-  { href: "/", label: "Home" },
-  { href: "/store", label: "Store" },
-  { href: "/skins", label: "Skins" },
-  { href: "/players", label: "Players" },
-  { href: "/beta", label: "Beta" },
-  { href: "/changes", label: "Changes" },
-  { href: "/partners", label: "Partners" },
-  { href: "/support", label: "Support" },
-];
+import CommandSearch, { openSearch } from "./search/CommandSearch";
+import { MENU_GROUPS, NAV, isGroup, onPage, type NavPage } from "@/lib/navLinks";
 
 const getLinks = [
   { label: "Windows", sub: "Installer · x64", href: "/api/download/windows", Icon: Windows },
@@ -108,6 +98,63 @@ function DownloadMenu() {
   );
 }
 
+/** A navbar link that opens a small menu of pages: on hover, on click and from the keyboard. */
+function NavGroup({ label, items, active, hovered, onHover }: { label: string; items: NavPage[]; active: boolean; hovered: boolean; onHover: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLLIElement>(null);
+  const closeTimer = useRef(0);
+  const path = usePathname();
+  useEffect(() => setOpen(false), [path]);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { setOpen(false); ref.current?.querySelector<HTMLButtonElement>("button")?.focus(); } };
+    document.addEventListener("mousedown", away);
+    document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("mousedown", away); document.removeEventListener("keydown", esc); };
+  }, [open]);
+  const enter = () => { window.clearTimeout(closeTimer.current); onHover(); setOpen(true); };
+  const leave = () => { closeTimer.current = window.setTimeout(() => setOpen(false), 160); };
+  return (
+    <li ref={ref} className="relative" onPointerEnter={(e) => e.pointerType === "mouse" && enter()} onPointerLeave={(e) => e.pointerType === "mouse" && leave()}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false); }}>
+      {hovered && <motion.span layoutId="nav-hover" className="v-nav-hover" transition={{ type: "spring", stiffness: 520, damping: 40 }} />}
+      <button type="button" className={`v-nav-link v-nav-group ${active ? "is-on" : ""} ${open ? "is-open" : ""}`} aria-expanded={open} aria-haspopup="true"
+        onClick={() => setOpen((v) => !v)} onKeyDown={(e) => { if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); window.setTimeout(() => ref.current?.querySelector<HTMLAnchorElement>("a")?.focus(), 30); } }}>
+        {label}
+        <ChevronDown className="v-nav-chev h-3.5 w-3.5" aria-hidden />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div className="v-nav-drop" initial={{ opacity: 0, y: -6, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.98 }} transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+            onPointerEnter={() => window.clearTimeout(closeTimer.current)}>
+            <ul>
+              {items.map(({ href, label: name, desc, Icon }) => (
+                <li key={href}>
+                  <Link href={href} className={`v-nav-drop-item ${onPage(path, href) ? "is-on" : ""}`} onClick={() => setOpen(false)}
+                    onKeyDown={(e) => {
+                      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+                      e.preventDefault();
+                      const links = [...(ref.current?.querySelectorAll<HTMLAnchorElement>(".v-nav-drop-item") ?? [])];
+                      const i = links.indexOf(e.currentTarget);
+                      links[(i + (e.key === "ArrowDown" ? 1 : links.length - 1)) % links.length]?.focus();
+                    }}>
+                    <span className="v-nav-drop-icon"><Icon className="h-[18px] w-[18px]" /></span>
+                    <span className="min-w-0">
+                      <span className="block text-[14px] font-bold leading-tight">{name}</span>
+                      <span className="mt-0.5 block truncate text-[12.5px] text-dim">{desc}</span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </li>
+  );
+}
+
 export default function Navbar() {
   const me = useAccount();
   const name = me === undefined ? undefined : (me?.name ?? null);
@@ -146,7 +193,8 @@ export default function Navbar() {
     href: name ? "/founder" : "/register?next=/founder",
     label: name ? "Claim free cape" : "Join early",
   };
-  const isOn = (href: string) => (href === "/" ? path === "/" : path?.startsWith(href));
+  const isOn = (href: string) => onPage(path, href);
+  const [hover, setHover] = useState<string | null>(null);
 
   const account = name ? (
     <Link href="/account" data-claim-target title="Your account" className="v-nav-acct hidden sm:inline-flex">
@@ -159,13 +207,7 @@ export default function Navbar() {
     </Link>
   );
 
-  const menuLinks = [
-    ...nav,
-    { href: "/plus", label: "Native+" },
-    { href: "/cloaks", label: "Cloaks" },
-    { href: "/cosmetics", label: "Cosmetics" },
-    { href: "/vote", label: "Vote" },
-  ];
+  let menuIndex = 0;
 
   return (
     <>
@@ -176,11 +218,15 @@ export default function Navbar() {
             <span>native</span>
           </Link>
 
-          <ul className="v-nav-links">
-            {nav.map((l) => (
-              <li key={l.href}>
-                <Link href={l.href} className={`v-nav-link ${isOn(l.href) ? "is-on" : ""}`}>
-                  {l.label}
+          <ul className="v-nav-links" onPointerLeave={() => setHover(null)}>
+            {NAV.map((entry) => isGroup(entry) ? (
+              <NavGroup key={entry.label} label={entry.label} items={entry.items} active={entry.items.some((i) => isOn(i.href))}
+                hovered={hover === entry.label} onHover={() => setHover(entry.label)} />
+            ) : (
+              <li key={entry.href} className="relative" onPointerEnter={() => setHover(entry.href)}>
+                {hover === entry.href && <motion.span layoutId="nav-hover" className="v-nav-hover" transition={{ type: "spring", stiffness: 520, damping: 40 }} />}
+                <Link href={entry.href} className={`v-nav-link ${isOn(entry.href) ? "is-on" : ""}`} aria-current={isOn(entry.href) ? "page" : undefined}>
+                  {entry.label}
                 </Link>
               </li>
             ))}
@@ -237,18 +283,32 @@ export default function Navbar() {
             exit={{ clipPath: "inset(0% 0% 100% 0%)" }}
             transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
           >
-            <ul className="v-menu-list">
-              {menuLinks.map((l, i) => (
-                <li key={l.href + l.label} className="overflow-hidden">
-                  <motion.div initial={{ y: "110%" }} animate={{ y: "0%" }} exit={{ y: "110%" }} transition={{ duration: 0.7, delay: 0.15 + i * 0.04, ease: [0.16, 1, 0.3, 1] }}>
-                    <Link href={l.href} onClick={() => setOpen(false)} className={`v-menu-link ${isOn(l.href) ? "is-on" : ""}`}>
-                      <span className="v-menu-i">{String(i + 1).padStart(2, "0")}</span>
-                      {l.label}
-                    </Link>
-                  </motion.div>
-                </li>
+            <motion.button type="button" className="v-menu-search" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.5, delay: 0.12 }}
+              onClick={() => { setOpen(false); window.setTimeout(openSearch, 80); }}>
+              <Search className="h-5 w-5 shrink-0" /> <span className="truncate">Search players, cloaks, pages…</span>
+            </motion.button>
+            <div className="v-menu-groups">
+              {MENU_GROUPS.map((group) => (
+                <div key={group.label}>
+                  <p className="v-menu-i v-menu-group">{group.label}</p>
+                  <ul className="v-menu-list">
+                    {group.items.map((l) => {
+                      const i = menuIndex++;
+                      return (
+                        <li key={l.href} className="overflow-hidden">
+                          <motion.div initial={{ y: "110%" }} animate={{ y: "0%" }} exit={{ y: "110%" }} transition={{ duration: 0.7, delay: 0.15 + i * 0.03, ease: [0.16, 1, 0.3, 1] }}>
+                            <Link href={l.href} onClick={() => setOpen(false)} className={`v-menu-link ${isOn(l.href) ? "is-on" : ""}`}>
+                              <l.Icon className="v-menu-icon" aria-hidden />
+                              {l.label}
+                            </Link>
+                          </motion.div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
             <motion.div className="v-menu-foot" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.6, delay: 0.5 }}>
               <Link href={gift ? giftCta.href : "/download"} onClick={() => setOpen(false)} className="v-btn is-solid">
                 {gift ? giftCta.label : "Download"}

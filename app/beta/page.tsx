@@ -9,7 +9,7 @@ import type { BetaApplication } from "@/lib/launch";
 export const dynamic = "force-dynamic";
 export const metadata = pageMeta({
   title: "Super Beta Tester program",
-  description: "Apply to test Native before everyone else. Accepted testers get the Super Beta Tester cape, badge and Native+ forever.",
+  description: "Apply to test Native before everyone else. Accepted testers get the Super Beta Tester cape and badge for good, plus a month of Native+.",
   path: "/beta",
 });
 
