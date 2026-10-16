@@ -23,12 +23,12 @@ export const dynamic = "force-dynamic";
 async function releaseCount(): Promise<number> {
   try {
     const r = await fetch("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json", { next: { revalidate: 86400 } });
-    if (!r.ok) return 80;
+    if (!r.ok) return 100;
     const m = (await r.json()) as { versions: { type: string }[] };
     const n = m.versions.filter((v) => v.type === "release").length;
-    return n > 0 ? Math.floor(n / 10) * 10 : 80;
+    return n > 0 ? Math.floor(n / 10) * 10 : 100;
   } catch {
-    return 80;
+    return 100;
   }
 }
 

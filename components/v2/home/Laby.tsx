@@ -43,8 +43,9 @@ export function Included({ items, versions }: { items: number; versions: number 
     { k: "Fixes", icon: <Bug />, list: ["Crash analyzer", "Java fixer", "Clean reports", "Logs"] },
     { k: "Discover", icon: <Compass />, list: ["Servers", "Modpacks", "Worlds", "Skins"] },
   ];
+  const safeVersions = Math.max(Number(versions) || 0, 100);
   const stats = [
-    { n: versions, s: "+", l: "Minecraft versions" },
+    { n: safeVersions, s: "+", l: "Minecraft versions" },
     { n: items, s: "+", l: "Capes & cosmetics" },
     { n: 3, s: "", l: "Platforms" },
   ];
@@ -166,9 +167,10 @@ export function LauncherGrid() {
 
 /** Plain-language explainer, like an encyclopedia entry, before the FAQ. */
 export function Explainer({ versions }: { versions: number }) {
+  const safeVersions = Math.max(Number(versions) || 0, 100);
   const facts = [
     { t: "Free forever", d: "The launcher costs nothing." },
-    { t: `${versions}+ versions`, d: "Snapshots to the classics." },
+    { t: `${safeVersions}+ versions`, d: "Snapshots to the classics." },
     { t: "3 platforms", d: "Windows, macOS and Linux." },
   ];
   return (
