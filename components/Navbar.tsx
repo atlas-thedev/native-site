@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, ChevronDown, Crown, Gift } from "lucide-react";
+import { ArrowRight, ChevronDown, Crown, Download, Gift, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import "../app/redesign.css";
@@ -44,9 +44,9 @@ function DownloadMenu() {
   useDismiss(open, () => setOpen(false), ref);
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open} className="nv-cta">
+      <button onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open} className="nv-box nv-box-strong">
+        <Download className="h-4 w-4" aria-hidden />
         Download
-        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       <AnimatePresence>
         {open && (
@@ -156,12 +156,21 @@ export default function Navbar() {
   const isOn = (href: string) => onPage(path, href);
 
   const account = name ? (
-    <Link href="/account" data-claim-target title="Your account" className="nv-acct">
-      <SkinHead skin={me?.skin ?? null} name={name} size={28} className="!rounded-full" />
-      <span className="max-w-[8rem] truncate">{name}</span>
+    <Link href="/account" data-claim-target title="Your account" className="nv-login">
+      <SkinHead skin={me?.skin ?? null} name={name} size={26} className="!rounded-[4px]" />
+      <span className="nv-login-text">
+        <span className="nv-login-title max-w-[9rem] truncate">{name}</span>
+        <span className="nv-login-sub">Your account</span>
+      </span>
     </Link>
   ) : (
-    <Link href="/login" className={`nv-signin ${name === undefined ? "opacity-0" : ""}`}>Sign in</Link>
+    <Link href="/login" className={`nv-login ${name === undefined ? "opacity-0" : ""}`}>
+      <UserRound className="h-[18px] w-[18px] shrink-0" aria-hidden />
+      <span className="nv-login-text">
+        <span className="nv-login-title">Sign in</span>
+        <span className="nv-login-sub">Account and cloaks</span>
+      </span>
+    </Link>
   );
 
   return (
@@ -170,7 +179,7 @@ export default function Navbar() {
         <div className="nv-bar">
           <nav aria-label="Main" className="nv-inner">
             <Link href="/" className="nv-brand" aria-label={`${site.name} home`}>
-              <img src="/brand/icon.png" alt="" width={28} height={28} className="logo-img h-7 w-7" aria-hidden />
+              <img src="/brand/icon.png" alt="" width={40} height={40} className="logo-img nv-logo" aria-hidden />
               <span>NATIVE</span>
             </Link>
 
@@ -185,27 +194,27 @@ export default function Navbar() {
                 </li>
               ))}
               <li>
-                <Link href="/plus" className={`nv-link nv-plus ${isOn("/plus") ? "is-on" : ""}`}>
-                  <Crown className="h-[15px] w-[15px]" aria-hidden />
+                <Link href="/plus" className={`nv-box nv-plus ${isOn("/plus") ? "is-on" : ""}`}>
+                  <Crown className="h-4 w-4" aria-hidden />
                   Native+
                 </Link>
               </li>
-            </ul>
-
-            <div className="nv-right">
-              {!theme?.halloween && <span className="nv-theme hidden xl:inline-flex" data-theme-control><ThemeToggle /></span>}
-              <span className="hidden sm:inline-flex">{account}</span>
-              <span className="hidden md:inline-flex">
+              <li>
                 {gift ? (
-                  <Link href={giftCta.href} className="nv-cta">
+                  <Link href={giftCta.href} className="nv-box nv-box-strong">
                     <Gift className="h-4 w-4" aria-hidden />
-                    <span className="whitespace-nowrap">{giftCta.label}</span>
+                    {giftCta.label}
                   </Link>
                 ) : (
                   <DownloadMenu />
                 )}
-              </span>
-              <button data-claim-target onClick={() => setOpen((v) => !v)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="nv-burger">
+              </li>
+            </ul>
+
+            <div className="nv-right">
+              {!theme?.halloween && <span className="nv-square nv-theme hidden lg:inline-flex" data-theme-control><ThemeToggle /></span>}
+              <span className="hidden sm:inline-flex">{account}</span>
+              <button data-claim-target onClick={() => setOpen((v) => !v)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="nv-square nv-burger">
                 <span className="nv-burger-lines" aria-hidden><i /><i /></span>
               </button>
             </div>
@@ -234,15 +243,15 @@ export default function Navbar() {
                 ))}
               </div>
               <div className="nv-sheet-foot">
-                <Link href={gift ? giftCta.href : "/download"} onClick={() => setOpen(false)} className="nv-cta">
+                <Link href={gift ? giftCta.href : "/download"} onClick={() => setOpen(false)} className="nv-box nv-box-strong">
                   {gift ? giftCta.label : "Download"}
                 </Link>
-                <Link href={name ? "/account" : "/login"} onClick={() => setOpen(false)} className="nv-ghost">
+                <Link href={name ? "/account" : "/login"} onClick={() => setOpen(false)} className="nv-box">
                   {name ? "Your account" : "Sign in"}
                 </Link>
                 <div className="ml-auto flex items-center gap-2">
-                  <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className="nv-round"><Discord className="h-[17px] w-[17px]" /></a>
-                  {!theme?.halloween && <span data-theme-control><ThemeToggle /></span>}
+                  <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className="nv-square"><Discord className="h-[17px] w-[17px]" /></a>
+                  {!theme?.halloween && <span className="nv-square nv-theme" data-theme-control><ThemeToggle /></span>}
                 </div>
               </div>
             </motion.div>
