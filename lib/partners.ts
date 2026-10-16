@@ -20,6 +20,16 @@ export type Partner = {
   code: string;
   tier: "featured" | "partner" | "sponsor";
   logoSize?: number;
+  /** Look, set in Admin → Partners */
+  buttonStyle?: "gradient" | "solid" | "outline" | "glass";
+  buttonColor?: string;
+  buttonText?: string;
+  button2Label?: string;
+  button2Url?: string;
+  logoStyle?: "plain" | "tile" | "circle" | "glass";
+  logoBg?: string;
+  badge?: string;
+  showName?: boolean;
 };
 
 /* Art the API serves from its bundle has a copy here, so it loads from our own domain. */

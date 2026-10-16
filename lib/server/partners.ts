@@ -33,6 +33,15 @@ function clean(raw: Record<string, unknown>): Partner | null {
     code: String(raw.code ?? "").slice(0, 24),
     tier: raw.tier === "featured" || raw.tier === "sponsor" ? raw.tier : "partner",
     logoSize: Number(raw.logoSize) ? Math.max(20, Math.min(160, Number(raw.logoSize))) : 52,
+    buttonStyle: (["gradient", "solid", "outline", "glass"] as const).find((v) => v === raw.buttonStyle) ?? "gradient",
+    buttonColor: HEX.test(String(raw.buttonColor)) ? String(raw.buttonColor) : "",
+    buttonText: HEX.test(String(raw.buttonText)) ? String(raw.buttonText) : "",
+    button2Label: https(raw.button2Url) ? String(raw.button2Label ?? "").slice(0, 24) : "",
+    button2Url: raw.button2Label ? https(raw.button2Url) : "",
+    logoStyle: (["plain", "tile", "circle", "glass"] as const).find((v) => v === raw.logoStyle) ?? "plain",
+    logoBg: HEX.test(String(raw.logoBg)) ? String(raw.logoBg) : "",
+    badge: String(raw.badge ?? "").slice(0, 24),
+    showName: raw.showName !== false,
   };
 }
 

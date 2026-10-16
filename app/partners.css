@@ -144,3 +144,17 @@
 @media (prefers-reduced-motion: reduce) {
   .np-stripe::after, .np-ring, .np-glow, .np-stripe-chip { animation: none; }
 }
+
+/* ---------- partner look (Admin → Partners) ---------- */
+.np-pbtn { border: 0; color: var(--np-btn-text, #fff); }
+.np-pbtn.is-gradient { background: linear-gradient(135deg, var(--np-btn, var(--np-accent)), var(--np-accent-2, var(--np-accent))); }
+.np-pbtn.is-solid { background: var(--np-btn, var(--np-accent)); }
+.np-pbtn.is-outline { background: transparent; box-shadow: inset 0 0 0 1.5px var(--np-btn, var(--np-accent)); color: var(--np-btn-text, var(--np-btn, var(--fg))); }
+.np-pbtn.is-glass { background: color-mix(in srgb, var(--np-btn, #ffffff) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fg) 18%, transparent); backdrop-filter: blur(10px); color: var(--np-btn-text, var(--fg)); }
+.np-pbtn:hover { filter: brightness(1.08); }
+.is-logo-tile > img, img.is-logo-tile, .is-logo-circle > img, img.is-logo-circle, .is-logo-glass > img, img.is-logo-glass {
+  box-sizing: border-box; padding: calc(var(--np-size, 40px) * 0.14); background: var(--np-logo-bg, #ffffff); object-fit: contain;
+}
+.is-logo-tile > img, img.is-logo-tile, .is-logo-glass > img, img.is-logo-glass { border-radius: 26%; }
+.is-logo-circle > img, img.is-logo-circle { border-radius: 50%; }
+.is-logo-glass > img, img.is-logo-glass { background: color-mix(in srgb, var(--np-logo-bg, #ffffff) 14%, transparent); backdrop-filter: blur(8px); }

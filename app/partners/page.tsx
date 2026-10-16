@@ -32,7 +32,12 @@ export default async function PartnersPage() {
   }
 
   const story = storyFor(partner);
-  const style = { ["--np-accent" as string]: partner.accent, ["--np-accent-2" as string]: partner.accent2 };
+  const style = {
+    ["--np-accent" as string]: partner.accent,
+    ["--np-accent-2" as string]: partner.accent2,
+    ...(partner.buttonColor ? { ["--np-btn" as string]: partner.buttonColor } : {}),
+    ...(partner.buttonText ? { ["--np-btn-text" as string]: partner.buttonText } : {}),
+  };
 
   return (
     <div className="np-page" style={style}>
@@ -53,9 +58,14 @@ export default async function PartnersPage() {
           <Reveal blur={false} delay={0.15} className="np-hero-side">
             <p className="np-lead">{story.intro}</p>
             <div className="np-actions">
-              <a href={partner.website} target="_blank" rel="noopener sponsored" className="np-btn is-accent">
+              <a href={partner.website} target="_blank" rel="noopener sponsored" className={`np-btn np-pbtn is-${partner.buttonStyle ?? "gradient"}`}>
                 {story.cta} <ArrowUpRight className="h-4 w-4" />
               </a>
+              {partner.button2Label && partner.button2Url && (
+                <a href={partner.button2Url} target="_blank" rel="noopener sponsored" className="np-btn">
+                  {partner.button2Label} <ArrowUpRight className="h-4 w-4" />
+                </a>
+              )}
               <Link href="/download" className="np-btn">Download Native</Link>
             </div>
             {story.note && <p className="np-note">{story.note}</p>}
@@ -142,7 +152,7 @@ export default async function PartnersPage() {
           <div className="np-list">
             {others.map((p) => (
               <a key={p.id} href={p.website} target="_blank" rel="noopener sponsored" className="np-list-row">
-                <img src={p.logo} alt="" style={p.logoSize ? { width: Math.min(64, p.logoSize), height: Math.min(64, p.logoSize) } : undefined} />
+                <img src={p.logo} alt="" className={`is-logo-${p.logoStyle ?? "plain"}`} style={{ ...(p.logoSize ? { width: Math.min(64, p.logoSize), height: Math.min(64, p.logoSize) } : {}), ...(p.logoBg ? { ["--np-logo-bg" as string]: p.logoBg } : {}) }} />
                 <span><strong>{p.name}</strong><small>{p.tagline}</small></span>
                 <ArrowUpRight className="h-4 w-4" />
               </a>
