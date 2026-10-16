@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { STAT_FLOORS } from "@/lib/site";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Expand } from "lucide-react";
@@ -26,7 +27,7 @@ const SCREENS: (Shot & { id: string })[] = [
 /** In-game screens from the Native mod. */
 const INGAME: (Shot & { k: string; span: string; pos?: string })[] = [
   { k: "Multiplayer", t: "Everyone sees your look", d: "Capes and cosmetics show on every Native player, on any server.", src: "/ui/ingame-multiplayer-v5.webp", w: 1600, h: 900, span: "lg:col-span-2 lg:row-span-2" },
-  { k: "Mods menu", t: "20+ built-in modules", d: "FPS, CPS, keystrokes, coordinates and more. Switch each on in a click.", src: "/ui/ingame-mods-v5.webp", w: 1600, h: 900, span: "" },
+  { k: "Mods menu", t: `${STAT_FLOORS.modules}+ built-in modules`, d: "FPS, CPS, keystrokes, coordinates and more. Switch each on in a click.", src: "/ui/ingame-mods-v5.webp", w: 1600, h: 900, span: "" },
   { k: "Wardrobe", t: "Change your look in game", d: "Put on capes, hats and wings without leaving your world.", src: "/ui/ingame-cosmetics-v5.webp", w: 1600, h: 900, span: "" },
   { k: "HUD editor", t: "Place every module", d: "Drag your HUD where you want it, then get back to playing.", src: "/ui/ingame-hud-v5.webp", w: 1600, h: 900, span: "", pos: "object-[0%_45%]" },
   { k: "Native settings", t: "Everything one key away", d: "Mods, cosmetics, Relay chat and settings from a single menu.", src: "/ui/ingame-settings-v5.webp", w: 1600, h: 900, span: "" },
