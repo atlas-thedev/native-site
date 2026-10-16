@@ -1,0 +1,129 @@
+/* ==========================================================================
+   Navbar: one floating glass bar. Every control in it is 40px tall and round,
+   so nothing in the bar looks like it came from a different design.
+   ========================================================================== */
+.v-nav.nv,
+.v-nav.nv.is-scrolled,
+.v-nav.nv.is-open,
+body[data-halloween="on"] .v-nav.nv.is-scrolled {
+  background: transparent !important;
+  border-color: transparent !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.nv { padding: 12px var(--v-pad, 20px) 0; pointer-events: none; }
+.nv-bar, .nv-sheet { pointer-events: auto; }
+.nv-bar {
+  position: relative;
+  max-width: 1240px;
+  margin: 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  backdrop-filter: blur(18px) saturate(1.3);
+  transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s;
+}
+.nv.is-scrolled .nv-bar, .nv.is-open .nv-bar {
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  box-shadow: 0 18px 40px -22px rgba(0, 0, 0, 0.75);
+}
+.nv-inner { display: flex; align-items: center; gap: 12px; height: 62px; padding: 0 10px 0 18px; }
+
+.nv-brand { display: inline-flex; flex: none; align-items: center; gap: 10px; font-size: 15px; font-weight: 900; letter-spacing: 0.16em; color: var(--fg); }
+.nv-brand .logo-img { flex: none; }
+
+.nv-links { display: none; align-items: center; gap: 2px; margin: 0 auto; }
+@media (min-width: 1180px) { .nv-links { display: flex; } }
+.nv-link {
+  display: inline-flex; align-items: center; gap: 5px; height: 38px; padding: 0 13px;
+  border: 0; border-radius: 999px; background: transparent;
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--mute); white-space: nowrap; cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+.nv-link:hover, .nv-link.is-open { color: var(--fg); background: var(--surface); }
+.nv-link.is-on { color: var(--fg); background: var(--surface-2); }
+.nv-link:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.nv-chev { width: 14px; height: 14px; opacity: 0.55; transition: transform 0.2s, opacity 0.15s; }
+.nv-link.is-open .nv-chev { transform: rotate(180deg); opacity: 1; }
+.nv-plus { color: #f5c451; }
+.nv-plus:hover, .nv-plus.is-on { color: #ffd677; background: rgba(245, 196, 81, 0.1); }
+[data-theme="light"] .nv-plus { color: #a86f00; }
+[data-theme="light"] .nv-plus:hover, [data-theme="light"] .nv-plus.is-on { color: #8a5b00; background: rgba(168, 111, 0, 0.08); }
+
+.nv-right { display: flex; flex: none; align-items: center; gap: 8px; margin-left: auto; }
+@media (min-width: 1180px) { .nv-right { margin-left: 0; } }
+.nv-signin { display: inline-flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--mute); transition: color 0.15s, background-color 0.15s; }
+.nv-signin:hover { color: var(--fg); background: var(--surface); }
+.nv-acct { display: inline-flex; align-items: center; gap: 9px; height: 40px; padding: 0 14px 0 6px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; font-weight: 600; transition: background-color 0.15s; }
+.nv-acct:hover { background: var(--surface-2); }
+.nv-cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 18px;
+  border-radius: 999px; background: var(--inv); color: var(--inv-fg);
+  font-size: 14px; font-weight: 700; white-space: nowrap; transition: opacity 0.15s, transform 0.15s;
+}
+.nv-cta:hover { opacity: 0.88; }
+.nv-cta:active { transform: scale(0.98); }
+.nv-ghost { display: inline-flex; align-items: center; height: 40px; padding: 0 18px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; font-weight: 600; transition: background-color 0.15s; }
+.nv-ghost:hover { background: var(--surface-2); }
+.nv-round, .nv-theme button { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 999px; color: var(--mute); transition: color 0.15s, background-color 0.15s; }
+.nv-round:hover { color: var(--fg); background: var(--surface-2); }
+
+.nv-burger { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 999px; transition: background-color 0.15s; }
+.nv-burger:hover { background: var(--surface-2); }
+@media (min-width: 1180px) { .nv-burger { display: none; } }
+.nv-burger-lines { position: relative; display: block; width: 16px; height: 8px; }
+.nv-burger-lines i { position: absolute; left: 0; width: 100%; height: 2px; border-radius: 2px; background: currentColor; transition: transform 0.3s, top 0.3s; }
+.nv-burger-lines i:first-child { top: 0; }
+.nv-burger-lines i:last-child { top: 6px; }
+.nv.is-open .nv-burger-lines i:first-child { top: 3px; transform: rotate(45deg); }
+.nv.is-open .nv-burger-lines i:last-child { top: 3px; transform: rotate(-45deg); }
+
+/* ---------- popovers (Store, Community, Download) ---------- */
+.nv-pop {
+  position: absolute; top: calc(100% + 12px); z-index: 80; width: 320px; padding: 6px;
+  border: 1px solid var(--line); border-radius: 16px;
+  background: color-mix(in srgb, var(--bg) 96%, transparent);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.75);
+}
+.nv-pop::before { content: ""; position: absolute; left: 0; right: 0; top: -14px; height: 14px; } /* hover bridge */
+.nv-pop-center { left: 50%; margin-left: -160px; }
+.nv-pop-right { right: 0; width: 280px; }
+.nv-pop-item { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 11px; color: var(--fg); transition: background-color 0.12s; }
+.nv-pop-item:hover, .nv-pop-item:focus-visible { background: var(--surface-2); outline: none; }
+.nv-pop-icon { display: grid; flex: none; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--surface-2); color: var(--mute); transition: color 0.12s; }
+.nv-pop-item:hover .nv-pop-icon, .nv-pop-item.is-on .nv-pop-icon { color: var(--fg); }
+.nv-pop-title { display: block; font-size: 14px; font-weight: 600; line-height: 1.25; }
+.nv-pop-desc { display: block; margin-top: 1px; overflow: hidden; font-size: 12.5px; color: var(--dim); text-overflow: ellipsis; white-space: nowrap; }
+.nv-pop-foot { display: flex; align-items: center; gap: 6px; margin: 4px 2px 2px; padding: 10px 8px 6px; border-top: 1px solid var(--line); font-size: 13px; color: var(--mute); transition: color 0.12s; }
+.nv-pop-foot:hover { color: var(--fg); }
+
+/* ---------- phone / tablet menu: a sheet under the bar ---------- */
+.nv-sheet {
+  max-width: 1240px; max-height: calc(100dvh - 96px); margin: 8px auto 0; padding: 14px; overflow-y: auto;
+  border: 1px solid var(--line); border-radius: 20px;
+  background: color-mix(in srgb, var(--bg) 97%, transparent);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  box-shadow: 0 30px 60px -24px rgba(0, 0, 0, 0.8);
+}
+@media (min-width: 1180px) { .nv-sheet { display: none; } }
+.nv-sheet-groups { display: grid; gap: 14px; }
+@media (min-width: 640px) { .nv-sheet-groups { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.nv-sheet-label { padding: 4px 8px 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+.nv-sheet-link { display: flex; align-items: center; gap: 12px; padding: 6px 8px; border-radius: 12px; font-size: 15px; font-weight: 600; transition: background-color 0.12s; }
+.nv-sheet-link:hover { background: var(--surface-2); }
+.nv-sheet-link.is-on { background: var(--surface-2); }
+.nv-sheet-link.is-on .nv-pop-icon { background: var(--inv); color: var(--inv-fg); }
+.nv-sheet-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+
+body[data-halloween="on"] .nv-brand span { color: var(--hw-orange); }
+body[data-halloween="on"] .nv-link.is-on { color: var(--hw-amber); }
+
+@media (max-width: 520px) {
+  .nv { padding-inline: 10px; }
+  .nv-inner { height: 58px; padding-left: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nv-bar, .nv-link, .nv-chev, .nv-burger-lines i, .nv-cta { transition: none; }
+}

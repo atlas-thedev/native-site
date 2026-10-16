@@ -39,7 +39,7 @@ function Mark({ text, term }: { text: string; term: string }) {
 const pageIcon = (Icon: React.ComponentType<{ className?: string }>) => <Icon className="h-5 w-5" />;
 
 /** Ctrl+K / ⌘K / "/" search over pages, players (Native + Minecraft), skins and the store. */
-export default function CommandSearch({ className = "" }: { className?: string }) {
+export default function CommandSearch({ className = "", trigger = true }: { className?: string; trigger?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -141,11 +141,11 @@ export default function CommandSearch({ className = "" }: { className?: string }
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} aria-label="Search" className={`cs-trigger nx-box inline-flex h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-[10px] border border-line bg-surface px-3 text-[13px] font-bold text-dim transition hover:bg-surface-2 hover:text-fg ${className}`}>
+      {trigger && <button type="button" onClick={() => setOpen(true)} aria-label="Search" className={`cs-trigger nx-box inline-flex h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-[10px] border border-line bg-surface px-3 text-[13px] font-bold text-dim transition hover:bg-surface-2 hover:text-fg ${className}`}>
         <Search className="h-4 w-4" />
         <span className="hidden pr-6 xl:inline">Search</span>
         <kbd className="hidden whitespace-nowrap rounded-[6px] border border-line bg-bg px-1.5 py-0.5 font-mono text-[11px] leading-none lg:inline-flex">{mac ? "⌘" : "Ctrl"} K</kbd>
-      </button>
+      </button>}
       <AnimatePresence>
         {open && (
           <motion.div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/60 px-3 pt-[9vh] backdrop-blur-sm sm:px-4 sm:pt-[12vh]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }} onMouseDown={(e) => e.target === e.currentTarget && setOpen(false)}>
