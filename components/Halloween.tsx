@@ -92,36 +92,30 @@ function PixelSpider({ tint, size }: { tint: number; size: number }) {
   );
 }
 
-/** Random layout, made on the client so server HTML never mismatches. */
+/** Random looks, made on the client so server HTML never mismatches. Few spiders, parked at the ends of the
+ * navbar on short threads so they never hang over what people are reading. */
 function makeSpiders(): SpiderSpec[] {
   const narrow = window.innerWidth < 700;
-  const count = narrow ? 2 + Math.floor(Math.random() * 2) : 3 + Math.floor(Math.random() * 3);
-  const gap = narrow ? 22 : 11;
-  const xs: number[] = [];
-  for (let tries = 0; xs.length < count && tries < 200; tries++) {
-    const x = 3 + Math.random() * 92;
-    if (xs.every((o) => Math.abs(o - x) > gap)) xs.push(x);
-  }
+  const xs = narrow ? [94 - Math.random() * 3] : [3 + Math.random() * 4, 93 + Math.random() * 4];
   return xs.map((x, id) => {
     const kind: SpiderKind = Math.random() < 0.5 ? "cute" : "pixel";
-    const hang = Math.round((narrow ? 28 : 36) + Math.random() * (narrow ? 65 : 105));
+    const hang = Math.round(14 + Math.random() * 22);
     return {
       id, x, hang, kind,
-      drop: hang + Math.round(130 + Math.random() * (narrow ? 70 : 160)),
-      size: Math.round((kind === "cute" ? (narrow ? 44 : 50) : (narrow ? 40 : 46)) + Math.random() * 18),
+      drop: hang + Math.round(110 + Math.random() * 90),
+      size: Math.round((kind === "cute" ? 38 : 34) + Math.random() * 8),
       tint: Math.floor(Math.random() * TINTS.length),
       sway: 2 + Math.random() * 2.4,
       delay: -Math.random() * 3,
-      flip: Math.random() < 0.5,
+      flip: id === 1,
     };
   });
 }
 
 /* ── Living silk ──────────────────────────────────────────────────────
  * Every thread is a little rope (verlet points) hanging from the bottom of the navbar with the spider as its
- * heavy end. The cursor brushes threads aside, scrolling sets them swinging, and each spider has a mind of
- * its own: it bobs up and down, kicks, turns round and watches the cursor. A click drops it on a bungee
- * bounce; it climbs back up hand over hand a moment later.
+ * heavy end. The spiders stay put and just sway a little and watch the cursor; a click drops one on a bungee
+ * bounce and it climbs back up a moment later.
  */
 const SEG = 12;
 const GRAVITY = 1500; // px/s²
@@ -132,23 +126,23 @@ type Strand = {
   ax: number; // anchor x (px in the host)
   x: Float32Array; y: Float32Array; px: Float32Array; py: Float32Array;
   len: number; lenV: number; target: number;
-  down: boolean; upAt: number; bobUntil: number; nextIdle: number;
-  hover: boolean; moving: boolean; flip: boolean; dew: number[];
+  down: boolean; upAt: number; bobUntil: number;
+  hover: boolean; moving: boolean; flip: boolean;
 };
 
 function makeStrand(ax: number, len: number, flip: boolean): Strand {
   const n = SEG + 1;
   const s: Strand = {
     ax, x: new Float32Array(n), y: new Float32Array(n), px: new Float32Array(n), py: new Float32Array(n),
-    len, lenV: 0, target: len, down: false, upAt: 0, bobUntil: 0, nextIdle: performance.now() + 2500 + Math.random() * 6000,
-    hover: false, moving: false, flip, dew: [0.3 + Math.random() * 0.25, 0.62 + Math.random() * 0.2],
+    len, lenV: 0, target: len, down: false, upAt: 0, bobUntil: 0,
+    hover: false, moving: false, flip,
   };
   for (let i = 0; i < n; i++) {
     s.x[i] = s.px[i] = ax;
     s.y[i] = s.py[i] = (len * i) / SEG;
   }
   // start with a little swing so nothing looks frozen on load
-  const kick = (Math.random() - 0.5) * 6;
+  const kick = (Math.random() - 0.5) * 3;
   for (let i = 1; i < n; i++) s.px[i] = ax - kick * (i / SEG);
   return s;
 }
@@ -163,20 +157,9 @@ function silkPath(s: Strand) {
   return d + `L${s.x[SEG].toFixed(1)} ${s.y[SEG].toFixed(1)}`;
 }
 
-/** A tiny tuft of web where a thread is glued under the navbar. */
-function tuft(ax: number) {
-  const f = (n: number) => n.toFixed(1);
-  return `M${f(ax - 17)} 0L${f(ax)} 9M${f(ax - 6)} 0L${f(ax)} 9M${f(ax + 6)} 0L${f(ax)} 9M${f(ax + 17)} 0L${f(ax)} 9`
-    + `M${f(ax - 12)} 2.4Q${f(ax - 6)} 5 ${f(ax - 4)} 2.4Q${f(ax)} 4.6 ${f(ax + 4)} 2.4Q${f(ax + 6)} 5 ${f(ax + 12)} 2.4`
-    + `M${f(ax - 6.5)} 5.6Q${f(ax - 3)} 7.4 ${f(ax)} 6Q${f(ax + 3)} 7.4 ${f(ax + 6.5)} 5.6`;
-}
-
 function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boolean }) {
   const host = useRef<HTMLDivElement>(null);
   const silk = useRef<(SVGPathElement | null)[]>([]);
-  const glint = useRef<(SVGPathElement | null)[]>([]);
-  const dew = useRef<(SVGCircleElement | null)[]>([]);
-  const tufts = useRef<(SVGPathElement | null)[]>([]);
   const bodies = useRef<(HTMLDivElement | null)[]>([]);
   const strands = useRef<Strand[]>([]);
   const [down, setDown] = useState<boolean[]>([]);
@@ -206,25 +189,11 @@ function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boo
     strands.current = spiders.map((spec) => makeStrand((spec.x / 100) * width, spec.hang, spec.flip));
     setDown(spiders.map(() => false));
 
-    const pointer = { x: -1e4, y: -1e4, vx: 0, vy: 0, t: 0 };
+    // only the eyes follow the cursor
+    const pointer = { x: -1e4, y: -1e4, t: 0 };
     let rect = el.getBoundingClientRect();
     const onMove = (e: PointerEvent) => {
-      const now = performance.now();
-      const nx = e.clientX - rect.left, ny = e.clientY - rect.top;
-      const dt = Math.max(8, now - pointer.t) / 1000;
-      if (pointer.t) { pointer.vx = pointer.vx * 0.5 + ((nx - pointer.x) / dt) * 0.5; pointer.vy = pointer.vy * 0.5 + ((ny - pointer.y) / dt) * 0.5; }
-      pointer.x = nx; pointer.y = ny; pointer.t = now;
-    };
-    let lastScroll = window.scrollY;
-    const onScroll = () => {
-      const dy = window.scrollY - lastScroll;
-      lastScroll = window.scrollY;
-      const push = Math.max(-30, Math.min(30, dy)) * 0.09;
-      for (const s of strands.current) {
-        const dir = s.flip ? -1 : 1;
-        for (let i = 1; i <= SEG; i++) s.px[i] -= push * dir * (i / SEG);
-        s.lenV += Math.abs(push) * 9; // a little bounce on the line
-      }
+      pointer.x = e.clientX - rect.left; pointer.y = e.clientY - rect.top; pointer.t = performance.now();
     };
     const onResize = () => {
       const w = el.clientWidth;
@@ -233,7 +202,6 @@ function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boo
         const nx = (spiders[i].x / 100) * w, dx = nx - s.ax;
         s.ax = nx;
         for (let k = 0; k <= SEG; k++) { s.x[k] += dx; s.px[k] += dx; }
-        tufts.current[i]?.setAttribute("d", tuft(nx));
       });
       width = w;
     };
@@ -252,14 +220,6 @@ function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boo
     const draw = () => {
       strands.current.forEach((s, i) => {
         silk.current[i]?.setAttribute("d", silkPath(s));
-        glint.current[i]?.setAttribute("d", silkPath(s));
-        s.dew.forEach((f, k) => {
-          const c = dew.current[i * 2 + k];
-          if (!c) return;
-          const at = f * SEG, j = Math.floor(at), t = at - j;
-          c.setAttribute("cx", (s.x[j] + (s.x[j + 1] - s.x[j]) * t).toFixed(1));
-          c.setAttribute("cy", (s.y[j] + (s.y[j + 1] - s.y[j]) * t).toFixed(1));
-        });
         const b = bodies.current[i];
         if (b) {
           const dx = s.x[SEG] - s.x[SEG - 2], dy = s.y[SEG] - s.y[SEG - 2];
@@ -273,11 +233,9 @@ function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boo
     };
 
     const step = (now: number) => {
-      const pSpeed = Math.hypot(pointer.vx, pointer.vy);
-      pointer.vx *= 0.9; pointer.vy *= 0.9;
       strands.current.forEach((s, idx) => {
         const spec = spiders[idx];
-        // ── length: bungee when dropped, steady climb back, gentle idle bobbing
+        // ── length: bungee when dropped, then a steady climb back
         if (s.down && now >= s.upAt && !s.hover) { s.down = false; s.target = spec.hang; setDown((l) => { const c = l.slice(); c[idx] = false; return c; }); }
         if (!s.down && s.bobUntil && now >= s.bobUntil) { s.bobUntil = 0; s.target = spec.hang; }
         let climbing = false;
@@ -291,15 +249,6 @@ function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boo
           s.len += s.lenV * STEP;
         }
         s.moving = climbing || Math.abs(s.lenV) > 18;
-        // ── idle mind
-        if (!s.down && !s.hover && now >= s.nextIdle) {
-          s.nextIdle = now + 3500 + Math.random() * 7000;
-          const r = Math.random();
-          if (r < 0.42) { s.target = spec.hang + (Math.random() < 0.5 ? -1 : 1) * (10 + Math.random() * 26); s.bobUntil = now + 1600 + Math.random() * 2200; }
-          else if (r < 0.7) { const kick = (Math.random() - 0.5) * 14; s.px[SEG] -= kick; s.px[SEG - 1] -= kick * 0.6; }
-          else if (r < 0.85) s.flip = !s.flip;
-          else { s.lenV -= 70; } // a little hop
-        }
         // ── verlet
         const rest = Math.max(4, s.len) / SEG;
         for (let i = 1; i <= SEG; i++) {
@@ -307,15 +256,6 @@ function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boo
           s.px[i] = s.x[i]; s.py[i] = s.y[i];
           s.x[i] += vx;
           s.y[i] += vy + GRAVITY * STEP * STEP * (i === SEG ? 1 : 0.6);
-          // the cursor brushes past: push points it passes near
-          if (pSpeed > 40) {
-            const dx = s.x[i] - pointer.x, dy = s.y[i] - pointer.y, d2 = dx * dx + dy * dy;
-            if (d2 < 70 * 70) {
-              const fall = 1 - Math.sqrt(d2) / 70;
-              s.x[i] += Math.max(-9, Math.min(9, pointer.vx * 0.006)) * fall;
-              s.y[i] += Math.max(-4, Math.min(4, pointer.vy * 0.003)) * fall;
-            }
-          }
         }
         // a breath of air so a still thread is never perfectly still
         s.x[SEG] += Math.sin(now / 900 + idx * 1.7) * 0.012;
@@ -353,13 +293,11 @@ function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boo
       while (acc >= STEP) { step(now); acc -= STEP; }
       draw();
     };
-    tufts.current.forEach((t, i) => t?.setAttribute("d", tuft(strands.current[i].ax)));
     if (reduce) {
       draw();
     } else {
       raf = requestAnimationFrame(frame);
       window.addEventListener("pointermove", onMove, { passive: true });
-      window.addEventListener("scroll", onScroll, { passive: true });
     }
     window.addEventListener("resize", onResize);
     if (reduce) {
@@ -377,7 +315,6 @@ function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boo
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -387,7 +324,6 @@ function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boo
     const s = strands.current[i];
     if (!s) return;
     s.hover = on;
-    if (on && !s.down) { s.target = spiders[i].hang - 10; s.bobUntil = performance.now() + 900; } // shy: pulls up a touch
   };
 
   return (
@@ -401,12 +337,7 @@ function SpiderWeb({ spiders, inactive }: { spiders: SpiderSpec[]; inactive: boo
         </defs>
         {spiders.map((spec, i) => (
           <g key={spec.id} className={`hw-strand hw-strand-${spec.kind}`}>
-            <path ref={(n) => { tufts.current[i] = n; }} className="hw-tuft" />
             <path ref={(n) => { silk.current[i] = n; }} className="hw-line" />
-            <path ref={(n) => { glint.current[i] = n; }} className="hw-glint" pathLength={100}
-              style={{ animationDuration: `${3.4 + (spec.id % 3) * 1.3}s`, animationDelay: `${spec.delay}s` } as CSSProperties} />
-            <circle ref={(n) => { dew.current[i * 2] = n; }} className="hw-dew" r="1.5" />
-            <circle ref={(n) => { dew.current[i * 2 + 1] = n; }} className="hw-dew" r="1.1" />
           </g>
         ))}
       </svg>

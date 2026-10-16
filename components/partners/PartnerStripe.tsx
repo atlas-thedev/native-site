@@ -13,7 +13,7 @@ export default function PartnerStripe({ partner }: { partner: Partner | null }) 
         <div className="np-stripe-lockup">
           <span className="np-stripe-native">
             <img src="/brand/icon.png" alt="" width={40} height={40} />
-            <span>native</span>
+            <span>NATIVE</span>
           </span>
           <span className="np-stripe-x" aria-hidden>×</span>
           <span className="np-stripe-partner">

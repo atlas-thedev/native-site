@@ -10,7 +10,7 @@ export type NavEntry = NavPage | { label: string; items: NavPage[] };
 export const PAGES = {
   home: { href: "/", label: "Home", desc: "The Native launcher and client", Icon: House, keywords: "start landing" },
   store: { href: "/store", label: "Store", desc: "Every cloak, cosmetic and bundle", Icon: ShoppingBag, keywords: "shop buy" },
-  cloaks: { href: "/cloaks", label: "Cloaks", desc: "Animated capes for the launcher and the game", Icon: Flag, keywords: "capes cape" },
+  cloaks: { href: "/cloaks", label: "Cloaks", desc: "Animated capes, in launcher and game", Icon: Flag, keywords: "capes cape" },
   cosmetics: { href: "/cosmetics", label: "Cosmetics", desc: "Hats, wings and more for your skin", Icon: Gem, keywords: "hats wings" },
   plus: { href: "/plus", label: "Native+", desc: "Every paid cape, the gold N+ and more", Icon: Crown, keywords: "plus premium subscription" },
   players: { href: "/players", label: "Players", desc: "Find anyone and see what they wear", Icon: Users, keywords: "profiles friends" },

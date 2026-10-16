@@ -1,10 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, Crown, Gift, Search } from "lucide-react";
+import { ArrowRight, ChevronDown, Crown, Gift } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import "../app/redesign.css";
+import "../app/nav.css";
 import { usePathname } from "next/navigation";
 import { useAccount } from "./useAccount";
 import { useLaunch } from "./launch/LaunchContext";
@@ -13,7 +14,7 @@ import { Apple, Discord, Linux, Windows } from "./icons";
 import ThemeToggle from "./ThemeToggle";
 import { HalloweenSpiders } from "./Halloween";
 import SkinHead from "./SkinHead";
-import CommandSearch, { openSearch } from "./search/CommandSearch";
+import CommandSearch from "./search/CommandSearch";
 import { MENU_GROUPS, NAV, isGroup, onPage, type NavPage } from "@/lib/navLinks";
 
 const getLinks = [
@@ -23,73 +24,44 @@ const getLinks = [
   { label: "Linux", sub: "AppImage · .deb", href: "/api/download/linux", Icon: Linux },
 ];
 
-/** Square-ish bordered control, used for every boxed item in the bar. */
-const box =
-  "nx-box inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-line bg-surface text-[13px] font-extrabold uppercase tracking-[0.04em] transition hover:bg-surface-2";
-/** The one filled call to action in the bar (Download, or Claim free cape before launch). */
-const primary =
-  "nx-cta group inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-inv text-[13px] font-extrabold uppercase tracking-[0.04em] text-inv-fg transition hover:opacity-90 active:scale-[0.98]";
+/** Closes a popover on an outside click or Escape. */
+function useDismiss(open: boolean, close: () => void, ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) close(); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
+    document.addEventListener("mousedown", away);
+    document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("mousedown", away); document.removeEventListener("keydown", esc); };
+  }, [open, close, ref]);
+}
+
+const pop = { initial: { opacity: 0, y: -6 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -4 }, transition: { duration: 0.16, ease: [0.16, 1, 0.3, 1] as const } };
 
 function DownloadMenu() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const away = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    document.addEventListener("mousedown", away);
-    document.addEventListener("keydown", esc);
-    return () => {
-      document.removeEventListener("mousedown", away);
-      document.removeEventListener("keydown", esc);
-    };
-  }, [open]);
-
+  useDismiss(open, () => setOpen(false), ref);
   return (
     <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className={`${primary} px-5`}
-      >
+      <button onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open} className="nv-cta">
         Download
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div
-            role="menu"
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.15 }}
-            className="nx-menu absolute right-0 top-[calc(100%+10px)] w-[260px] !rounded-[12px] p-2"
-          >
+          <motion.div role="menu" className="nv-pop nv-pop-right" {...pop}>
             {getLinks.map(({ label, sub, href, Icon }) => (
-              <a
-                key={href}
-                role="menuitem"
-                href={href}
-                download=""
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition hover:bg-surface-2"
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                <span className="flex flex-col leading-tight">
-                  <span className="text-[14px] font-bold">{label}</span>
-                  <span className="text-[12.5px] text-dim">{sub}</span>
+              <a key={href} role="menuitem" href={href} download="" onClick={() => setOpen(false)} className="nv-pop-item">
+                <span className="nv-pop-icon"><Icon className="h-[18px] w-[18px]" /></span>
+                <span className="min-w-0">
+                  <span className="nv-pop-title">{label}</span>
+                  <span className="nv-pop-desc">{sub}</span>
                 </span>
               </a>
             ))}
-            <Link
-              href="/download"
-              onClick={() => setOpen(false)}
-              className="mt-1 block rounded-lg border-t border-line px-3 pb-2 pt-3 text-[13px] text-mute transition hover:text-fg"
-            >
-              All downloads and release notes →
+            <Link href="/download" onClick={() => setOpen(false)} className="nv-pop-foot">
+              All downloads and release notes <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </motion.div>
         )}
@@ -98,56 +70,44 @@ function DownloadMenu() {
   );
 }
 
-/** A navbar link that opens a small menu of pages: on hover, on click and from the keyboard. */
-function NavGroup({ label, items, active, hovered, onHover }: { label: string; items: NavPage[]; active: boolean; hovered: boolean; onHover: () => void }) {
+/** A nav link that opens a small menu of pages: on hover, on click and from the keyboard. */
+function NavGroup({ label, items, active }: { label: string; items: NavPage[]; active: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLLIElement>(null);
   const closeTimer = useRef(0);
   const path = usePathname();
   useEffect(() => setOpen(false), [path]);
-  useEffect(() => {
-    if (!open) return;
-    const away = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { setOpen(false); ref.current?.querySelector<HTMLButtonElement>("button")?.focus(); } };
-    document.addEventListener("mousedown", away);
-    document.addEventListener("keydown", esc);
-    return () => { document.removeEventListener("mousedown", away); document.removeEventListener("keydown", esc); };
-  }, [open]);
-  const enter = () => { window.clearTimeout(closeTimer.current); onHover(); setOpen(true); };
-  const leave = () => { closeTimer.current = window.setTimeout(() => setOpen(false), 160); };
+  useDismiss(open, () => setOpen(false), ref);
+  const enter = () => { window.clearTimeout(closeTimer.current); setOpen(true); };
+  const leave = () => { closeTimer.current = window.setTimeout(() => setOpen(false), 140); };
   return (
     <li ref={ref} className="relative" onPointerEnter={(e) => e.pointerType === "mouse" && enter()} onPointerLeave={(e) => e.pointerType === "mouse" && leave()}
       onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false); }}>
-      {hovered && <motion.span layoutId="nav-hover" className="v-nav-hover" transition={{ type: "spring", stiffness: 520, damping: 40 }} />}
-      <button type="button" className={`v-nav-link v-nav-group ${active ? "is-on" : ""} ${open ? "is-open" : ""}`} aria-expanded={open} aria-haspopup="true"
-        onClick={() => setOpen((v) => !v)} onKeyDown={(e) => { if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); window.setTimeout(() => ref.current?.querySelector<HTMLAnchorElement>("a")?.focus(), 30); } }}>
+      <button type="button" className={`nv-link ${active ? "is-on" : ""} ${open ? "is-open" : ""}`} aria-expanded={open} aria-haspopup="true"
+        onClick={() => setOpen((v) => !v)}
+        onKeyDown={(e) => { if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); window.setTimeout(() => ref.current?.querySelector<HTMLAnchorElement>("a")?.focus(), 30); } }}>
         {label}
-        <ChevronDown className="v-nav-chev h-3.5 w-3.5" aria-hidden />
+        <ChevronDown className="nv-chev" aria-hidden />
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div className="v-nav-drop" initial={{ opacity: 0, y: -6, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.98 }} transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            onPointerEnter={() => window.clearTimeout(closeTimer.current)}>
-            <ul>
-              {items.map(({ href, label: name, desc, Icon }) => (
-                <li key={href}>
-                  <Link href={href} className={`v-nav-drop-item ${onPage(path, href) ? "is-on" : ""}`} onClick={() => setOpen(false)}
-                    onKeyDown={(e) => {
-                      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-                      e.preventDefault();
-                      const links = [...(ref.current?.querySelectorAll<HTMLAnchorElement>(".v-nav-drop-item") ?? [])];
-                      const i = links.indexOf(e.currentTarget);
-                      links[(i + (e.key === "ArrowDown" ? 1 : links.length - 1)) % links.length]?.focus();
-                    }}>
-                    <span className="v-nav-drop-icon"><Icon className="h-[18px] w-[18px]" /></span>
-                    <span className="min-w-0">
-                      <span className="block text-[14px] font-bold leading-tight">{name}</span>
-                      <span className="mt-0.5 block truncate text-[12.5px] text-dim">{desc}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          <motion.div className="nv-pop nv-pop-center" {...pop} onPointerEnter={() => window.clearTimeout(closeTimer.current)}>
+            {items.map(({ href, label: name, desc, Icon }) => (
+              <Link key={href} href={href} className={`nv-pop-item ${onPage(path, href) ? "is-on" : ""}`} onClick={() => setOpen(false)}
+                onKeyDown={(e) => {
+                  if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+                  e.preventDefault();
+                  const links = [...(ref.current?.querySelectorAll<HTMLAnchorElement>(".nv-pop-item") ?? [])];
+                  const i = links.indexOf(e.currentTarget);
+                  links[(i + (e.key === "ArrowDown" ? 1 : links.length - 1)) % links.length]?.focus();
+                }}>
+                <span className="nv-pop-icon"><Icon className="h-[18px] w-[18px]" /></span>
+                <span className="min-w-0">
+                  <span className="nv-pop-title">{name}</span>
+                  <span className="nv-pop-desc">{desc}</span>
+                </span>
+              </Link>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
@@ -194,136 +154,104 @@ export default function Navbar() {
     label: name ? "Claim free cape" : "Join early",
   };
   const isOn = (href: string) => onPage(path, href);
-  const [hover, setHover] = useState<string | null>(null);
 
   const account = name ? (
-    <Link href="/account" data-claim-target title="Your account" className="v-nav-acct hidden sm:inline-flex">
-      <SkinHead skin={me?.skin ?? null} name={name} size={30} className="!rounded-[8px]" />
+    <Link href="/account" data-claim-target title="Your account" className="nv-acct">
+      <SkinHead skin={me?.skin ?? null} name={name} size={28} className="!rounded-full" />
       <span className="max-w-[8rem] truncate">{name}</span>
     </Link>
   ) : (
-    <Link href="/login" className={`v-nav-link hidden sm:inline-flex ${name === undefined ? "opacity-0" : ""}`}>
-      Sign in
-    </Link>
+    <Link href="/login" className={`nv-signin ${name === undefined ? "opacity-0" : ""}`}>Sign in</Link>
   );
-
-  let menuIndex = 0;
 
   return (
     <>
-      <header className={`v-nav ${scrolled ? "is-scrolled" : ""} ${hidden && !open ? "is-hidden" : ""} ${open ? "is-open" : ""}`}>
-        <nav aria-label="Main" className="v-nav-inner">
-          <Link href="/" className="v-nav-brand" aria-label={`${site.name} home`}>
-            <img src="/brand/icon.png" alt="" width={30} height={30} className="logo-img h-[30px] w-[30px]" aria-hidden />
-            <span>native</span>
-          </Link>
+      <header className={`v-nav nv ${scrolled ? "is-scrolled" : ""} ${hidden && !open ? "is-hidden" : ""} ${open ? "is-open" : ""}`}>
+        <div className="nv-bar">
+          <nav aria-label="Main" className="nv-inner">
+            <Link href="/" className="nv-brand" aria-label={`${site.name} home`}>
+              <img src="/brand/icon.png" alt="" width={28} height={28} className="logo-img h-7 w-7" aria-hidden />
+              <span>NATIVE</span>
+            </Link>
 
-          <ul className="v-nav-links" onPointerLeave={() => setHover(null)}>
-            {NAV.map((entry) => isGroup(entry) ? (
-              <NavGroup key={entry.label} label={entry.label} items={entry.items} active={entry.items.some((i) => isOn(i.href))}
-                hovered={hover === entry.label} onHover={() => setHover(entry.label)} />
-            ) : (
-              <li key={entry.href} className="relative" onPointerEnter={() => setHover(entry.href)}>
-                {hover === entry.href && <motion.span layoutId="nav-hover" className="v-nav-hover" transition={{ type: "spring", stiffness: 520, damping: 40 }} />}
-                <Link href={entry.href} className={`v-nav-link ${isOn(entry.href) ? "is-on" : ""}`} aria-current={isOn(entry.href) ? "page" : undefined}>
-                  {entry.label}
+            <ul className="nv-links">
+              {NAV.map((entry) => isGroup(entry) ? (
+                <NavGroup key={entry.label} label={entry.label} items={entry.items} active={entry.items.some((i) => isOn(i.href))} />
+              ) : (
+                <li key={entry.href}>
+                  <Link href={entry.href} className={`nv-link ${isOn(entry.href) ? "is-on" : ""}`} aria-current={isOn(entry.href) ? "page" : undefined}>
+                    {entry.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link href="/plus" className={`nv-link nv-plus ${isOn("/plus") ? "is-on" : ""}`}>
+                  <Crown className="h-[15px] w-[15px]" aria-hidden />
+                  Native+
                 </Link>
               </li>
-            ))}
-            <li>
-              <Link href="/plus" className="nx-plus v-nav-plus">
-                <Crown className="nx-plus-icon h-3.5 w-3.5" />
-                Native+
-              </Link>
-            </li>
-          </ul>
+            </ul>
 
-          <div className="v-nav-right">
-            <CommandSearch className="w-11 justify-center lg:w-auto" />
-            <div className="hidden xl:block">
-              {gift ? (
-                <Link href={giftCta.href} className={`${primary} btn-shine gap-2.5 pl-1.5 pr-4`}>
-                  <span className="grid h-8 w-8 place-items-center rounded-[7px] bg-inv-fg/10">
-                    <Gift className="h-4 w-4" />
-                  </span>
-                  <span className="whitespace-nowrap">{giftCta.label}</span>
-                </Link>
-              ) : (
-                <DownloadMenu />
-              )}
+            <div className="nv-right">
+              {!theme?.halloween && <span className="nv-theme hidden xl:inline-flex" data-theme-control><ThemeToggle /></span>}
+              <span className="hidden sm:inline-flex">{account}</span>
+              <span className="hidden md:inline-flex">
+                {gift ? (
+                  <Link href={giftCta.href} className="nv-cta">
+                    <Gift className="h-4 w-4" aria-hidden />
+                    <span className="whitespace-nowrap">{giftCta.label}</span>
+                  </Link>
+                ) : (
+                  <DownloadMenu />
+                )}
+              </span>
+              <button data-claim-target onClick={() => setOpen((v) => !v)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="nv-burger">
+                <span className="nv-burger-lines" aria-hidden><i /><i /></span>
+              </button>
             </div>
-            {!theme?.halloween && (
-              <div className="hidden xl:block" data-theme-control>
-                <div className={`${box} w-11`}><ThemeToggle /></div>
-              </div>
-            )}
-            {account}
-            <button
-              data-claim-target
-              onClick={() => setOpen((v) => !v)}
-              aria-label={open ? "Close menu" : "Open menu"}
-              aria-expanded={open}
-              className="v-burger xl:hidden"
-            >
-              <span className="v-burger-txt">{open ? "Close" : "Menu"}</span>
-              <span className="v-burger-lines" aria-hidden><i /><i /></span>
-            </button>
-          </div>
-        </nav>
-        <HalloweenSpiders hidden={hidden && !open} menuOpen={open} />
-      </header>
-      <div className="v-nav-spacer" aria-hidden />
+          </nav>
+          <HalloweenSpiders hidden={hidden && !open} menuOpen={open} />
+        </div>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="v-menu xl:hidden"
-            initial={{ clipPath: "inset(0% 0% 100% 0%)" }}
-            animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
-            exit={{ clipPath: "inset(0% 0% 100% 0%)" }}
-            transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
-          >
-            <motion.button type="button" className="v-menu-search" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.5, delay: 0.12 }}
-              onClick={() => { setOpen(false); window.setTimeout(openSearch, 80); }}>
-              <Search className="h-5 w-5 shrink-0" /> <span className="truncate">Search players, cloaks, pages…</span>
-            </motion.button>
-            <div className="v-menu-groups">
-              {MENU_GROUPS.map((group) => (
-                <div key={group.label}>
-                  <p className="v-menu-i v-menu-group">{group.label}</p>
-                  <ul className="v-menu-list">
-                    {group.items.map((l) => {
-                      const i = menuIndex++;
-                      return (
-                        <li key={l.href} className="overflow-hidden">
-                          <motion.div initial={{ y: "110%" }} animate={{ y: "0%" }} exit={{ y: "110%" }} transition={{ duration: 0.7, delay: 0.15 + i * 0.03, ease: [0.16, 1, 0.3, 1] }}>
-                            <Link href={l.href} onClick={() => setOpen(false)} className={`v-menu-link ${isOn(l.href) ? "is-on" : ""}`}>
-                              <l.Icon className="v-menu-icon" aria-hidden />
-                              {l.label}
-                            </Link>
-                          </motion.div>
+        <AnimatePresence>
+          {open && (
+            <motion.div className="nv-sheet" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}>
+              <div className="nv-sheet-groups">
+                {MENU_GROUPS.map((group) => (
+                  <div key={group.label}>
+                    <p className="nv-sheet-label">{group.label}</p>
+                    <ul>
+                      {group.items.map((l) => (
+                        <li key={l.href}>
+                          <Link href={l.href} onClick={() => setOpen(false)} className={`nv-sheet-link ${isOn(l.href) ? "is-on" : ""}`}>
+                            <span className="nv-pop-icon"><l.Icon className="h-[17px] w-[17px]" aria-hidden /></span>
+                            {l.label}
+                          </Link>
                         </li>
-                      );
-                    })}
-                  </ul>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              <div className="nv-sheet-foot">
+                <Link href={gift ? giftCta.href : "/download"} onClick={() => setOpen(false)} className="nv-cta">
+                  {gift ? giftCta.label : "Download"}
+                </Link>
+                <Link href={name ? "/account" : "/login"} onClick={() => setOpen(false)} className="nv-ghost">
+                  {name ? "Your account" : "Sign in"}
+                </Link>
+                <div className="ml-auto flex items-center gap-2">
+                  <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className="nv-round"><Discord className="h-[17px] w-[17px]" /></a>
+                  {!theme?.halloween && <span data-theme-control><ThemeToggle /></span>}
                 </div>
-              ))}
-            </div>
-            <motion.div className="v-menu-foot" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.6, delay: 0.5 }}>
-              <Link href={gift ? giftCta.href : "/download"} onClick={() => setOpen(false)} className="v-btn is-solid">
-                {gift ? giftCta.label : "Download"}
-              </Link>
-              <Link href={name ? "/account" : "/login"} onClick={() => setOpen(false)} className="v-btn">
-                {name ? "Your account" : "Sign in"}
-              </Link>
-              <div className="ml-auto flex items-center gap-2">
-                <a href={site.discord} target="_blank" rel="noreferrer" aria-label="Discord" className={`${box} w-11`}><Discord className="h-[17px] w-[17px]" /></a>
-                {!theme?.halloween && <div className={`${box} w-11`} data-theme-control><ThemeToggle /></div>}
               </div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </header>
+      <div className="v-nav-spacer" aria-hidden />
+      {/* Ctrl+K / "/" still open search; it just has no button in the bar. */}
+      <CommandSearch trigger={false} />
     </>
   );
 }
