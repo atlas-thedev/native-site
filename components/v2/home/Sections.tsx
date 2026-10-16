@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
+import { STAT_FLOORS } from "@/lib/site";
 import { ArrowUpRight, Crown, FlaskConical, Vote } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -31,7 +32,7 @@ export function Statement({ items }: { items: number }) {
         {[
           { n: 3, s: "", l: "Platforms. Windows, macOS and Linux, one account." },
           { n: 0, s: "$", l: "To download and play. Free, forever, for everyone." },
-          { n: items, s: "+", l: "Capes, cloaks and cosmetics in the Native locker." },
+          { n: Math.max(items, STAT_FLOORS.cosmetics), s: "+", l: "Capes, cloaks and cosmetics in the Native locker." },
           { n: 1, s: "", l: "Click to install a modpack, fix a crash or switch your look." },
         ].map((x, i) => (
           <div key={i} className="v-stat">

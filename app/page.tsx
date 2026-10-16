@@ -11,7 +11,7 @@ import { Explainer, Highlights, Included, LauncherGrid } from "@/components/v2/h
 import { InGame, ScreenTour } from "@/components/v2/home/Showcase";
 import { getAvailability } from "@/lib/server/releases";
 import { getLatestMinecraft } from "@/lib/server/mojang";
-import { faqs } from "@/lib/site";
+import { STAT_FLOORS, faqs, statCount } from "@/lib/site";
 import { getCatalog } from "@/lib/server/store";
 import { outfitOf } from "@/lib/outfit";
 import type { Wearing } from "@/lib/store";
@@ -19,16 +19,15 @@ import { getSiteConfig } from "@/lib/server/siteConfig";
 
 export const dynamic = "force-dynamic";
 
-/** How many Minecraft releases exist (for the stats row). */
+/** How many Minecraft releases exist (for the stats row); 0 when Mojang can't be reached. */
 async function releaseCount(): Promise<number> {
   try {
     const r = await fetch("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json", { next: { revalidate: 86400 } });
-    if (!r.ok) return 100;
+    if (!r.ok) return 0;
     const m = (await r.json()) as { versions: { type: string }[] };
-    const n = m.versions.filter((v) => v.type === "release").length;
-    return n > 0 ? Math.floor(n / 10) * 10 : 100;
+    return m.versions.filter((v) => v.type === "release").length;
   } catch {
-    return 100;
+    return 0;
   }
 }
 
@@ -46,6 +45,11 @@ export default async function Home() {
   const capes = (catalog?.items ?? []).filter((i) => !i.hidden);
   const showcase = [...capes.filter((i) => i.featured), ...capes.filter((i) => !i.featured)];
   const pre = cfg.launch.prelaunch;
+  const stats = {
+    versions: statCount(versions, STAT_FLOORS.versions),
+    cosmetics: statCount(all.length, STAT_FLOORS.cosmetics),
+    platforms: STAT_FLOORS.platforms,
+  };
   return (
     <>
       <JsonLd
@@ -56,14 +60,14 @@ export default async function Home() {
         }}
       />
       <HomeHero mascot={mascot} />
-      <Included items={all.length} versions={versions} />
+      <Included stats={stats} />
       <ScreenTour />
       <Highlights />
       <InGame />
       <LauncherGrid />
       <Locker items={showcase} />
       <VersionsRail latest={mc} />
-      <Explainer versions={versions} />
+      <Explainer stats={stats} />
       <GoFurther />
       <section id="download" className="v-wrap pb-[clamp(80px,10vw,150px)]">
         <SectionHead index="(06)" label="Download" title="Get Native" />

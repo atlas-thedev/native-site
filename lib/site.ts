@@ -116,3 +116,10 @@ export const faqs = [
     a: "English, Español, Deutsch, Français, Português (Brasil) and Türkçe, with more on the way.",
   },
 ];
+
+/**
+ * Landing-page numbers. Each one is a floor: the page shows the real count when it is higher
+ * (rounded down to tens), so it never shows a stale or smaller number.
+ */
+export const STAT_FLOORS = { versions: 100, cosmetics: 90, platforms: 3, modules: 40 } as const;
+export const statCount = (real: number, floor: number) => Math.max(floor, Math.floor((Number(real) || 0) / 10) * 10);

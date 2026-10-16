@@ -34,7 +34,9 @@ const rise = (i = 0) => ({
 });
 
 /** "One launcher. Everything included." Stats + every feature grouped by what it is for. */
-export function Included({ items, versions }: { items: number; versions: number }) {
+type Stats = { versions: number; cosmetics: number; platforms: number };
+
+export function Included({ stats: n }: { stats: Stats }) {
   const groups: { k: string; icon: ReactNode; list: string[] }[] = [
     { k: "Launcher", icon: <Zap />, list: ["Instances", "Every version", "Fast start", "Auto updates"] },
     { k: "Mods & packs", icon: <Package />, list: ["Modrinth", "CurseForge", "One-click modpacks", "Dependency check"] },
@@ -43,11 +45,10 @@ export function Included({ items, versions }: { items: number; versions: number 
     { k: "Fixes", icon: <Bug />, list: ["Crash analyzer", "Java fixer", "Clean reports", "Logs"] },
     { k: "Discover", icon: <Compass />, list: ["Servers", "Modpacks", "Worlds", "Skins"] },
   ];
-  const safeVersions = Math.max(Number(versions) || 0, 100);
   const stats = [
-    { n: safeVersions, s: "+", l: "Minecraft versions" },
-    { n: items, s: "+", l: "Capes & cosmetics" },
-    { n: 3, s: "", l: "Platforms" },
+    { n: n.versions, s: "+", l: "Minecraft versions" },
+    { n: n.cosmetics, s: "+", l: "Capes & cosmetics" },
+    { n: n.platforms, s: "", l: "Platforms" },
   ];
   return (
     <section id="features" className="v-section v-wrap">
@@ -166,12 +167,11 @@ export function LauncherGrid() {
 }
 
 /** Plain-language explainer, like an encyclopedia entry, before the FAQ. */
-export function Explainer({ versions }: { versions: number }) {
-  const safeVersions = Math.max(Number(versions) || 0, 100);
+export function Explainer({ stats }: { stats: Stats }) {
   const facts = [
     { t: "Free forever", d: "The launcher costs nothing." },
-    { t: `${safeVersions}+ versions`, d: "Snapshots to the classics." },
-    { t: "3 platforms", d: "Windows, macOS and Linux." },
+    { t: `${stats.versions}+ versions`, d: "Snapshots to the classics." },
+    { t: `${stats.platforms} platforms`, d: "Windows, macOS and Linux." },
   ];
   return (
     <section className="v-section v-wrap">
