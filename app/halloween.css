@@ -79,43 +79,40 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 
 .hw-ghost { position: absolute; left: 0; top: 0; margin: -32px 0 0 -27px; opacity: 0.85; will-change: transform; filter: drop-shadow(0 0 14px rgba(200, 190, 255, 0.55)); }
 
-/* Randomly scattered spiders (cute cartoon + pixel art) hanging from the navbar. */
-.hw-spider { position: absolute; top: 100%; z-index: 41; display: flex; flex-direction: column; align-items: center; width: 72px; margin-left: -36px; pointer-events: none; transition: transform 0.6s var(--v-ease), opacity 0.6s var(--v-ease); }
-.v-nav.is-hidden .hw-spider, .v-nav.is-open .hw-spider { transform: translateY(-100%); opacity: 0; }
-.hw-thread {
-  width: 2px;
-  height: var(--hw-hang, 38px);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(235, 225, 255, 0.95) 100%);
-  box-shadow: 0 0 4px rgba(180, 160, 255, 0.55), 0 0 1px rgba(0, 0, 0, 0.7);
-  transition: height 0.8s cubic-bezier(0.34, 1.25, 0.64, 1);
-}
-.hw-spider-cute .hw-thread {
-  width: 2px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(235, 225, 255, 0.95) 100%);
-  box-shadow: 0 0 4px rgba(180, 160, 255, 0.55), 0 0 1px rgba(0, 0, 0, 0.7);
-}
-.hw-spider-pixel .hw-thread {
-  width: 2px;
-  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0 4px, transparent 4px 6px);
-  box-shadow: 0 0 3px rgba(180, 160, 255, 0.45);
-}
-.hw-spider.is-down .hw-thread { height: min(var(--hw-drop, 280px), 48vh); }
-.hw-spider-body { display: grid; place-items: center; min-width: 44px; min-height: 44px; margin-top: -4px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; pointer-events: auto; transform: translateX(var(--peek, 0px)); transition: transform 0.12s ease, background 0.2s ease; }
-.hw-spider-body svg { display: block; overflow: visible; animation: hw-sway var(--hw-sway, 2.6s) ease-in-out var(--hw-delay, 0s) infinite; transform-origin: 50% -6px; filter: drop-shadow(0 0 7px color-mix(in srgb, var(--glow, #8b5cf6) 70%, transparent)); }
-.hw-spider-pixel .hw-spider-body svg { image-rendering: pixelated; animation-timing-function: steps(6, jump-none); }
-.hw-spider.is-flip .hw-spider-body svg { animation-direction: alternate-reverse; }
+/* Spiders on living silk, hanging from the navbar (positions come from the physics in Halloween.tsx). */
+.hw-spiders { position: absolute; left: 0; right: 0; top: 100%; height: 0; z-index: 41; pointer-events: none; transition: transform 0.6s var(--v-ease), opacity 0.6s var(--v-ease); }
+.v-nav.is-hidden .hw-spiders, .v-nav.is-open .hw-spiders { transform: translateY(-40px); opacity: 0; }
+.hw-silk { position: absolute; left: 0; top: 0; width: 100%; height: 1px; overflow: visible; pointer-events: none; }
+.hw-line { fill: none; stroke: url(#hw-silk-fade); stroke-width: 1.3; stroke-linecap: round; filter: drop-shadow(0 0 2px rgba(190, 170, 255, 0.75)); }
+.hw-strand-pixel .hw-line { stroke-width: 1.6; stroke-dasharray: 4 2; }
+.hw-glint { fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 7 93; stroke-dashoffset: 100; opacity: 0; filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 8px rgba(255, 179, 71, 0.8)); animation: hw-glint 4s ease-in infinite; }
+@keyframes hw-glint { 0% { stroke-dashoffset: 100; opacity: 0; } 8% { opacity: 1; } 45% { stroke-dashoffset: 4; opacity: 0.9; } 52%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+.hw-dew { fill: #fff; opacity: 0.85; filter: drop-shadow(0 0 3px rgba(200, 230, 255, 0.95)); animation: hw-dew 2.6s ease-in-out infinite alternate; }
+.hw-dew:nth-of-type(2) { animation-delay: -1.3s; }
+@keyframes hw-dew { from { opacity: 0.35; } to { opacity: 1; } }
+.hw-tuft { fill: none; stroke: rgba(235, 228, 255, 0.5); stroke-width: 0.8; }
+
+.hw-spider { position: absolute; left: 0; top: 0; width: 0; height: 0; display: flex; justify-content: center; will-change: transform; }
+.hw-spider-body { display: grid; place-items: center; flex: none; min-width: 44px; min-height: 44px; margin-top: -2px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; pointer-events: auto; transition: background 0.2s ease; }
+.hw-spider-body svg { display: block; overflow: visible; transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); filter: drop-shadow(0 0 7px color-mix(in srgb, var(--glow, #8b5cf6) 70%, transparent)); }
+.hw-spider.is-flip .hw-spider-body svg { transform: scaleX(-1); }
+.hw-spider.is-down .hw-spider-body svg { filter: drop-shadow(0 0 12px var(--glow, #8b5cf6)); }
+.hw-spider-pixel .hw-spider-body svg { image-rendering: pixelated; }
 .hw-spider-body:hover, .hw-spider-body:focus-visible { background: rgba(139, 92, 246, 0.14); }
 .hw-spider-body:focus-visible { outline: 2px solid var(--hw-orange, #ff7a18); outline-offset: 2px; }
-.hw-spider-body:hover svg { animation-duration: 0.5s; }
-@keyframes hw-sway { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
 .hw-eyes { transform-box: fill-box; transform-origin: center; animation: hw-blink 4.2s infinite var(--hw-delay, 0s); }
 @keyframes hw-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
-.hw-spider-body:hover .hw-pupil { transform: translateY(1.4px); }
-.hw-pupil { transition: transform 0.2s ease; }
+/* the eyes follow the cursor (--lx/--ly come from the physics loop) */
+.hw-pupil { transform: translate(var(--lx, 0px), var(--ly, 0px)); transition: transform 0.18s ease-out; }
+.hw-px-eye { transform: translate(calc(var(--lx, 0px) * 0.18), calc(var(--ly, 0px) * 0.18)); }
 .hw-legs { animation: hw-wiggle 0.9s ease-in-out infinite alternate; transform-origin: 32px 32px; }
 .hw-spider-body:hover .hw-legs { animation-duration: 0.18s; }
+/* scuttling legs while it climbs or bounces */
+.hw-spider.is-moving .hw-legs { animation: hw-scuttle 0.14s linear infinite alternate; }
 @keyframes hw-wiggle { from { transform: scaleX(1); } to { transform: scaleX(0.94) translateY(1px); } }
+@keyframes hw-scuttle { from { transform: scaleX(1.04) rotate(-3deg); } to { transform: scaleX(0.9) rotate(3deg) translateY(1px); } }
 .hw-px-leg { animation: hw-px-blink 0.8s steps(1) infinite; }
+.hw-spider.is-moving .hw-px-leg { animation-duration: 0.16s; }
 @keyframes hw-px-blink { 50% { transform: translateY(0.3px); } }
 
 /* pumpkins: click for candy */
@@ -146,11 +143,11 @@ body[data-halloween="on"] .v-cursor::before { background: var(--hw-orange) !impo
 @media (max-width: 700px) {
   .hw-web { width: 110px; }
   .hw-ghost { display: none; }
-  .hw-spider.is-down .hw-thread { height: min(var(--hw-drop, 180px), 35vh); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hw-fog i, .hw-light, .hw-spider-body svg, .hw-eyes, .hw-legs, .hw-px-leg, .hw-face, .hw-bat svg { animation: none; }
-  .hw-spider, .hw-thread, .hw-spider-body, .hw-pumpkin { transition: none; }
+  .hw-fog i, .hw-light, .hw-eyes, .hw-legs, .hw-px-leg, .hw-face, .hw-bat svg, .hw-glint, .hw-dew, .hw-spider.is-moving .hw-legs { animation: none; }
+  .hw-glint { display: none; }
+  .hw-spiders, .hw-spider-body, .hw-spider-body svg, .hw-pupil, .hw-pumpkin { transition: none; }
   .hw-burst i { animation: none; opacity: 0; }
 }
 

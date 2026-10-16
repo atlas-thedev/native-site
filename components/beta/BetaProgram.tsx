@@ -322,19 +322,19 @@ export default function BetaProgram({
     { icon: Bug, title: "A real say", body: "Your reports decide what we fix next, and your ideas end up in what we build after." },
     { icon: Shirt, title: "The Super Beta cape", body: "Animated, never sold, and only handed to accepted testers. Wear it in the launcher and in game." },
     { icon: BadgeIcon, title: "The badge", body: "It sits next to your name in Relay, on your profile and in your friends’ lists." },
-    { icon: Crown, title: "Native+ for life", body: "Every paid cape and every Native+ perk, with no bill and no end date." },
+    { icon: Crown, title: "A month of Native+", body: "Every paid cape and every Native+ perk for 30 days, on us. No card needed." },
   ];
   const steps: [string, string][] = [
     ["Apply", "Three short steps. Most people finish in about three minutes."],
     ["We read it", "A real person reviews every application, usually within a week."],
-    ["You’re in", "The cape, badge and Native+ land on your account and we message you on Discord."],
+    ["You’re in", "The cape, badge and your month of Native+ land on your account and we message you on Discord."],
   ];
   const faq: [string, string][] = [
     ["Who gets picked?", "People who play a lot, on different hardware and versions, and who will actually tell us when something breaks. A good bug report beats a big follower count."],
     ["How long until I hear back?", "Usually within a week. Your status updates on this page, and if you’re accepted the team sends you a Discord message."],
-    ["Is Native+ really forever?", "Yes. Accepted testers get Native+ with no end date, including every paid cape it covers now and later."],
+    ["How long does the Native+ last?", "One month from the day you’re accepted. After that you can keep it with a Native+ plan, and the Super Beta cape and badge stay yours either way."],
     ["What if I’m not picked?", "You can apply again a week after your review. Hanging out in the Discord and reporting bugs helps a lot."],
-    ["Can I lose the perks?", "Only if you leak private builds or break the rules. Otherwise they stay yours."],
+    ["Can I lose the perks?", "Only if you leak private builds or break the rules. Otherwise the cape and badge stay yours for good."],
   ];
   const cta = signedIn ? (
     app && !editing ? (
@@ -368,7 +368,7 @@ export default function BetaProgram({
               Super Beta<span className="text-beta">.</span>
             </h1>
             <p className="mt-6 max-w-[470px] text-[19px] leading-relaxed text-mute">
-              Play new Native builds before anyone else, talk straight to the team, and keep the cape, badge and Native+ for life.
+              Play new Native builds before anyone else, talk straight to the team, keep the cape and badge for good, and get a month of Native+ on us.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
               {cta}
@@ -446,9 +446,9 @@ export default function BetaProgram({
               </span>
               <div>
                 <p className="text-[19px] font-extrabold tracking-tight">
-                  Native<span className="text-gold">+</span> for life
+                  A month of Native<span className="text-gold">+</span>
                 </p>
-                <p className="mt-1.5 text-[14.5px] leading-relaxed text-mute">Every paid cape, the gold N+ and the crown in Relay. No subscription and no end date.</p>
+                <p className="mt-1.5 text-[14.5px] leading-relaxed text-mute">Every paid cape, the gold N+ and the crown in Relay for 30 days. No card, no subscription.</p>
               </div>
             </div>
           </div>
@@ -501,7 +501,7 @@ export default function BetaProgram({
                 Sign in to apply.
               </h2>
               <p className="mx-auto mt-3 max-w-[460px] text-mute">
-                If you’re accepted, the cape, badge and Native+ go straight to
+                If you’re accepted, the cape, badge and a month of Native+ go straight to
                 your Native account. Making one takes a minute.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
@@ -927,8 +927,9 @@ function Status({
               <PartyPopper className="h-8 w-8" /> You’re in.
             </h2>
             <p className="mt-3 max-w-[560px] text-mute">
-              Welcome to the Super Beta Testers. Your badge, cape and lifetime
+              Welcome to the Super Beta Testers. Your badge, cape and month of
               Native+ are already on your account.
+              {app.plusEndsAt ? ` Native+ runs until ${new Date(app.plusEndsAt).toLocaleDateString(undefined, { day: "numeric", month: "long" })}.` : ""}
             </p>
           </>
         ) : app.status === "rejected" ? (
@@ -1035,7 +1036,7 @@ function Status({
               <span className="flex h-[34px] w-[34px] items-center justify-center rounded-xl bg-inv text-inv-fg">
                 <Crown className="h-4 w-4" />
               </span>
-              <span className="text-[14px] font-bold">Native+ forever</span>
+              <span className="text-[14px] font-bold">{app.plusEndsAt ? `Native+ until ${date(app.plusEndsAt)}` : "A month of Native+"}</span>
             </div>
           </div>
         )}
