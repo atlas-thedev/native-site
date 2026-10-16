@@ -3,7 +3,11 @@ import { FALLBACK_PARTNERS, localArt, type Partner, type PartnerAnimation } from
 
 const ANIMATIONS = new Set<PartnerAnimation>(["aurora", "orbit", "glitch", "float", "shine", "pulse", "grid", "none"]);
 const HEX = /^#[0-9a-f]{6}$/i;
-const https = (v: unknown) => (typeof v === "string" && /^https:\/\//.test(v) ? v : "");
+// http:// links (a backend behind a plain-http proxy hop) are upgraded, not dropped with the whole partner.
+const https = (v: unknown) => {
+  const s = typeof v === "string" ? v.replace(/^http:\/\//i, "https://") : "";
+  return /^https:\/\//.test(s) ? s : "";
+};
 
 function clean(raw: Record<string, unknown>): Partner | null {
   const website = https(raw.website);
