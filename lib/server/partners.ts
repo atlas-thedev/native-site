@@ -45,15 +45,39 @@ function clean(raw: Record<string, unknown>): Partner | null {
   };
 }
 
-/** Live partners from the Native API (cached for a minute). Falls back to the built-in list; never throws. */
-export async function getPartners(): Promise<Partner[]> {
-  try {
-    const r = await fetch(`${API_URL}/v1/site/partners`, { next: { revalidate: 60 }, signal: AbortSignal.timeout(6000) });
-    if (!r.ok) return FALLBACK_PARTNERS;
-    const d = (await r.json()) as { partners?: Record<string, unknown>[] };
-    if (!Array.isArray(d.partners)) return FALLBACK_PARTNERS;
-    return d.partners.map(clean).filter((p): p is Partner => p !== null);
-  } catch {
-    return FALLBACK_PARTNERS;
+/*
+ * The root layout is force-dynamic, which turns off Next's fetch cache, so without this every visit to
+ * /partners asked the API again. Partners are kept in memory instead: fresh for a minute, then served
+ * from memory straight away while one background request refreshes them. A failed refresh keeps the
+ * last good list; the built-in list is only used before the API has ever answered.
+ */
+const FRESH_MS = 60_000;
+let cached: { at: number; partners: Partner[] } | null = null;
+let refreshing: Promise<Partner[]> | null = null;
+
+async function load(): Promise<Partner[]> {
+  const r = await fetch(`${API_URL}/v1/site/partners`, { cache: "no-store", signal: AbortSignal.timeout(6000) });
+  if (!r.ok) throw new Error(`partners ${r.status}`);
+  const d = (await r.json()) as { partners?: Record<string, unknown>[] };
+  if (!Array.isArray(d.partners)) throw new Error("partners: bad response");
+  return d.partners.map(clean).filter((p): p is Partner => p !== null);
+}
+
+function refresh(): Promise<Partner[]> {
+  if (!refreshing) {
+    refreshing = load()
+      .then((partners) => { cached = { at: Date.now(), partners }; return partners; })
+      .catch(() => cached?.partners ?? FALLBACK_PARTNERS)
+      .finally(() => { refreshing = null; });
   }
+  return refreshing;
+}
+
+/** Live partners from the Native API, served from memory (see above). Never throws. */
+export async function getPartners(): Promise<Partner[]> {
+  if (cached) {
+    if (Date.now() - cached.at > FRESH_MS) void refresh(); // stale: answer now, refresh in the background
+    return cached.partners;
+  }
+  return refresh();
 }
